@@ -28,7 +28,7 @@ except ImportError:  # pragma: no cover - optional only in minimal local setups
     PyJWK = None
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 METRICS_PATH = ROOT / "models" / "metrics-v1.json"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 

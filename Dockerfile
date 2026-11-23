@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     IDENTITY_CLIENT_ID=snapqc \
     IDENTITY_REDIRECT_URI=https://snapqc.icxhnk.com/api/auth/callback
 
-RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

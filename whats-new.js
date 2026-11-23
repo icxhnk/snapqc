@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.2.2",
+    date: "2026-11-23",
+    category: "Perbaikan",
+    title: "Perbaikan pemeriksaan kesehatan container produksi (healthcheck)",
+    summary:
+      "Menambahkan utilitas curl di image container produksi agar healthcheck Coolify dan routing HTTPS otomatis berjalan stabil tanpa gangguan.",
+  },
+  {
     version: "0.2.1",
     date: "2026-11-23",
     category: "Baru",
