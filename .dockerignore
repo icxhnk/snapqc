@@ -1,0 +1,12 @@
+.git
+.venv
+datasets
+runs
+tests
+__pycache__
+*.pyc
+.env
+.env.*
+yolo11n.pt
+models/*.pt
+Start-SnapQC.ps1

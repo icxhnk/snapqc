@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0f2433" />
+    <title>SnapQC — Inspeksi Cacat Las AI (YOLO11n ONNX)</title>
+    <link rel="icon" href="../mark.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --bg: #eef3f6;
+        --panel: #ffffff;
+        --rail: #0d202e;
+        --rail-soft: #173245;
+        --ink: #102432;
+        --ink-soft: #435b6a;
+        --muted: #647b89;
+        --line: #d3dfe6;
+        --cyan: #0891b2;
+        --cyan-bright: #22d3ee;
+        --amber: #d97706;
+        --amber-pale: #fef3c7;
+        --danger: #dc2626;
+        --danger-pale: #fee2e2;
+        --ok: #15803d;
+        --ok-pale: #dcfce7;
+        --radius: 12px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 14.5px/1.55 "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        display: grid;
+        grid-template-columns: 248px 1fr;
+        min-height: 100vh;
+      }
+      .rail {
+        background: var(--rail);
+        color: #e6f1f6;
+        padding: 20px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 8px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 17px;
+      }
+      .brand small { display: block; font-size: 11px; font-weight: 500; color: #96b4c4; }
+      .menu-toggle {
+        display: none;
+        background: var(--rail-soft);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      nav.rail-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+      nav.rail-nav button {
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: 0;
+        color: #c5d9e4;
+        padding: 10px 12px;
+        border-radius: 9px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      nav.rail-nav button:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+      nav.rail-nav button[aria-current="page"] {
+        background: #16374d;
+        color: #fff;
+        box-shadow: inset 3px 0 0 var(--cyan-bright);
+      }
+      nav.rail-nav svg { width: 18px; height: 18px; flex: none; }
+      .rail-foot { border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 12px; font-size: 12px; color: #9cb8c7; }
+      .rail-foot strong { color: #fff; display: block; margin-bottom: 2px; }
+
+      .workspace { display: flex; flex-direction: column; min-width: 0; }
+      .status-banner {
+        background: #e6f7fb;
+        border-bottom: 1px solid #b6e3ee;
+        color: #0b4a5c;
+        padding: 9px 24px;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      main { padding: 24px; max-width: 1240px; width: 100%; margin: 0 auto; }
+      .page-head {
+        display: flex; justify-content: space-between; align-items: flex-end;
+        gap: 14px; margin-bottom: 18px; flex-wrap: wrap;
+      }
+      .page-head h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.02em; }
+      .page-head p { margin: 0; color: var(--ink-soft); }
+
+      .btn {
+        display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px;
+        border-radius: 8px; font: 600 13.5px/1.2 inherit; border: 1px solid var(--line);
+        background: #fff; color: var(--ink); cursor: pointer;
+      }
+      .btn:hover { border-color: var(--cyan); }
+      .btn-primary { background: var(--cyan); border-color: var(--cyan); color: #fff; }
+      .btn-primary:hover { background: #0e7490; }
+      .btn-ok { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
+      .btn-danger { background: var(--danger-pale); border-color: #fca5a5; color: var(--danger); }
+
+      .grid-inspect { display: grid; grid-template-columns: 1.35fr 0.95fr; gap: 18px; align-items: start; }
+      .card {
+        background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 18px; box-shadow: 0 1px 3px rgba(16, 36, 50, 0.04);
+      }
+      .card h2 { margin: 0 0 10px; font-size: 16.5px; }
+      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+
+      .sample-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      .chip {
+        padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line);
+        background: #f6fafc; color: var(--ink-soft); font: 600 12.5px/1.2 inherit; cursor: pointer;
+      }
+      .chip.active { background: #0f2433; border-color: #0f2433; color: #fff; }
+
+      .viewport {
+        position: relative; background: #0a1620; border-radius: 10px; overflow: hidden;
+        border: 1px solid #1e3a4c; aspect-ratio: 4 / 3;
+      }
+      .viewport canvas, .viewport video { width: 100%; height: 100%; display: block; object-fit: contain; }
+      .viewport-hud {
+        position: absolute; top: 10px; left: 10px; right: 10px;
+        display: flex; justify-content: space-between; pointer-events: none; font-size: 11.5px; gap: 8px;
+      }
+      .hud-pill {
+        background: rgba(13, 32, 46, 0.86); color: #e6f4f8; padding: 4px 10px;
+        border-radius: 999px; border: 1px solid rgba(34, 211, 238, 0.35); font-weight: 600;
+      }
+
+      .controls-bar {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+      }
+      .slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+      .detection-list { display: flex; flex-direction: column; gap: 10px; }
+      .det-item { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fbfdfe; }
+      .det-item.approved { border-left: 4px solid var(--ok); background: #f4fcf6; }
+      .det-item.rejected { border-left: 4px solid var(--danger); opacity: 0.7; }
+      .det-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+      .b-high { background: var(--danger-pale); color: var(--danger); }
+      .b-med { background: var(--amber-pale); color: #92400e; }
+      .b-ok { background: var(--ok-pale); color: var(--ok); }
+      .b-info { background: #e0f2fe; color: #0369a1; }
+      .det-meta { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 8px; }
+      .det-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .det-actions button { padding: 5px 10px; font-size: 12px; }
+      pre.yolo-box {
+        background: #0d202e; color: #b5eef7; padding: 12px; border-radius: 8px;
+        font-size: 12px; overflow-x: auto; margin: 10px 0 0;
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+      th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { background: #edf4f7; font-size: 12.5px; }
+      .notice {
+        margin-top: 12px; padding: 11px 13px; border-radius: 8px;
+        background: #f4f9fb; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft);
+      }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+      .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+      .kpi strong { display: block; font-size: 22px; color: #0e7490; }
+      .kpi span { display: block; font-size: 12.5px; font-weight: 700; margin-top: 2px; }
+      .kpi small { color: var(--muted); font-size: 11.5px; }
+      .plot-img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+      .hidden { display: none !important; }
+
+      @media (max-width: 900px) {
+        body { grid-template-columns: 1fr; }
+        .rail { position: static; height: auto; padding: 12px 16px; }
+        .rail-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .menu-toggle { display: inline-flex; }
+        nav.rail-nav, .rail-foot { display: none; }
+        .rail.open nav.rail-nav, .rail.open .rail-foot { display: flex; }
+        .grid-inspect, .two-col { grid-template-columns: 1fr; }
+        .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        main { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="rail" id="rail">
+      <div class="rail-top">
+        <a class="brand" href="#kamera">
+          <img src="../mark.svg" width="32" height="32" alt="" />
+          <span>SnapQC<small>Welding AI v1 · ONNX</small></span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="rail-nav">Menu</button>
+      </div>
+      <nav class="rail-nav" id="rail-nav" aria-label="Navigasi SnapQC">
+        <button type="button" data-tab="kamera" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="4"/></svg>
+          Kamera &amp; Deteksi Las
+        </button>
+        <button type="button" data-tab="model">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg>
+          Evaluasi Model v1
+        </button>
+        <button type="button" data-tab="riwayat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
+          Riwayat Verifikasi
+        </button>
+        <button type="button" data-tab="whats-new">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
+          What's New
+        </button>
+      </nav>
+      <div class="rail-foot">
+        <strong>SnapQC v0.2.1</strong>
+        <span>YOLO11n ONNX · 10,13 MB</span>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <div class="status-banner">
+        <span id="engine-banner"><strong>Model Terlatih Aktif:</strong> SnapQC Welding v1 (YOLO11n ONNX · 2.028 foto las publik CC0). Memeriksa koneksi server deteksi lokal…</span>
+        <span>Asisten visual · keputusan akhir tetap oleh inspector</span>
+      </div>
+
+      <main>
+        <section id="tab-kamera">
+          <div class="page-head">
+            <div>
+              <h1>Inspeksi Cacat Las (Model Deep Learning v1)</h1>
+              <p>Pilih foto uji nyata (belum pernah dilihat model saat latihan) atau unggah/jepret foto las Anda sendiri untuk menjalankan deteksi ONNX.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" type="button" id="btn-live-cam">Buka Kamera</button>
+              <label class="btn btn-primary" style="margin:0">Unggah Foto Las<input id="file-upload" type="file" accept="image/*" capture="environment" hidden /></label>
+              <button class="btn" type="button" onclick="window.print()">Cetak Lembar</button>
+            </div>
+          </div>
+
+          <div class="grid-inspect">
+            <div class="card">
+              <div class="card-head">
+                <h2 id="scene-title">Foto Uji Nyata 1 · Fillet Weld Campuran (Good + Bad + Defect)</h2>
+                <span class="badge b-info" id="model-badge">YOLO11n ONNX · Held-Out Test</span>
+              </div>
+
+              <div class="sample-tabs" role="tablist" aria-label="Pilih foto uji nyata">
+                <button class="chip active" type="button" data-sample="test-05">Uji 1 · Fillet Campuran</button>
+                <button class="chip" type="button" data-sample="test-04">Uji 2 · Bad Weld + 2 Defect</button>
+                <button class="chip" type="button" data-sample="test-06">Uji 3 · Cacat Permukaan</button>
+                <button class="chip" type="button" data-sample="test-03">Uji 4 · Bad Weld</button>
+              </div>
+
+              <div class="viewport">
+                <canvas id="inspect-canvas" width="960" height="720"></canvas>
+                <video id="live-video" class="hidden" autoplay playsinline muted></video>
+                <div class="viewport-hud">
+                  <span class="hud-pill" id="hud-mode">SnapQC Welding v1 (YOLO11n ONNX)</span>
+                  <span class="hud-pill" id="hud-count">Memuat…</span>
+                </div>
+              </div>
+
+              <div class="controls-bar">
+                <label class="slider-wrap">
+                  Batas keyakinan AI: <strong id="conf-label">45%</strong>
+                  <input id="conf-slider" type="range" min="25" max="90" value="45" step="5" />
+                </label>
+                <button class="btn hidden" type="button" id="btn-capture">Jepret &amp; Deteksi AI</button>
+                <button class="btn hidden" type="button" id="btn-stop-cam">Tutup Kamera</button>
+              </div>
+
+              <div class="notice">
+                <strong>Catatan Keselamatan QC:</strong> Deteksi di atas dihasilkan oleh model Deep Learning <strong>SnapQC Welding v1</strong> yang benar-benar dilatih pada dataset publik CC0. Gunakan sebagai alat bantu skrining awal; pemeriksaan gauge, NDT, dan persetujuan class/flag tetap dilakukan oleh inspector berwenang.
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="card">
+                <div class="card-head">
+                  <h2>Verifikasi Inspector (Human-in-the-Loop)</h2>
+                  <span class="badge b-ok" id="verified-badge">0 disetujui</span>
+                </div>
+                <p style="margin:0 0 12px;font-size:13px;color:var(--ink-soft)">
+                  Tinjau hasil deteksi model. Klik <strong>Setujui</strong> untuk menyimpan label latih ulang (<em>Active Learning</em>) atau <strong>Tolak</strong> bila deteksi meleset.
+                </p>
+                <div class="detection-list" id="detection-list"></div>
+              </div>
+
+              <div class="card">
+                <h2>Ekspor Label YOLO (Active Learning)</h2>
+                <p style="margin:0;font-size:12.5px;color:var(--ink-soft)">
+                  Label otomatis berformat YOLO (<code>class_id cx cy w h</code>) untuk memperkaya dataset versi berikutnya.
+                </p>
+                <pre class="yolo-box" id="yolo-preview"># Setujui minimal satu deteksi di atas untuk melihat format label YOLO</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-model" class="hidden">
+          <div class="page-head">
+            <div>
+              <h1>Evaluasi Nyata — SnapQC Welding v1 (YOLO11n)</h1>
+              <p>Hasil terukur pada 126 foto uji terpisah (tidak pernah masuk data latih) setelah 40 epoch di NVIDIA RTX 5060.</p>
+            </div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi"><strong>80,2%</strong><span>AP@50 Bad Weld</span><small>Uji terpisah (126 foto)</small></div>
+            <div class="kpi"><strong>71,5%</strong><span>AP@50 Good Weld</span><small>Uji terpisah (126 foto)</small></div>
+            <div class="kpi"><strong>59,7%</strong><span>mAP@50 Total</span><small>Val: 64,8% · Test: 59,7%</small></div>
+            <div class="kpi"><strong>10,13 MB</strong><span>Ukuran ONNX</span><small>Jalan lokal tanpa API cloud</small></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <h2>Rincian Evaluasi per Kelas (Validation vs Held-Out Test)</h2>
+            <table>
+              <thead>
+                <tr><th>Kelas</th><th>AP@50 Validasi (283 foto)</th><th>AP@50 Uji Terpisah (126 foto)</th><th>Analisis Rekayasa</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Bad Weld</strong></td><td>74,6%</td><td><strong>80,2%</strong></td><td>Kuat mengenali jalur las kasar/tidak rata secara keseluruhan.</td></tr>
+                <tr><td><strong>Good Weld</strong></td><td>77,0%</td><td><strong>71,5%</strong></td><td>Baik membedakan jalur las rapi dari area las bermasalah.</td></tr>
+                <tr><td><strong>Defect (titik cacat kecil)</strong></td><td>42,8%</td><td><strong>27,4%</strong></td><td>Cacat mikro (porositas/lubang kecil 20–40 px) lebih menantang pada input 640px; target peningkatan v2 lewat resolusi 1024px / tiling (SAHI) + Active Learning.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <h2>Confusion Matrix (Ternormalisasi)</h2>
+              <img class="plot-img" src="../models/confusion_matrix_normalized.png" alt="Confusion matrix ternormalisasi SnapQC Welding v1" />
+            </div>
+            <div class="card">
+              <h2>Kurva Pelatihan 40 Epoch</h2>
+              <img class="plot-img" src="../models/results.png" alt="Kurva loss dan mAP pelatihan SnapQC Welding v1" />
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-riwayat" class="hidden">
+          <div class="page-head">
+            <div>
+              <h1>Riwayat Verifikasi Inspector</h1>
+              <p>Keputusan validasi Anda pada sesi ini.</p>
+            </div>
+          </div>
+          <div class="card">
+            <table>
+              <thead><tr><th>Foto</th><th>Kelas Model</th><th>Skor AI</th><th>Keputusan Inspector</th></tr></thead>
+              <tbody id="history-body">
+                <tr><td colspan="4" style="color:var(--muted)">Belum ada verifikasi pada sesi ini.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tab-whats-new" class="hidden">
+          <div class="page-head">
+            <div>
+              <h1>What's New</h1>
+              <p>Riwayat pembaruan SnapQC, terbaru terlebih dahulu.</p>
+            </div>
+          </div>
+          <div id="releases-container" style="display:flex;flex-direction:column;gap:12px"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../whats-new.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        const REAL_SAMPLES = {
+          "test-05": {
+            title: "Foto Uji Nyata 1 · Fillet Weld Campuran (Good + Bad + Defect)",
+            image: "samples/test-05.jpg",
+            detections: [
+              { id: "s5-1", clsId: 0, label: "Bad Weld", conf: 0.8931, box: [0.4345, 0.38, 0.1488, 0.1098] },
+              { id: "s5-2", clsId: 1, label: "Good Weld", conf: 0.8626, box: [0.2701, 0.3301, 0.122, 0.0927] },
+              { id: "s5-3", clsId: 1, label: "Good Weld", conf: 0.8312, box: [0.6355, 0.4456, 0.157, 0.1134] },
+              { id: "s5-4", clsId: 2, label: "Defect", conf: 0.7108, box: [0.5256, 0.4381, 0.0371, 0.0318] },
+            ],
+          },
+          "test-04": {
+            title: "Foto Uji Nyata 2 · Sambungan Las Kasar + 2 Titik Defect",
+            image: "samples/test-04.jpg",
+            detections: [
+              { id: "s4-1", clsId: 0, label: "Bad Weld", conf: 0.8277, box: [0.4202, 0.3599, 0.2934, 0.2524] },
+              { id: "s4-2", clsId: 2, label: "Defect", conf: 0.7885, box: [0.4499, 0.5102, 0.0734, 0.0794] },
+              { id: "s4-3", clsId: 2, label: "Defect", conf: 0.6969, box: [0.5188, 0.4426, 0.0766, 0.085] },
+            ],
+          },
+          "test-06": {
+            title: "Foto Uji Nyata 3 · Bad Weld & Titik Cacat Permukaan",
+            image: "samples/test-06.jpg",
+            detections: [
+              { id: "s6-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.4457, 0.3776, 0.2057, 0.1999] },
+              { id: "s6-2", clsId: 2, label: "Defect", conf: 0.5999, box: [0.4628, 0.4947, 0.0535, 0.0593] },
+            ],
+          },
+          "test-03": {
+            title: "Foto Uji Nyata 4 · Jalur Las Bermasalah (Bad Weld)",
+            image: "samples/test-03.jpg",
+            detections: [
+              { id: "s3-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.2698, 0.361, 0.3169, 0.1868] },
+            ],
+          },
+        };
+
+        const CLASS_INFO = {
+          "Bad Weld": { badge: "b-high", color: "#ef4444", desc: "Jalur las terlihat tidak rata / bermasalah — perlu pemeriksaan visual lebih dekat & kemungkinan perbaikan." },
+          "Defect": { badge: "b-med", color: "#f59e0b", desc: "Titik indikasi cacat lokal (porositas/kawah/slag) — verifikasi dengan welding gauge / NDT." },
+          "Good Weld": { badge: "b-ok", color: "#22d3ee", desc: "Profil jalur las terlihat rapi secara visual — tetap ikuti kriteria penerimaan proyek." },
+        };
+
+        let serverLive = false;
+        let currentTitle = REAL_SAMPLES["test-05"].title;
+        let currentImage = null;
+        let currentDetections = REAL_SAMPLES["test-05"].detections;
+        let currentLatency = null;
+        let threshold = 0.45;
+        let stream = null;
+        const decisions = new Map();
+
+        const canvas = document.getElementById("inspect-canvas");
+        const ctx = canvas.getContext("2d");
+        const video = document.getElementById("live-video");
+        const rail = document.getElementById("rail");
+        const menuToggle = document.getElementById("menu-toggle");
+
+        menuToggle.addEventListener("click", () => {
+          const open = !rail.classList.contains("open");
+          rail.classList.toggle("open", open);
+          menuToggle.setAttribute("aria-expanded", String(open));
+        });
+
+        function activateTab(tab) {
+          document.querySelectorAll("[data-tab]").forEach((b) => {
+            if (b.dataset.tab === tab) b.setAttribute("aria-current", "page");
+            else b.removeAttribute("aria-current");
+          });
+          ["kamera", "model", "riwayat", "whats-new"].forEach((id) => {
+            document.getElementById("tab-" + id).classList.toggle("hidden", id !== tab);
+          });
+          rail.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          if (tab === "riwayat") renderHistory();
+        }
+
+        document.querySelectorAll("[data-tab]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const tab = btn.dataset.tab;
+            activateTab(tab);
+            if (location.protocol !== "file:") {
+              const targetPath = tab === "whats-new" ? "/whats-new" : "/";
+              if (location.pathname !== targetPath) history.replaceState(null, "", targetPath);
+            }
+          });
+        });
+
+        async function checkServer() {
+          const banner = document.getElementById("engine-banner");
+          if (location.protocol === "file:") {
+            banner.innerHTML = "<strong>Mode Pratinjau File Lokal:</strong> Menampilkan hasil nyata model ONNX pada foto uji terpisah. Untuk deteksi langsung foto baru Anda, jalankan <code>Start-SnapQC.ps1</code> lalu buka <code>http://127.0.0.1:57840</code>.";
+            return;
+          }
+          try {
+            const res = await fetch("/healthz", { cache: "no-store" });
+            const data = await res.json();
+            if (data.modelLoaded) {
+              serverLive = true;
+              const loc = location.hostname === "127.0.0.1" || location.hostname === "localhost" ? "Live Lokal" : "Live";
+              banner.innerHTML = `<strong>Model ONNX Aktif (${loc}):</strong> SnapQC Welding v1 siap mendeteksi foto kamera &amp; unggahan baru secara nyata.`;
+            } else if (data.modelLoading) {
+              banner.innerHTML = "<strong>Server Aktif · Memuat Model ONNX…</strong> Anda sudah bisa melihat foto uji; deteksi unggahan foto baru akan aktif otomatis dalam beberapa detik.";
+              setTimeout(checkServer, 2000);
+            } else if (data.modelError) {
+              banner.innerHTML = "<strong>Model ONNX Gagal Dimuat:</strong> " + String(data.modelError);
+            }
+          } catch {}
+        }
+
+        function visibleDetections() {
+          return currentDetections.filter((d) => d.conf >= threshold);
+        }
+
+        function drawViewport() {
+          const w = canvas.width, h = canvas.height;
+          ctx.fillStyle = "#0a1620";
+          ctx.fillRect(0, 0, w, h);
+          if (!currentImage) return;
+          const scale = Math.min(w / currentImage.width, h / currentImage.height);
+          const dw = currentImage.width * scale, dh = currentImage.height * scale;
+          const ox = (w - dw) / 2, oy = (h - dh) / 2;
+          ctx.drawImage(currentImage, ox, oy, dw, dh);
+
+          const list = visibleDetections();
+          list.forEach((d) => {
+            const st = decisions.get(d.id)?.status;
+            const [x, y, bw, bh] = d.box;
+            const px = ox + x * dw, py = oy + y * dh, pw = bw * dw, ph = bh * dh;
+            const baseColor = (CLASS_INFO[d.label] || { color: "#22d3ee" }).color;
+            const color = st === "approved" ? "#22c55e" : st === "rejected" ? "#94a3b8" : baseColor;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = st === "rejected" ? 2 : 3.5;
+            if (st === "rejected") ctx.setLineDash([6, 6]);
+            ctx.strokeRect(px, py, pw, ph);
+            ctx.setLineDash([]);
+            const tag = `${d.label} ${Math.round(d.conf * 100)}%`;
+            ctx.font = "bold 14px Segoe UI, Arial, sans-serif";
+            const tw = ctx.measureText(tag).width + 14;
+            ctx.fillStyle = color;
+            ctx.fillRect(px, Math.max(oy, py - 24), tw, 24);
+            ctx.fillStyle = "#0b1720";
+            ctx.fillText(tag, px + 7, Math.max(oy + 17, py - 7));
+          });
+          document.getElementById("hud-mode").textContent = currentLatency !== null
+            ? `ONNX Live · ${currentLatency} ms`
+            : "SnapQC Welding v1 (YOLO11n ONNX)";
+          document.getElementById("hud-count").textContent = `${list.length} deteksi (≥ ${Math.round(threshold * 100)}%)`;
+        }
+
+        function renderDetections() {
+          const listEl = document.getElementById("detection-list");
+          const list = visibleDetections();
+          if (!list.length) {
+            listEl.innerHTML = `<p style="margin:0;color:var(--muted);font-size:13px">Tidak ada deteksi di atas ${Math.round(threshold * 100)}%. Coba turunkan slider batas keyakinan.</p>`;
+          } else {
+            listEl.innerHTML = list.map((d) => {
+              const st = decisions.get(d.id)?.status || "";
+              const info = CLASS_INFO[d.label] || { badge: "b-info", desc: "Perlu tinjauan inspector." };
+              return `<article class="det-item ${st}">
+                <div class="det-top">
+                  <strong>${d.label}</strong>
+                  <span class="badge ${info.badge}">${Math.round(d.conf * 100)}%</span>
+                </div>
+                <p class="det-meta">${info.desc}</p>
+                <div class="det-actions">
+                  <button type="button" class="btn btn-ok" data-decide="approved" data-id="${d.id}">${st === "approved" ? "✓ Disetujui" : "Setujui (Valid)"}</button>
+                  <button type="button" class="btn btn-danger" data-decide="rejected" data-id="${d.id}">${st === "rejected" ? "× Ditolak" : "Tolak (False Positive)"}</button>
+                </div>
+              </article>`;
+            }).join("");
+            listEl.querySelectorAll("[data-decide]").forEach((b) => {
+              b.onclick = () => {
+                const det = currentDetections.find((x) => x.id === b.dataset.id);
+                decisions.set(det.id, { status: b.dataset.decide, scene: currentTitle, det });
+                renderAll();
+              };
+            });
+          }
+          const approvedCount = [...decisions.values()].filter((x) => x.status === "approved").length;
+          document.getElementById("verified-badge").textContent = `${approvedCount} disetujui`;
+          updateYolo();
+        }
+
+        function updateYolo() {
+          const box = document.getElementById("yolo-preview");
+          const approved = [...decisions.values()].filter((x) => x.status === "approved" && currentDetections.some((d) => d.id === x.det.id));
+          if (!approved.length) {
+            box.textContent = "# Setujui minimal satu deteksi di atas untuk melihat format label YOLO";
+            return;
+          }
+          box.textContent = approved
+            .map(({ det }) => {
+              const [x, y, w, h] = det.box;
+              return `${det.clsId} ${(x + w / 2).toFixed(4)} ${(y + h / 2).toFixed(4)} ${w.toFixed(4)} ${h.toFixed(4)}  # ${det.label}`;
+            })
+            .join("\n");
+        }
+
+        function renderHistory() {
+          const tbody = document.getElementById("history-body");
+          const rows = [...decisions.values()];
+          if (!rows.length) return;
+          tbody.innerHTML = rows
+            .map((r) => `<tr><td>${r.scene}</td><td><strong>${r.det.label}</strong></td><td>${Math.round(r.det.conf * 100)}%</td><td><span class="badge ${r.status === "approved" ? "b-ok" : "b-high"}">${r.status === "approved" ? "Disetujui (Valid)" : "Ditolak"}</span></td></tr>`)
+            .join("");
+        }
+
+        function renderAll() {
+          document.getElementById("scene-title").textContent = currentTitle;
+          drawViewport();
+          renderDetections();
+        }
+
+        function loadSample(key) {
+          const s = REAL_SAMPLES[key];
+          currentTitle = s.title;
+          currentDetections = s.detections;
+          currentLatency = null;
+          const img = new Image();
+          img.onload = () => { currentImage = img; renderAll(); };
+          img.src = s.image;
+        }
+
+        async function detectUploadedBlob(blob, titleText) {
+          const img = new Image();
+          const url = URL.createObjectURL(blob);
+          img.onload = async () => {
+            currentImage = img;
+            currentTitle = titleText;
+            URL.revokeObjectURL(url);
+            if (!serverLive) {
+              currentDetections = [];
+              currentLatency = null;
+              renderAll();
+              document.getElementById("detection-list").innerHTML = `<div class="det-item"><strong>Jalankan server lokal untuk deteksi foto baru</strong><p class="det-meta">Buka <code>Start-SnapQC.ps1</code> lalu akses <code>http://127.0.0.1:57840</code> agar foto Anda diproses langsung oleh model <code>snapqc-welding-v1.onnx</code>.</p></div>`;
+              return;
+            }
+            document.getElementById("hud-count").textContent = "Mendeteksi dengan ONNX…";
+            try {
+              const res = await fetch("/api/detect?conf=0.25", { method: "POST", body: blob });
+              const data = await res.json();
+              if (!res.ok) throw Error(data.error || "Deteksi gagal");
+              currentLatency = data.latencyMs;
+              currentDetections = data.detections.map((d, i) => ({ ...d, id: "live-" + Date.now() + "-" + i }));
+              renderAll();
+            } catch (err) {
+              alert(err.message);
+            }
+          };
+          img.src = url;
+        }
+
+        document.querySelectorAll("[data-sample]").forEach((chip) => {
+          chip.onclick = () => {
+            document.querySelectorAll("[data-sample]").forEach((c) => c.classList.toggle("active", c === chip));
+            loadSample(chip.dataset.sample);
+          };
+        });
+
+        document.getElementById("conf-slider").addEventListener("input", (e) => {
+          threshold = Number(e.target.value) / 100;
+          document.getElementById("conf-label").textContent = e.target.value + "%";
+          renderAll();
+        });
+
+        document.getElementById("file-upload").addEventListener("change", (e) => {
+          const file = e.target.files?.[0];
+          if (file) detectUploadedBlob(file, "Foto Unggahan · " + file.name);
+        });
+
+        async function stopCamera() {
+          if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+          video.classList.add("hidden");
+          canvas.classList.remove("hidden");
+          document.getElementById("btn-capture").classList.add("hidden");
+          document.getElementById("btn-stop-cam").classList.add("hidden");
+        }
+
+        document.getElementById("btn-live-cam").onclick = async () => {
+          if (!navigator.mediaDevices?.getUserMedia) { alert("Gunakan tombol Unggah Foto Las pada perangkat ini."); return; }
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            canvas.classList.add("hidden");
+            video.classList.remove("hidden");
+            document.getElementById("btn-capture").classList.remove("hidden");
+            document.getElementById("btn-stop-cam").classList.remove("hidden");
+          } catch { alert("Izin kamera ditolak atau kamera tidak tersedia."); }
+        };
+
+        document.getElementById("btn-capture").onclick = () => {
+          const snap = document.createElement("canvas");
+          snap.width = video.videoWidth || 960;
+          snap.height = video.videoHeight || 720;
+          snap.getContext("2d").drawImage(video, 0, 0, snap.width, snap.height);
+          snap.toBlob((blob) => { stopCamera(); if (blob) detectUploadedBlob(blob, "Jepretan Kamera Langsung"); }, "image/jpeg", 0.92);
+        };
+        document.getElementById("btn-stop-cam").onclick = () => { stopCamera(); renderAll(); };
+
+        const relEl = document.getElementById("releases-container");
+        if (typeof SnapQCReleases !== "undefined") {
+          relEl.innerHTML = SnapQCReleases.map(
+            (r) => `<article class="card"><div class="card-head"><h2>${r.title}</h2><span class="badge b-info">v${r.version} · ${r.date} · ${r.category}</span></div><p style="margin:0;color:var(--ink-soft)">${r.summary}</p></article>`,
+          ).join("");
+        }
+
+        checkServer();
+        loadSample("test-05");
+        if (location.pathname === "/whats-new") activateTab("whats-new");
+      })();
+    </script>
+  </body>
+</html>

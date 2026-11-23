@@ -1,0 +1,41 @@
+{
+  "repo": "rikkarth/welding-defect-object-detection",
+  "license": "CC0-1.0 (Public Domain)",
+  "classes": {
+    "0": "Bad Weld",
+    "1": "Good Weld",
+    "2": "Defect"
+  },
+  "splits": {
+    "train": {
+      "images": 1619,
+      "annotations": 4583,
+      "background_images": 0,
+      "per_class": {
+        "Defect": 1598,
+        "Bad Weld": 1089,
+        "Good Weld": 1896
+      }
+    },
+    "valid": {
+      "images": 283,
+      "annotations": 802,
+      "background_images": 0,
+      "per_class": {
+        "Defect": 273,
+        "Bad Weld": 194,
+        "Good Weld": 335
+      }
+    },
+    "test": {
+      "images": 126,
+      "annotations": 301,
+      "background_images": 0,
+      "per_class": {
+        "Defect": 89,
+        "Bad Weld": 95,
+        "Good Weld": 117
+      }
+    }
+  }
+}
