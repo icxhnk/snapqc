@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.5.1",
+    date: "2026-11-24",
+    category: "Perbaikan",
+    title: "Perbaikan tampilan mobile, pemisahan input Galeri vs Kamera, & perbaikan seluruh fitur interaktif",
+    summary:
+      "Memisahkan input Galeri (tanpa atribut capture agar galeri HP langsung terbuka) dari input Kamera, menambahkan auto-resize foto beresolusi tinggi di sisi browser agar foto kamera HP tidak pernah gagal ukuran 10 MB, membuat sakelar Scan Teliti langsung memindai ulang otomatis, merapikan navbar/toolbar/kartu temuan/tabel agar 100% nyaman di layar HP 360–430px, serta menambahkan fallback unduh PNG, salin YOLO, dan gambar canvas untuk seluruh browser mobile.",
+  },
+  {
     version: "0.5.0",
     date: "2026-11-24",
     category: "Baru",

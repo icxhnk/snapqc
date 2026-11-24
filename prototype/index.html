@@ -2,7 +2,7 @@
 <html lang="id">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <title>SnapQC — Deteksi Cacat Las AI</title>
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
@@ -28,7 +28,8 @@
         --radius: 16px;
         --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04);
       }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { max-width: 100%; overflow-x: clip; }
       body {
         margin: 0;
         font: 14.5px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
@@ -37,22 +38,28 @@
         font-variant-numeric: tabular-nums;
       }
 
-      /* Top Sticky Social Navigation */
+      /* Mobile-safe visually hidden file inputs (NEVER display:none so iOS/Android labels always work!) */
+      .sr-file {
+        position: fixed; top: -100px; left: -100px; width: 1px; height: 1px;
+        opacity: 0; pointer-events: none;
+      }
+
+      /* Top Sticky Navigation */
       .nav-bar {
         position: sticky; top: 0; z-index: 40;
-        background: rgba(255, 255, 255, 0.92);
+        background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--line);
       }
       .nav-inner {
-        max-width: 1080px; margin: 0 auto; padding: 0 18px; height: 60px;
-        display: flex; align-items: center; justify-content: space-between; gap: 14px;
+        max-width: 1080px; margin: 0 auto; padding: 0 16px; height: 58px;
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
       }
       .brand {
-        display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
-        color: var(--ink); font-weight: 800; font-size: 18px; letter-spacing: -0.025em;
+        display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+        color: var(--ink); font-weight: 800; font-size: 17.5px; letter-spacing: -0.025em; flex: none;
       }
-      .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
+      .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; flex: none; }
       .live-dot.loading { background: #f59e0b; }
 
       .nav-tabs { display: flex; align-items: center; gap: 4px; }
@@ -64,17 +71,17 @@
       .nav-tabs button:hover, .nav-tabs a:hover { background: var(--surface-soft); color: var(--ink); }
       .nav-tabs button[aria-current="page"] { background: var(--ink); color: #fff; }
 
-      .nav-right { display: flex; align-items: center; gap: 8px; }
+      .nav-right { display: flex; align-items: center; gap: 8px; flex: none; }
       .menu-toggle {
         display: none; border: 1px solid var(--line); background: #fff; color: var(--ink);
         border-radius: 10px; padding: 7px 11px; font: 600 13px/1 inherit; cursor: pointer;
       }
       .mobile-drawer {
-        display: none; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px 14px;
+        display: none; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 14px 14px;
       }
       .mobile-drawer.open { display: flex; flex-direction: column; gap: 4px; }
       .mobile-drawer button, .mobile-drawer a {
-        text-align: left; border: 0; background: transparent; padding: 10px 12px;
+        text-align: left; border: 0; background: transparent; padding: 11px 12px;
         border-radius: 10px; font: 600 14px/1.2 inherit; color: var(--ink); text-decoration: none; cursor: pointer;
       }
       .mobile-drawer button[aria-current="page"] { background: var(--brand-pale); color: var(--brand-dark); }
@@ -82,12 +89,13 @@
       /* Buttons */
       .btn {
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-        padding: 8px 14px; border-radius: 999px; font: 600 13px/1.2 inherit;
+        padding: 9px 14px; border-radius: 999px; font: 600 13px/1.2 inherit;
         border: 1px solid var(--line); background: #fff; color: var(--ink);
-        cursor: pointer; text-decoration: none; transition: all 0.15s;
+        cursor: pointer; text-decoration: none; transition: background 0.15s, border-color 0.15s;
+        min-height: 36px; white-space: nowrap;
       }
       .btn:hover { border-color: #cbd5e1; background: #f8fafc; }
-      .btn-sm { padding: 6px 11px; font-size: 12.5px; }
+      .btn-sm { padding: 6px 11px; font-size: 12.5px; min-height: 32px; }
       .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
       .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
       .btn-dark { background: var(--ink); border-color: var(--ink); color: #fff; }
@@ -98,94 +106,99 @@
       .btn svg { width: 16px; height: 16px; flex: none; }
 
       .user-pill {
-        display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 4px;
-        border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px;
+        border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 12.5px; font-weight: 600;
+        max-width: 150px;
       }
+      .user-pill .uname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .avatar {
         width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #0891b2, #0284c7);
         color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none;
       }
 
-      /* Main Centered Social Feed Layout */
-      .shell { max-width: 1080px; margin: 0 auto; padding: 18px 18px 80px; }
+      /* Main Layout */
+      .shell { max-width: 1080px; margin: 0 auto; padding: 16px 16px 84px; }
       .feed-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 22px; align-items: start; }
-      .feed-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-      .side-col { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+      .feed-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+      .side-col { position: sticky; top: 74px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
       .card {
         background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
         box-shadow: var(--shadow); overflow: hidden; min-width: 0;
       }
-      .card-pad { padding: 16px 18px; }
+      .card-pad { padding: 16px; }
 
-      /* Stories / Quick Sample Strip */
-      .stories {
-        display: flex; gap: 12px; overflow-x: auto; padding: 14px 16px; scrollbar-width: none;
-      }
-      .stories::-webkit-scrollbar { display: none; }
-      .story-item {
-        border: 0; background: transparent; padding: 0; cursor: pointer;
-        display: flex; flex-direction: column; align-items: center; gap: 6px;
-        width: 76px; flex: none; font: 600 11.5px/1.2 inherit; color: var(--ink-soft);
-      }
-      .story-ring {
-        width: 62px; height: 62px; border-radius: 50%; padding: 3px;
-        background: var(--line); display: flex; align-items: center; justify-content: center;
-        transition: transform 0.15s;
-      }
-      .story-item:hover .story-ring { transform: scale(1.04); }
-      .story-item.active .story-ring { background: linear-gradient(135deg, #06b6d4, #2563eb); }
-      .story-item.add-story .story-ring { background: none; border: 2px dashed var(--brand); }
-      .story-ring img, .story-ring .story-ico {
-        width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-        border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
-        background: var(--brand-pale); color: var(--brand-dark);
-      }
-      .story-item span { max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-      /* Social Composer Card */
+      /* Quick Input Composer (Gallery + Camera front & center!) */
       .composer { padding: 14px 16px; transition: background 0.15s, border-color 0.15s; }
       .composer.drag-over { background: #ecfeff; border-color: var(--brand); }
-      .composer-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
-      .composer-prompt {
-        flex: 1; padding: 10px 14px; border-radius: 999px; background: var(--surface-soft);
-        border: 1px solid var(--line-soft); color: var(--muted); font-size: 13.5px;
-        cursor: pointer; text-align: left; font-family: inherit;
+      .composer-cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+      .big-action {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 12px 14px; border-radius: 12px; font: 700 13.5px/1.2 inherit;
+        cursor: pointer; text-decoration: none; border: 1px solid var(--line);
+        background: var(--surface-soft); color: var(--ink); min-height: 46px;
+        transition: all 0.15s;
       }
-      .composer-prompt:hover { background: #f1f5f9; color: var(--ink); }
+      .big-action.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+      .big-action.primary:hover { background: var(--brand-dark); }
+      .big-action:hover { border-color: var(--brand); }
+      .big-action svg { width: 19px; height: 19px; flex: none; }
+
       .composer-bar {
         display: flex; justify-content: space-between; align-items: center; gap: 8px;
         flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line-soft);
       }
-      .composer-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .composer-hint { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
       .pill-toggle {
-        display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px;
+        display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px;
         border-radius: 999px; border: 1px solid var(--line); background: var(--surface-soft);
-        font-size: 12px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+        font-size: 12.5px; font-weight: 600; color: var(--ink); cursor: pointer; min-height: 34px;
       }
-      .pill-toggle input { accent-color: var(--brand); margin: 0; }
+      .pill-toggle.active { background: var(--brand-pale); border-color: var(--brand); color: var(--brand-dark); }
+      .pill-toggle input { accent-color: var(--brand); margin: 0; width: 15px; height: 15px; }
       .preset-bar { display: inline-flex; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
       .preset-btn {
-        border: 0; background: transparent; padding: 4px 9px; border-radius: 999px;
-        font: 600 11.5px/1.2 inherit; color: var(--muted); cursor: pointer;
+        border: 0; background: transparent; padding: 5px 10px; border-radius: 999px;
+        font: 600 12px/1.2 inherit; color: var(--muted); cursor: pointer; min-height: 28px;
       }
       .preset-btn.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
 
+      /* Stories / Quick Sample Strip */
+      .stories-wrap { padding: 12px 14px; }
+      .stories-head { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 9px; }
+      .stories { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+      .stories::-webkit-scrollbar { display: none; }
+      .story-item {
+        border: 0; background: transparent; padding: 0; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+        width: 72px; flex: none; font: 600 11.5px/1.2 inherit; color: var(--ink-soft);
+      }
+      .story-ring {
+        width: 58px; height: 58px; border-radius: 50%; padding: 3px;
+        background: var(--line); display: flex; align-items: center; justify-content: center;
+      }
+      .story-item.active .story-ring { background: linear-gradient(135deg, #06b6d4, #2563eb); }
+      .story-ring img {
+        width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; display: block;
+      }
+      .story-item span { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
       /* Active Inspection Post Card */
       .post-head {
-        padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
       }
-      .post-author { display: flex; align-items: center; gap: 10px; min-width: 0; }
+      .post-author { display: flex; align-items: center; gap: 9px; min-width: 0; flex: 1; }
+      .post-author > div { min-width: 0; }
       .post-author strong { display: block; font-size: 14px; line-height: 1.2; }
-      .post-author small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+      .post-author small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-      .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; flex: none; }
       .b-warn { background: var(--amber-pale); color: #b45309; border: 1px solid #fde68a; }
       .b-high { background: var(--danger-pale); color: var(--danger); border: 1px solid #fecaca; }
       .b-ok { background: var(--ok-pale); color: var(--ok); border: 1px solid #bbf7d0; }
       .b-info { background: var(--brand-pale); color: var(--brand-dark); border: 1px solid #a5f3fc; }
 
-      /* Dark Precision Media Stage */
+      /* Dark Precision Media Stage (clean — controls docked BELOW so photo is 100% unobstructed!) */
       .stage {
         position: relative; background: #0a1017;
         background-image: radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px);
@@ -193,7 +206,7 @@
         aspect-ratio: 4 / 3; overflow: hidden; user-select: none;
       }
       .stage.drag-over { outline: 3px solid var(--brand); outline-offset: -3px; }
-      .stage canvas, .stage video { width: 100%; height: 100%; display: block; cursor: crosshair; }
+      .stage canvas, .stage video { width: 100%; height: 100%; display: block; cursor: pointer; }
       .scan-beam {
         position: absolute; left: 0; right: 0; height: 3px; top: 0;
         background: linear-gradient(90deg, transparent, #22d3ee, #fff, #22d3ee, transparent);
@@ -203,175 +216,176 @@
       @keyframes scanSweep { 0% { top: 4%; } 50% { top: 94%; } 100% { top: 4%; } }
 
       .stage-hud-top {
-        position: absolute; top: 10px; left: 10px; right: 10px;
-        display: flex; justify-content: space-between; pointer-events: none; gap: 8px;
+        position: absolute; top: 8px; left: 8px; right: 8px;
+        display: flex; justify-content: space-between; pointer-events: none; gap: 6px;
       }
       .hud-chip {
-        background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(6px);
-        color: #f1f5f9; padding: 4px 10px; border-radius: 999px;
-        font-size: 11.5px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(6px);
+        color: #f1f5f9; padding: 4px 9px; border-radius: 999px;
+        font-size: 11px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.14);
       }
-      .stage-tools {
-        position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-        display: inline-flex; align-items: center; gap: 3px;
-        background: rgba(15, 23, 42, 0.84); backdrop-filter: blur(8px);
-        padding: 4px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14);
+
+      /* Docked Precision Toolbar (never covers photo, never overflows on 360px!) */
+      .stage-dock {
+        background: #0f172a; color: #e2e8f0; padding: 8px 10px;
+        display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;
       }
-      .stage-tools button {
-        border: 0; background: transparent; color: #e2e8f0;
-        padding: 5px 10px; border-radius: 999px; font: 600 11.5px/1 inherit;
-        cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+      .dock-group { display: inline-flex; align-items: center; gap: 4px; }
+      .dock-btn {
+        border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06);
+        color: #e2e8f0; padding: 6px 10px; border-radius: 8px; font: 600 12px/1 inherit;
+        cursor: pointer; min-height: 32px; display: inline-flex; align-items: center; gap: 4px;
       }
-      .stage-tools button:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
-      .stage-tools button.active { background: var(--brand); color: #fff; }
+      .dock-btn:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+      .dock-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
       /* Social Action Bar under Photo */
       .post-actions {
-        padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
-        gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--line-soft);
+        padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
+        gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line-soft);
       }
-      .action-group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+      .action-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
       .act-btn {
-        border: 0; background: transparent; color: var(--ink);
-        padding: 7px 11px; border-radius: 10px; font: 600 13px/1.2 inherit;
-        cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        border: 1px solid var(--line); background: #fff; color: var(--ink);
+        padding: 7px 11px; border-radius: 10px; font: 600 12.5px/1.2 inherit;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-height: 36px;
       }
       .act-btn:hover { background: var(--surface-soft); }
-      .act-btn.primary { background: var(--brand-pale); color: var(--brand-dark); }
-      .act-btn.primary:hover { background: #cffafe; }
-      .act-btn svg { width: 17px; height: 17px; }
+      .act-btn.primary { background: var(--brand-pale); border-color: #a5f3fc; color: var(--brand-dark); }
+      .act-btn svg { width: 16px; height: 16px; flex: none; }
 
-      /* Caption Summary & Finding Comments */
-      .post-body { padding: 14px 16px 16px; }
-      .verdict-line {
-        font-size: 13.5px; margin: 0 0 12px; padding: 10px 13px; border-radius: 12px;
-      }
+      /* Verdict Summary & Finding Rows */
+      .post-body { padding: 13px 14px 16px; }
+      .verdict-line { font-size: 13.5px; margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; }
       .verdict-line.warn { background: var(--amber-pale); color: #92400e; }
       .verdict-line.ok { background: var(--ok-pale); color: #166534; }
       .verdict-line.neutral { background: var(--surface-soft); color: var(--ink-soft); }
 
       .finding-rows { display: flex; flex-direction: column; gap: 8px; }
       .finding-row {
-        display: flex; align-items: center; justify-content: space-between; gap: 10px;
-        padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line-soft);
+        display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line-soft);
         background: var(--surface-soft); cursor: pointer; transition: border-color 0.15s, background 0.15s;
       }
       .finding-row:hover, .finding-row.selected { border-color: var(--brand); background: #f0fdff; }
       .finding-row.approved { border-left: 3px solid var(--ok); background: var(--ok-pale); }
-      .finding-row.rejected { opacity: 0.55; }
-      .f-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
-      .f-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+      .finding-row.rejected { opacity: 0.6; }
+      .f-left { display: flex; align-items: flex-start; gap: 9px; min-width: 190px; flex: 1; }
+      .f-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex: none; }
       .f-info { min-width: 0; flex: 1; }
       .f-title { font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
       .f-sub { font-size: 12px; color: var(--muted); }
-      .f-bar { height: 4px; border-radius: 99px; background: #e2e8f0; margin-top: 5px; overflow: hidden; max-width: 160px; }
+      .f-bar { height: 4px; border-radius: 99px; background: #e2e8f0; margin-top: 5px; overflow: hidden; max-width: 150px; }
       .f-bar i { display: block; height: 100%; border-radius: 99px; }
-      .f-btns { display: flex; gap: 5px; flex: none; }
+      .f-btns { display: flex; gap: 6px; flex: none; }
       .icon-pill {
         border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
-        padding: 5px 10px; border-radius: 999px; font: 600 12px/1 inherit; cursor: pointer;
+        padding: 7px 11px; border-radius: 999px; font: 600 12px/1 inherit; cursor: pointer; min-height: 34px;
       }
       .icon-pill.ok.on, .icon-pill.ok:hover { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
       .icon-pill.no.on, .icon-pill.no:hover { background: var(--danger-pale); border-color: #fecaca; color: var(--danger); }
 
-      .yolo-drawer {
-        margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft);
-      }
+      .yolo-drawer { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
       pre.yolo-box {
         background: #0f172a; color: #a5f3fc; padding: 11px 12px; border-radius: 10px;
         font-size: 12px; overflow-x: auto; margin: 8px 0 0; max-height: 150px;
       }
 
-      /* Community Feed Cards */
+      /* Community Feed */
       .section-label {
         display: flex; justify-content: space-between; align-items: center;
-        font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
-        padding: 4px 4px 0;
+        font-size: 12.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+        padding: 4px 2px 0;
       }
-      .feed-post-img { width: 100%; max-height: 360px; object-fit: cover; display: block; background: #0a1017; }
+      .feed-post-img { width: 100%; max-height: 340px; object-fit: cover; display: block; background: #0a1017; }
       .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
       .hashtag { font-size: 12px; font-weight: 600; color: var(--brand-dark); background: var(--brand-pale); padding: 2px 8px; border-radius: 999px; }
 
-      /* Right Sidebar Cards */
+      /* Sidebar Cards */
       .side-card { padding: 16px; }
       .side-card h3 { margin: 0 0 6px; font-size: 14.5px; }
       .side-card p { margin: 0 0 12px; font-size: 13px; color: var(--ink-soft); }
       .legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
       .legend-item { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); }
 
-      /* Secondary Tabs (Riwayat, Performa AI, What's New) */
-      .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-      .page-head h1 { margin: 0 0 3px; font-size: 22px; letter-spacing: -0.02em; }
-      .page-head p { margin: 0; color: var(--ink-soft); }
-      .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-      .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-      .kpi strong { display: block; font-size: 22px; color: var(--brand-dark); }
+      /* Secondary Tabs */
+      .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+      .page-head h1 { margin: 0 0 3px; font-size: 21px; letter-spacing: -0.02em; }
+      .page-head p { margin: 0; color: var(--ink-soft); font-size: 13.5px; }
+      .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+      .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 13px; }
+      .kpi strong { display: block; font-size: 21px; color: var(--brand-dark); }
       .kpi span { display: block; font-size: 12.5px; font-weight: 700; margin-top: 2px; }
       .kpi small { color: var(--muted); font-size: 11.5px; }
-      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
       .plot-img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
-      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
       th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
       th { background: var(--surface-soft); font-size: 12px; color: var(--muted); }
 
-      /* QC Report Modal */
+      /* Mobile History Cards */
+      .history-cards { display: none; flex-direction: column; gap: 10px; }
+      .h-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; }
+      .h-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+
+      /* Modal */
       .modal-backdrop {
         position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, 0.55);
-        backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px;
+        backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 12px;
       }
       .modal {
         background: #fff; border-radius: 18px; width: 100%; max-width: 580px; max-height: 90vh;
         overflow-y: auto; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25); border: 1px solid var(--line);
       }
       .modal-head {
-        padding: 15px 18px; border-bottom: 1px solid var(--line);
-        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 16px; border-bottom: 1px solid var(--line);
+        display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff;
       }
-      .modal-head h2 { margin: 0; font-size: 16.5px; }
-      .modal-body { padding: 16px 18px; }
+      .modal-head h2 { margin: 0; font-size: 16px; }
+      .modal-body { padding: 14px 16px; }
       .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .field { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
       .field.full { grid-column: 1 / -1; }
       .field label { font-weight: 600; color: var(--ink-soft); }
       .field input, .field select, .field textarea {
-        font: 13.5px/1.4 inherit; padding: 9px 11px; border: 1px solid var(--line);
+        font: 14px/1.4 inherit; padding: 9px 11px; border: 1px solid var(--line);
         border-radius: 10px; background: #fff; color: var(--ink); width: 100%;
       }
-      .field input:focus, .field select:focus, .field textarea:focus {
-        outline: 2px solid rgba(8, 145, 178, 0.22); border-color: var(--brand);
-      }
       .modal-foot {
-        padding: 13px 18px; border-top: 1px solid var(--line); background: var(--surface-soft);
-        display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+        padding: 12px 16px; border-top: 1px solid var(--line); background: var(--surface-soft);
+        display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+        position: sticky; bottom: 0;
       }
 
-      /* Mobile Bottom App Bar */
+      /* Mobile Bottom Navigation Bar */
       .bottom-bar {
         display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
-        background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px);
-        border-top: 1px solid var(--line); padding: 6px 8px env(safe-area-inset-bottom, 6px);
-        grid-template-columns: repeat(4, 1fr); gap: 4px;
+        background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(12px);
+        border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+        grid-template-columns: repeat(4, 1fr); gap: 2px;
       }
-      .bottom-bar button {
-        border: 0; background: transparent; color: var(--muted); padding: 6px 4px;
+      .bottom-bar button, .bottom-bar label {
+        border: 0; background: transparent; color: var(--muted); padding: 6px 2px;
         border-radius: 10px; font: 600 11px/1.2 inherit; cursor: pointer;
-        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+        margin: 0;
       }
       .bottom-bar button[aria-current="page"] { color: var(--brand-dark); }
-      .bottom-bar svg { width: 20px; height: 20px; }
+      .bottom-bar label { color: var(--brand-dark); }
+      .bottom-bar svg { width: 21px; height: 21px; }
 
-      /* Non-blocking Toast */
+      /* Toast */
       .toast {
-        position: fixed; right: 20px; bottom: 24px; z-index: 80;
+        position: fixed; right: 18px; bottom: 22px; z-index: 80;
         background: #0f172a; color: #fff; padding: 11px 16px; border-radius: 12px;
         font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
         opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s;
       }
       .toast.show { opacity: 1; transform: translateY(0); }
-
       .hidden { display: none !important; }
 
-      /* Formal Maritime QC Print / PDF Sheet */
+      /* Print / PDF */
       #print-report { display: none; }
       @media print {
         @page { size: A4; margin: 12mm; }
@@ -399,23 +413,34 @@
       }
 
       @media (max-width: 880px) {
-        .nav-tabs { display: none; }
+        .nav-tabs, .desktop-only { display: none !important; }
         .menu-toggle { display: inline-flex; }
-        .feed-layout { grid-template-columns: 1fr; }
+        .nav-inner { padding: 0 12px; height: 54px; }
+        .feed-layout { grid-template-columns: 1fr; gap: 14px; }
         .side-col { position: static; }
         .kpi-row { grid-template-columns: repeat(2, 1fr); }
         .two-col, .form-grid { grid-template-columns: 1fr; }
+        .history-table-card { display: none; }
+        .history-cards { display: flex; }
         .bottom-bar { display: grid; }
-        .shell { padding: 12px 12px 92px; }
-        .toast { bottom: 78px; right: 12px; left: 12px; text-align: center; }
+        .shell { padding: 10px 10px 88px; }
+        .composer { padding: 12px; }
+        .composer-hint { display: none; }
+        .f-btns { width: 100%; }
+        .f-btns .icon-pill { flex: 1; text-align: center; }
+        .toast { bottom: 76px; right: 12px; left: 12px; text-align: center; }
       }
     </style>
   </head>
   <body>
+    <!-- Dedicated separate inputs: Gallery (NO capture!) vs Native Phone Camera (capture=environment) -->
+    <input id="file-gallery" class="sr-file" type="file" accept="image/*" />
+    <input id="file-camera" class="sr-file" type="file" accept="image/*" capture="environment" />
+
     <header class="nav-bar">
       <div class="nav-inner">
         <a class="brand" href="/">
-          <img src="/mark.svg" width="30" height="30" alt="" />
+          <img src="/mark.svg" width="28" height="28" alt="" />
           <span>SnapQC</span>
           <span class="live-dot loading" id="live-dot" title="Status AI"></span>
         </a>
@@ -429,15 +454,14 @@
         </nav>
 
         <div class="nav-right">
-          <label class="btn btn-primary btn-sm" style="margin:0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-            Cek Foto
-            <input id="file-upload" type="file" accept="image/*" capture="environment" hidden />
+          <label for="file-gallery" class="btn btn-primary btn-sm desktop-only" style="margin:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Galeri
           </label>
           <a id="nav-signin" class="btn btn-sm hidden" href="/api/auth/oidc/start">Sign in to SnapQC</a>
-          <div id="nav-user" class="hidden" style="display:inline-flex;align-items:center;gap:6px">
-            <span class="user-pill"><span class="avatar" id="nav-avatar">U</span><span id="nav-username">User</span></span>
-            <button id="nav-signout" class="btn btn-ghost btn-sm" type="button">Keluar</button>
+          <div id="nav-user" class="hidden" style="display:inline-flex;align-items:center;gap:4px">
+            <span class="user-pill"><span class="avatar" id="nav-avatar">U</span><span class="uname" id="nav-username">User</span></span>
+            <button id="nav-signout" class="btn btn-ghost btn-sm desktop-only" type="button">Keluar</button>
           </div>
           <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer">Menu</button>
         </div>
@@ -450,23 +474,43 @@
       <button type="button" data-tab="model">Performa AI</button>
       <button type="button" data-tab="whats-new">What's New</button>
       <a href="/portfolio">Studi Kasus / PDF</a>
+      <button id="drawer-signout" class="hidden" type="button" style="color:var(--danger)">Keluar Akun</button>
     </nav>
 
     <div class="shell">
-      <!-- TAB 1: SOCIAL FEED & LIVE SCANNER -->
+      <!-- TAB 1: SOCIAL FEED & SCANNER -->
       <section id="tab-kamera" class="feed-layout">
         <div class="feed-col">
-          <!-- Stories / Sample Reels -->
-          <div class="card">
-            <div class="stories" role="tablist" aria-label="Pilih foto atau unggah baru">
-              <button type="button" class="story-item add-story" id="story-upload">
-                <div class="story-ring"><span class="story-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></span></div>
-                <span>Foto Baru</span>
+          <!-- Primary Input Composer: Big Clear Gallery + Camera buttons -->
+          <div class="card composer" id="composer-drop">
+            <div class="composer-cta-grid">
+              <label for="file-gallery" class="big-action primary" id="btn-pick-gallery">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Pilih dari Galeri
+              </label>
+              <button type="button" class="big-action" id="btn-live-cam">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                Ambil Kamera
               </button>
-              <button type="button" class="story-item" id="story-cam">
-                <div class="story-ring"><span class="story-ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>
-                <span>Kamera</span>
-              </button>
+            </div>
+            <p class="composer-hint">Di laptop/PC Anda juga bisa seret foto ke sini atau tekan <strong>Ctrl+V</strong> dari clipboard.</p>
+            <div class="composer-bar">
+              <label class="pill-toggle" id="tile-pill" title="Otomatis memindai ulang foto per petak kecil agar porositas mikro lebih mudah terdeteksi">
+                <input id="tile-toggle" type="checkbox" />
+                Scan Teliti (Cacat Kecil)
+              </label>
+              <div class="preset-bar" role="group" aria-label="Sensitivitas AI">
+                <button type="button" class="preset-btn" data-preset="25">Teliti</button>
+                <button type="button" class="preset-btn active" data-preset="45">Seimbang</button>
+                <button type="button" class="preset-btn" data-preset="65">Ketat</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stories: Quick Real Sample Photos -->
+          <div class="card stories-wrap">
+            <p class="stories-head">Atau coba foto uji nyata</p>
+            <div class="stories" role="tablist" aria-label="Pilih foto contoh">
               <button type="button" class="story-item active" data-sample="test-05">
                 <div class="story-ring"><img src="/samples/test-05.jpg" alt="Contoh Campuran" /></div>
                 <span>Campuran</span>
@@ -486,37 +530,6 @@
             </div>
           </div>
 
-          <!-- Quick Composer -->
-          <div class="card composer" id="composer-drop">
-            <div class="composer-top">
-              <span class="avatar" id="composer-avatar">S</span>
-              <button type="button" class="composer-prompt" id="composer-trigger">
-                Seret foto las ke sini, tempel (Ctrl+V), atau klik untuk cek otomatis…
-              </button>
-            </div>
-            <div class="composer-bar">
-              <div class="composer-actions">
-                <button type="button" class="btn btn-sm" id="btn-composer-upload">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  Galeri
-                </button>
-                <button type="button" class="btn btn-sm" id="btn-live-cam">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-                  Kamera
-                </button>
-                <label class="pill-toggle" title="Memindai foto per bagian kecil agar lubang/porositas mikro lebih mudah tertangkap">
-                  <input id="tile-toggle" type="checkbox" />
-                  Scan Teliti
-                </label>
-              </div>
-              <div class="preset-bar" role="group" aria-label="Sensitivitas AI">
-                <button type="button" class="preset-btn" data-preset="30">Teliti</button>
-                <button type="button" class="preset-btn active" data-preset="45">Seimbang</button>
-                <button type="button" class="preset-btn" data-preset="65">Ketat</button>
-              </div>
-            </div>
-          </div>
-
           <!-- Active Inspection Post Card -->
           <article class="card">
             <div class="post-head">
@@ -524,7 +537,7 @@
                 <span class="avatar" id="post-avatar">AI</span>
                 <div>
                   <strong id="post-author-name">SnapQC Scanner</strong>
-                  <small id="scene-title">Contoh 1 · Fillet Weld Campuran</small>
+                  <small id="scene-title">Fillet Weld Campuran · Contoh Uji Nyata</small>
                 </div>
               </div>
               <span class="badge b-warn" id="post-verdict-pill">Perlu Periksa</span>
@@ -538,17 +551,23 @@
                 <span class="hud-chip" id="hud-mode">SnapQC AI</span>
                 <span class="hud-chip" id="hud-count">Memuat…</span>
               </div>
-              <div class="stage-tools" id="stage-tools">
-                <button type="button" id="btn-zoom-out" title="Perkecil">−</button>
-                <button type="button" id="btn-zoom-reset" title="Reset Zoom">100%</button>
-                <button type="button" id="btn-zoom-in" title="Perbesar">+</button>
-                <button type="button" id="btn-toggle-boxes" class="active" title="Tampilkan / sembunyikan kotak AI">Kotak AI</button>
-                <button type="button" id="btn-rerun-live" title="Scan ulang langsung via ONNX">Scan Ulang</button>
+            </div>
+
+            <!-- Clean Docked Toolbar below photo (zero overlap on mobile!) -->
+            <div class="stage-dock" id="stage-tools">
+              <div class="dock-group">
+                <button type="button" class="dock-btn" id="btn-zoom-out" aria-label="Perkecil">−</button>
+                <button type="button" class="dock-btn" id="btn-zoom-reset">100%</button>
+                <button type="button" class="dock-btn" id="btn-zoom-in" aria-label="Perbesar">+</button>
               </div>
-              <div class="stage-tools hidden" id="cam-tools">
-                <button type="button" id="btn-capture" class="active">Jepret &amp; Cek AI</button>
-                <button type="button" id="btn-stop-cam">Tutup Kamera</button>
+              <div class="dock-group">
+                <button type="button" class="dock-btn active" id="btn-toggle-boxes">Kotak AI</button>
+                <button type="button" class="dock-btn" id="btn-rerun-live">Scan Ulang</button>
               </div>
+            </div>
+            <div class="stage-dock hidden" id="cam-tools">
+              <button type="button" class="dock-btn active" id="btn-capture" style="flex:1;justify-content:center">Jepret &amp; Cek AI</button>
+              <button type="button" class="dock-btn" id="btn-stop-cam">Tutup Kamera</button>
             </div>
 
             <div class="post-actions">
@@ -559,16 +578,14 @@
                 </button>
                 <button type="button" class="act-btn" id="btn-print-qc">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                  Cetak PDF
+                  PDF
                 </button>
                 <button type="button" class="act-btn" id="btn-download-png">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   PNG
                 </button>
               </div>
-              <button type="button" class="act-btn" id="btn-toggle-yolo" style="color:var(--muted);font-size:12px">
-                &lt;/&gt; Label YOLO
-              </button>
+              <button type="button" class="act-btn" id="btn-toggle-yolo" style="color:var(--muted)">&lt;/&gt; YOLO</button>
             </div>
 
             <div class="post-body">
@@ -588,7 +605,6 @@
             </div>
           </article>
 
-          <!-- Community / Recent Inspection Feed -->
           <div class="section-label">
             <span>Feed Inspeksi Terbaru</span>
             <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-feed">Segarkan</button>
@@ -596,11 +612,11 @@
           <div id="community-feed" class="feed-col"></div>
         </div>
 
-        <!-- Sticky Right Rail (like X / Instagram Web) -->
+        <!-- Sticky Right Rail (desktop) / Bottom Info Cards (mobile) -->
         <aside class="side-col">
-          <div class="card side-card" id="side-auth-card">
+          <div class="card side-card">
             <h3 id="side-auth-title">Gratis untuk Siapa Saja</h3>
-            <p id="side-auth-desc">Langsung unggah atau tempel foto las tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi &amp; bisa diakses kapan saja.</p>
+            <p id="side-auth-desc">Langsung pilih foto dari galeri atau kamera tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi.</p>
             <a id="side-signin-btn" class="btn btn-primary hidden" style="width:100%" href="/api/auth/oidc/start">Sign in to SnapQC</a>
             <div id="side-signed-actions" class="hidden" style="display:flex;gap:8px">
               <button type="button" class="btn btn-primary btn-sm" style="flex:1" id="btn-goto-riwayat">Riwayat Saya</button>
@@ -611,19 +627,16 @@
           <div class="card side-card">
             <h3>Panduan Warna Deteksi</h3>
             <div class="legend">
-              <div class="legend-item"><span class="f-dot" style="background:#ef4444"></span><span><strong>Las Perlu Dicek</strong> — profil las kasar / tidak rata</span></div>
-              <div class="legend-item"><span class="f-dot" style="background:#f59e0b"></span><span><strong>Titik Cacat Kecil</strong> — indikasi porositas / slag</span></div>
-              <div class="legend-item"><span class="f-dot" style="background:#22d3ee"></span><span><strong>Las Rapi</strong> — jalur las tampak baik secara visual</span></div>
+              <div class="legend-item"><span class="f-dot" style="background:#ef4444;margin:0"></span><span><strong>Las Perlu Dicek</strong> — profil las kasar / tidak rata</span></div>
+              <div class="legend-item"><span class="f-dot" style="background:#f59e0b;margin:0"></span><span><strong>Titik Cacat Kecil</strong> — indikasi porositas / slag</span></div>
+              <div class="legend-item"><span class="f-dot" style="background:#22d3ee;margin:0"></span><span><strong>Las Rapi</strong> — jalur las tampak baik secara visual</span></div>
             </div>
-            <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">
-              Klik kotak di foto atau klik baris temuan untuk menyorot area secara langsung.
-            </p>
           </div>
 
           <div class="card side-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <h3 style="margin:0">Status Mesin AI</h3>
-              <span class="badge b-info" id="side-version">v0.5.0</span>
+              <span class="badge b-info" id="side-version">v0.5.1</span>
             </div>
             <p id="engine-banner" style="margin-bottom:10px">Menyiapkan model ONNX…</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -639,7 +652,7 @@
         <div class="page-head">
           <div>
             <h1>Riwayat Laporan QC</h1>
-            <p id="history-subtitle">Laporan yang tersimpan permanen di database.</p>
+            <p>Laporan yang tersimpan permanen di database.</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-sm" type="button" id="btn-refresh-db">Muat Ulang</button>
@@ -649,22 +662,25 @@
         </div>
 
         <div class="kpi-row">
-          <div class="kpi"><strong id="db-kpi-count">0</strong><span>Laporan Tersimpan</span><small id="db-kpi-scope">Mode Tamu</small></div>
+          <div class="kpi"><strong id="db-kpi-count">0</strong><span>Laporan</span><small id="db-kpi-scope">Mode Tamu</small></div>
           <div class="kpi"><strong id="db-kpi-labels">0</strong><span>Temuan Benar</span><small>Siap ekspor YOLO</small></div>
           <div class="kpi"><strong id="db-kpi-repair">0</strong><span>Perlu Repair</span><small>Status REPAIR</small></div>
           <div class="kpi"><strong id="db-kpi-accept">0</strong><span>Lolos Visual</span><small>Status ACCEPT</small></div>
         </div>
 
-        <div class="card">
-          <table>
-            <thead>
-              <tr><th>No. Laporan</th><th>Kapal / Lokasi / Joint</th><th>Inspector &amp; Standar</th><th>Keputusan</th><th>Temuan</th><th>Aksi</th></tr>
-            </thead>
-            <tbody id="history-body">
-              <tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan.</td></tr>
-            </tbody>
-          </table>
+        <div class="card history-table-card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>No. Laporan</th><th>Kapal / Lokasi / Joint</th><th>Inspector &amp; Standar</th><th>Keputusan</th><th>Temuan</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="history-body">
+                <tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+        <div class="history-cards" id="history-cards"></div>
       </section>
 
       <!-- TAB 3: PERFORMA AI -->
@@ -681,16 +697,18 @@
           <div class="kpi"><strong>59,7%</strong><span>Total mAP@50</span><small>Val 64,8% · Test 59,7%</small></div>
           <div class="kpi"><strong>10,13 MB</strong><span>Model Ringan</span><small>Cepat di CPU + Scan Teliti</small></div>
         </div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-pad" style="padding-bottom:6px"><h2 style="margin:0;font-size:16px">Champion (v1) vs Eksperimen (v2)</h2></div>
-          <table>
-            <thead>
-              <tr><th>Model</th><th>Resolusi</th><th>Bad Weld</th><th>Good Weld</th><th>Cacat Kecil</th><th>mAP@50 Uji</th><th>Ukuran</th></tr>
-            </thead>
-            <tbody id="eval-compare-body">
-              <tr><td colspan="7" style="color:var(--muted)">Memuat data evaluasi…</td></tr>
-            </tbody>
-          </table>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-pad" style="padding-bottom:6px"><h2 style="margin:0;font-size:15.5px">Champion (v1) vs Eksperimen (v2)</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Model</th><th>Resolusi</th><th>Bad Weld</th><th>Good Weld</th><th>Cacat Kecil</th><th>mAP@50 Uji</th><th>Ukuran</th></tr>
+              </thead>
+              <tbody id="eval-compare-body">
+                <tr><td colspan="7" style="color:var(--muted)">Memuat data evaluasi…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div class="two-col">
           <div class="card card-pad">
@@ -716,16 +734,16 @@
       </section>
     </div>
 
-    <!-- Mobile App Bottom Navigation -->
+    <!-- Mobile Bottom Navigation (native label for="file-gallery" directly opens Gallery!) -->
     <nav class="bottom-bar" aria-label="Navigasi bawah mobile">
       <button type="button" data-tab="kamera" aria-current="page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
         Beranda
       </button>
-      <button type="button" id="bottom-upload">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
-        Cek Las
-      </button>
+      <label for="file-gallery">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Galeri
+      </label>
       <button type="button" data-tab="riwayat">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
         Riwayat
@@ -736,7 +754,7 @@
       </button>
     </nav>
 
-    <!-- Sleek QC Report & Save Modal -->
+    <!-- QC Report & Save Modal -->
     <div class="modal-backdrop hidden" id="report-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal">
         <div class="modal-head">
@@ -770,7 +788,7 @@
               </select>
             </div>
             <div class="field full"><label for="f-notes">Catatan Lapangan</label><textarea id="f-notes" rows="2" placeholder="Catatan singkat hasil pemeriksaan..."></textarea></div>
-            <div class="field full" id="public-toggle-wrap">
+            <div class="field full hidden" id="public-toggle-wrap">
               <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
                 <input id="f-public" type="checkbox" style="width:auto" />
                 <span>Bagikan ke Feed Publik (jika tidak dicentang, hanya terlihat di Riwayat Pribadi akun Anda)</span>
@@ -781,8 +799,8 @@
         <div class="modal-foot">
           <span style="font-size:12px;color:var(--muted)" id="report-no-badge">Draft Baru</span>
           <div style="display:flex;gap:8px">
-            <button type="button" class="btn" id="btn-modal-print">Cetak PDF A4</button>
-            <button type="button" class="btn btn-primary" id="btn-save-db">Simpan Laporan</button>
+            <button type="button" class="btn btn-sm" id="btn-modal-print">Cetak PDF A4</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-db">Simpan Laporan</button>
           </div>
         </div>
       </div>
@@ -829,7 +847,7 @@
     <script>
       (function () {
         "use strict";
-        const DRAFT_KEY = "snapqc_draft_v050";
+        const DRAFT_KEY = "snapqc_draft_v051";
         const REAL_SAMPLES = {
           "test-05": {
             title: "Fillet Weld Campuran · Contoh Uji Nyata",
@@ -910,14 +928,28 @@
         const video = document.getElementById("live-video");
         const stage = document.getElementById("drop-zone");
         const composer = document.getElementById("composer-drop");
-        const fileInput = document.getElementById("file-upload");
+        const galleryInput = document.getElementById("file-gallery");
+        const cameraInput = document.getElementById("file-camera");
         const tileToggle = document.getElementById("tile-toggle");
+        const tilePill = document.getElementById("tile-pill");
         const mobileDrawer = document.getElementById("mobile-drawer");
         const menuToggle = document.getElementById("menu-toggle");
         const modal = document.getElementById("report-modal");
 
         function escHtml(s) {
           return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        }
+
+        function fillRoundRect(c, x, y, w, h, r) {
+          const rad = Math.min(r, w / 2, h / 2);
+          c.beginPath();
+          c.moveTo(x + rad, y);
+          c.arcTo(x + w, y, x + w, y + h, rad);
+          c.arcTo(x + w, y + h, x, y + h, rad);
+          c.arcTo(x, y + h, x, y, rad);
+          c.arcTo(x, y, x + w, y, rad);
+          c.closePath();
+          c.fill();
         }
 
         function showToast(msg) {
@@ -953,17 +985,14 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        document.querySelectorAll("[data-tab]").forEach((btn) => {
-          btn.addEventListener("click", () => activateTab(btn.dataset.tab));
-        });
-        document.querySelectorAll("[data-tab-jump]").forEach((btn) => {
-          btn.addEventListener("click", () => activateTab(btn.dataset.tabJump));
-        });
+        document.querySelectorAll("[data-tab]").forEach((btn) => btn.addEventListener("click", () => activateTab(btn.dataset.tab)));
+        document.querySelectorAll("[data-tab-jump]").forEach((btn) => btn.addEventListener("click", () => activateTab(btn.dataset.tabJump)));
         document.getElementById("btn-goto-riwayat").onclick = () => activateTab("riwayat");
 
         function renderAuthUI() {
           const navIn = document.getElementById("nav-signin");
           const navUser = document.getElementById("nav-user");
+          const drawerOut = document.getElementById("drawer-signout");
           const sideBtn = document.getElementById("side-signin-btn");
           const sideSigned = document.getElementById("side-signed-actions");
           const sideTitle = document.getElementById("side-auth-title");
@@ -975,9 +1004,9 @@
             const init = nm.trim().charAt(0).toUpperCase() || "U";
             navIn.classList.add("hidden");
             navUser.classList.remove("hidden");
+            drawerOut.classList.remove("hidden");
             document.getElementById("nav-username").textContent = nm;
             document.getElementById("nav-avatar").textContent = init;
-            document.getElementById("composer-avatar").textContent = init;
             document.getElementById("post-avatar").textContent = init;
             document.getElementById("post-author-name").textContent = nm;
 
@@ -990,12 +1019,12 @@
             if (!inspInput.value.trim()) inspInput.value = nm;
           } else {
             navUser.classList.add("hidden");
+            drawerOut.classList.add("hidden");
             sideSigned.classList.add("hidden");
-            document.getElementById("composer-avatar").textContent = "S";
             document.getElementById("post-avatar").textContent = "AI";
             document.getElementById("post-author-name").textContent = "SnapQC Scanner";
             sideTitle.textContent = "Gratis untuk Siapa Saja";
-            sideDesc.textContent = "Langsung unggah atau tempel foto las tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi.";
+            sideDesc.textContent = "Langsung pilih foto dari galeri atau kamera tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi.";
             pubWrap.classList.add("hidden");
             if (authState.loginUrl) {
               navIn.href = authState.loginUrl;
@@ -1013,11 +1042,13 @@
           try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
           authState = { ...authState, authenticated: false, user: null };
           renderAuthUI();
+          mobileDrawer.classList.remove("open");
           showToast("Anda telah keluar dari akun.");
           loadCommunityFeed();
         }
         document.getElementById("nav-signout").onclick = doLogout;
         document.getElementById("side-signout-btn").onclick = doLogout;
+        document.getElementById("drawer-signout").onclick = doLogout;
 
         async function checkServer() {
           const banner = document.getElementById("engine-banner");
@@ -1074,7 +1105,6 @@
         function visibleDetections() {
           return currentDetections.filter((d) => d.conf >= threshold);
         }
-
         function rectsOverlap(a, b) {
           return !(a.x + a.w + 3 <= b.x || b.x + b.w + 3 <= a.x || a.y + a.h + 2 <= b.y || b.y + b.h + 2 <= a.y);
         }
@@ -1109,7 +1139,7 @@
               if (st === "rejected") ctx.setLineDash([6, 6]);
               ctx.strokeRect(px, py, pw, ph);
               if (isSel) {
-                ctx.fillStyle = color + "24";
+                ctx.fillStyle = color + "28";
                 ctx.fillRect(px, py, pw, ph);
               }
               ctx.setLineDash([]);
@@ -1146,9 +1176,7 @@
 
               ctx.globalAlpha = selectedId && !isSel ? 0.5 : 1;
               ctx.fillStyle = color;
-              ctx.beginPath();
-              ctx.roundRect(chosen.x, chosen.y, tw, th, 6);
-              ctx.fill();
+              fillRoundRect(ctx, chosen.x, chosen.y, tw, th, 6);
               ctx.fillStyle = "#0b1720";
               ctx.fillText(tag, chosen.x + 8, chosen.y + 17);
               ctx.globalAlpha = 1;
@@ -1162,7 +1190,6 @@
           document.getElementById("hud-count").textContent = `${list.length} area`;
         }
 
-        // Click on canvas box to focus finding!
         canvas.addEventListener("click", (e) => {
           const rect = canvas.getBoundingClientRect();
           const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
@@ -1202,48 +1229,48 @@
           }
 
           const listEl = document.getElementById("detection-list");
-          if (!list.length) {
-            listEl.innerHTML = "";
-          } else {
-            listEl.innerHTML = list.map((d) => {
-              const st = decisions.get(d.id)?.status || "";
-              const info = CLASS_INFO[d.label] || { friendly: d.label, color: "#22d3ee", desc: "" };
-              const pct = Math.round(d.conf * 100);
-              return `<div class="finding-row ${st} ${selectedId === d.id ? "selected" : ""}" data-select-id="${escHtml(d.id)}">
-                <div class="f-left">
-                  <span class="f-dot" style="background:${info.color}"></span>
-                  <div class="f-info">
-                    <div class="f-title">${escHtml(info.friendly)} <span style="font-weight:600;color:var(--muted);font-size:12px">${pct}%</span></div>
-                    <div class="f-sub">${escHtml(info.desc)}</div>
-                    <div class="f-bar"><i style="width:${pct}%;background:${info.color}"></i></div>
-                  </div>
+          listEl.innerHTML = list.map((d) => {
+            const st = decisions.get(d.id)?.status || "";
+            const info = CLASS_INFO[d.label] || { friendly: d.label, color: "#22d3ee", desc: "" };
+            const pct = Math.round(d.conf * 100);
+            return `<div class="finding-row ${st} ${selectedId === d.id ? "selected" : ""}" data-select-id="${escHtml(d.id)}">
+              <div class="f-left">
+                <span class="f-dot" style="background:${info.color}"></span>
+                <div class="f-info">
+                  <div class="f-title">${escHtml(info.friendly)} <span style="font-weight:600;color:var(--muted);font-size:12px">${pct}%</span></div>
+                  <div class="f-sub">${escHtml(info.desc)}</div>
+                  <div class="f-bar"><i style="width:${pct}%;background:${info.color}"></i></div>
                 </div>
-                <div class="f-btns">
-                  <button type="button" class="icon-pill ok ${st === "approved" ? "on" : ""}" data-decide="approved" data-id="${escHtml(d.id)}">✓ Benar</button>
-                  <button type="button" class="icon-pill no ${st === "rejected" ? "on" : ""}" data-decide="rejected" data-id="${escHtml(d.id)}">× Bukan</button>
-                </div>
-              </div>`;
-            }).join("");
+              </div>
+              <div class="f-btns">
+                <button type="button" class="icon-pill ok ${st === "approved" ? "on" : ""}" data-decide="approved" data-id="${escHtml(d.id)}">✓ Benar</button>
+                <button type="button" class="icon-pill no ${st === "rejected" ? "on" : ""}" data-decide="rejected" data-id="${escHtml(d.id)}">× Bukan</button>
+              </div>
+            </div>`;
+          }).join("");
 
-            listEl.querySelectorAll("[data-select-id]").forEach((row) => {
-              row.onclick = (e) => {
-                if (e.target.closest("[data-decide]")) return;
-                const id = row.dataset.selectId;
-                selectedId = selectedId === id ? null : id;
-                renderAll();
-              };
-            });
-            listEl.querySelectorAll("[data-decide]").forEach((btn) => {
-              btn.onclick = (e) => {
-                e.stopPropagation();
-                const det = currentDetections.find((x) => x.id === btn.dataset.id);
-                const prev = decisions.get(det.id)?.status;
-                if (prev === btn.dataset.decide) decisions.delete(det.id);
-                else decisions.set(det.id, { status: btn.dataset.decide, det });
-                renderAll();
-              };
-            });
-          }
+          listEl.querySelectorAll("[data-select-id]").forEach((row) => {
+            row.onclick = (e) => {
+              if (e.target.closest("[data-decide]")) return;
+              const id = row.dataset.selectId;
+              selectedId = selectedId === id ? null : id;
+              renderAll();
+            };
+          });
+          listEl.querySelectorAll("[data-decide]").forEach((btn) => {
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              const det = currentDetections.find((x) => x.id === btn.dataset.id);
+              const prev = decisions.get(det.id)?.status;
+              if (prev === btn.dataset.decide) {
+                decisions.delete(det.id);
+              } else {
+                decisions.set(det.id, { status: btn.dataset.decide, det });
+                showToast(btn.dataset.decide === "approved" ? "Temuan dikonfirmasi benar ✓" : "Ditandai bukan cacat");
+              }
+              renderAll();
+            };
+          });
           updateYolo();
         }
 
@@ -1265,7 +1292,7 @@
           renderFindings();
         }
 
-        // Zoom & Overlay Controls
+        // Docked canvas controls
         document.getElementById("btn-zoom-in").onclick = () => { zoomLevel = Math.min(2.5, zoomLevel + 0.25); renderAll(); };
         document.getElementById("btn-zoom-out").onclick = () => { zoomLevel = Math.max(0.75, zoomLevel - 0.25); renderAll(); };
         document.getElementById("btn-zoom-reset").onclick = () => { zoomLevel = 1.0; renderAll(); };
@@ -1273,6 +1300,7 @@
           showBoxes = !showBoxes;
           e.currentTarget.classList.toggle("active", showBoxes);
           drawViewport();
+          showToast(showBoxes ? "Kotak AI ditampilkan" : "Kotak AI disembunyikan (foto asli)");
         };
         document.getElementById("btn-toggle-yolo").onclick = () => {
           document.getElementById("yolo-drawer").classList.toggle("hidden");
@@ -1283,6 +1311,7 @@
             threshold = Number(btn.dataset.preset) / 100;
             document.querySelectorAll("[data-preset]").forEach((b) => b.classList.toggle("active", b === btn));
             renderAll();
+            showToast(`Sensitivitas: ${btn.textContent} (≥ ${btn.dataset.preset}%)`);
           };
         });
 
@@ -1290,12 +1319,12 @@
           currentBlob = blob;
           currentTitle = titleText;
           selectedId = null;
-          if (!serverLive) { renderAll(); return; }
+          if (!serverLive) { renderAll(); showToast("Model AI sedang dimuat, coba sebentar lagi…"); return; }
           stage.classList.add("scanning");
-          document.getElementById("hud-count").textContent = tileToggle.checked ? "Memindai lebih teliti…" : "Memindai…";
+          document.getElementById("hud-count").textContent = tileToggle.checked ? "Scan teliti…" : "Memindai…";
           try {
             const tile = tileToggle.checked ? "1" : "0";
-            const res = await fetch(`/api/detect?conf=0.25&tile=${tile}`, { method: "POST", body: blob });
+            const res = await fetch(`/api/detect?conf=0.15&tile=${tile}`, { method: "POST", body: blob });
             const data = await res.json();
             if (!res.ok) throw Error(data.error || "Deteksi gagal");
             currentLatency = data.latencyMs;
@@ -1303,29 +1332,101 @@
             if (data.model) activeModelName = data.model;
             currentDetections = data.detections.map((d, i) => ({ ...d, id: "live-" + Date.now() + "-" + i }));
             renderAll();
-            showToast(`Selesai dipindai (${data.latencyMs} ms) — ${visibleDetections().length} area ditemukan`);
+            showToast(`Selesai (${data.latencyMs} ms) — ${visibleDetections().length} area terdeteksi`);
           } catch (err) {
-            showToast(err.message);
+            showToast(err.message || "Gagal memindai foto.");
           } finally {
             stage.classList.remove("scanning");
           }
         }
 
-        async function detectUploadedBlob(blob, titleText) {
+        async function rerunCurrentScan() {
+          if (currentBlob) {
+            await runLiveInference(currentBlob, currentTitle);
+          } else if (currentSampleKey && REAL_SAMPLES[currentSampleKey]) {
+            const resp = await fetch(REAL_SAMPLES[currentSampleKey].image);
+            const blob = await resp.blob();
+            await runLiveInference(blob, REAL_SAMPLES[currentSampleKey].title);
+          } else if (currentImage) {
+            const off = document.createElement("canvas");
+            off.width = currentImage.naturalWidth || currentImage.width;
+            off.height = currentImage.naturalHeight || currentImage.height;
+            off.getContext("2d").drawImage(currentImage, 0, 0);
+            off.toBlob((b) => { if (b) runLiveInference(b, currentTitle); }, "image/jpeg", 0.9);
+          }
+        }
+
+        // Toggling Scan Teliti immediately re-scans the active photo!
+        tileToggle.addEventListener("change", () => {
+          tilePill.classList.toggle("active", tileToggle.checked);
+          rerunCurrentScan();
+        });
+        document.getElementById("btn-rerun-live").onclick = rerunCurrentScan;
+
+        // Auto-resize large phone gallery/camera photos (fixes >10MB 413 errors & normalizes EXIF rotation!)
+        function prepareImageFile(file) {
+          return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+              URL.revokeObjectURL(url);
+              const maxSide = 1600;
+              let w = img.naturalWidth || img.width;
+              let h = img.naturalHeight || img.height;
+              if (w > maxSide || h > maxSide || file.size > 4 * 1024 * 1024) {
+                const ratio = Math.min(maxSide / w, maxSide / h, 1);
+                const nw = Math.max(1, Math.round(w * ratio));
+                const nh = Math.max(1, Math.round(h * ratio));
+                const off = document.createElement("canvas");
+                off.width = nw;
+                off.height = nh;
+                off.getContext("2d").drawImage(img, 0, 0, nw, nh);
+                off.toBlob((blob) => {
+                  if (!blob) return resolve({ img, blob: file });
+                  const resizedImg = new Image();
+                  const rUrl = URL.createObjectURL(blob);
+                  resizedImg.onload = () => { URL.revokeObjectURL(rUrl); resolve({ img: resizedImg, blob }); };
+                  resizedImg.onerror = () => { URL.revokeObjectURL(rUrl); resolve({ img, blob }); };
+                  resizedImg.src = rUrl;
+                }, "image/jpeg", 0.9);
+              } else {
+                resolve({ img, blob: file });
+              }
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.")); };
+            img.src = url;
+          });
+        }
+
+        async function handleSelectedFile(file, sourceLabel) {
+          if (!file) return;
+          activateTab("kamera");
           currentSampleKey = null;
           currentReportNo = "";
           zoomLevel = 1.0;
+          decisions.clear();
           document.getElementById("report-no-badge").textContent = "Draft Baru";
           document.querySelectorAll("[data-sample]").forEach((c) => c.classList.remove("active"));
-          const img = new Image();
-          const url = URL.createObjectURL(blob);
-          img.onload = async () => {
+          try {
+            showToast("Memproses gambar…");
+            const { img, blob } = await prepareImageFile(file);
             currentImage = img;
-            URL.revokeObjectURL(url);
-            await runLiveInference(blob, titleText);
-          };
-          img.src = url;
+            await runLiveInference(blob, `${sourceLabel}${file.name ? " · " + file.name : ""}`);
+          } catch (err) {
+            showToast(err.message);
+          }
         }
+
+        galleryInput.addEventListener("change", (e) => {
+          const f = e.target.files?.[0];
+          if (f) handleSelectedFile(f, "Foto Galeri");
+          galleryInput.value = "";
+        });
+        cameraInput.addEventListener("change", (e) => {
+          const f = e.target.files?.[0];
+          if (f) handleSelectedFile(f, "Foto Kamera");
+          cameraInput.value = "";
+        });
 
         function loadSample(key) {
           const s = REAL_SAMPLES[key];
@@ -1338,41 +1439,22 @@
           currentReportNo = "";
           selectedId = null;
           zoomLevel = 1.0;
+          decisions.clear();
           document.getElementById("report-no-badge").textContent = "Draft Baru";
           document.querySelectorAll("[data-sample]").forEach((c) => c.classList.toggle("active", c.dataset.sample === key));
           const img = new Image();
           img.onload = () => { currentImage = img; renderAll(); };
           img.src = s.image;
         }
+        document.querySelectorAll("[data-sample]").forEach((b) => { b.onclick = () => loadSample(b.dataset.sample); });
 
-        document.querySelectorAll("[data-sample]").forEach((b) => {
-          b.onclick = () => loadSample(b.dataset.sample);
-        });
-        document.getElementById("btn-rerun-live").onclick = async () => {
-          if (currentBlob) await runLiveInference(currentBlob, currentTitle);
-          else if (currentSampleKey && REAL_SAMPLES[currentSampleKey]) {
-            const blob = await (await fetch(REAL_SAMPLES[currentSampleKey].image)).blob();
-            await runLiveInference(blob, REAL_SAMPLES[currentSampleKey].title);
-          }
-        };
-
-        // Upload / Drag-drop / Ctrl+V triggers
-        const openPicker = () => fileInput.click();
-        document.getElementById("story-upload").onclick = openPicker;
-        document.getElementById("composer-trigger").onclick = openPicker;
-        document.getElementById("btn-composer-upload").onclick = openPicker;
-        document.getElementById("bottom-upload").onclick = () => { activateTab("kamera"); openPicker(); };
-        fileInput.addEventListener("change", (e) => {
-          const file = e.target.files?.[0];
-          if (file) { detectUploadedBlob(file, "Foto Anda · " + file.name); fileInput.value = ""; }
-        });
-
+        // Drag-drop & Ctrl+V paste
         [stage, composer].forEach((zone) => {
           ["dragenter", "dragover"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add("drag-over"); }));
           ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove("drag-over"); }));
           zone.addEventListener("drop", (e) => {
             const file = e.dataTransfer?.files?.[0];
-            if (file && file.type.startsWith("image/")) detectUploadedBlob(file, "Foto Anda · " + file.name);
+            if (file && file.type.startsWith("image/")) handleSelectedFile(file, "Foto Unggahan");
           });
         });
         window.addEventListener("paste", (e) => {
@@ -1381,12 +1463,13 @@
           for (const it of items) {
             if (it.type.startsWith("image/")) {
               const file = it.getAsFile();
-              if (file) { e.preventDefault(); detectUploadedBlob(file, "Foto Tempelan (Ctrl+V)"); break; }
+              if (file) { e.preventDefault(); handleSelectedFile(file, "Foto Tempelan"); break; }
             }
           }
         });
 
-        // Camera
+        // Smart Camera: uses native phone camera (#file-camera) on touch mobile devices for crisp autofocus,
+        // and live webcam preview on desktop (falling back cleanly to #file-camera if webcam unavailable!)
         async function stopCamera() {
           if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
           video.classList.add("hidden");
@@ -1394,8 +1477,12 @@
           document.getElementById("cam-tools").classList.add("hidden");
           document.getElementById("stage-tools").classList.remove("hidden");
         }
-        async function startCamera() {
-          if (!navigator.mediaDevices?.getUserMedia) { showToast("Gunakan tombol Unggah Foto pada perangkat ini."); return; }
+        document.getElementById("btn-live-cam").onclick = async () => {
+          const isMobile = window.matchMedia("(pointer: coarse)").matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          if (isMobile || !navigator.mediaDevices?.getUserMedia) {
+            cameraInput.click();
+            return;
+          }
           try {
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
@@ -1403,46 +1490,76 @@
             video.classList.remove("hidden");
             document.getElementById("stage-tools").classList.add("hidden");
             document.getElementById("cam-tools").classList.remove("hidden");
-          } catch { showToast("Izin kamera ditolak atau kamera tidak tersedia."); }
-        }
-        document.getElementById("btn-live-cam").onclick = startCamera;
-        document.getElementById("story-cam").onclick = startCamera;
+          } catch {
+            cameraInput.click();
+          }
+        };
         document.getElementById("btn-stop-cam").onclick = () => { stopCamera(); renderAll(); };
         document.getElementById("btn-capture").onclick = () => {
           const snap = document.createElement("canvas");
           snap.width = video.videoWidth || 960;
           snap.height = video.videoHeight || 720;
           snap.getContext("2d").drawImage(video, 0, 0, snap.width, snap.height);
-          snap.toBlob((blob) => { stopCamera(); if (blob) detectUploadedBlob(blob, "Jepretan Kamera"); }, "image/jpeg", 0.92);
+          snap.toBlob((blob) => {
+            stopCamera();
+            if (blob) handleSelectedFile(new File([blob], "kamera.jpg", { type: "image/jpeg" }), "Jepretan Kamera");
+          }, "image/jpeg", 0.92);
         };
 
-        // PNG & YOLO Export
+        // Mobile-safe PNG Download using Blob URL
         document.getElementById("btn-download-png").onclick = () => {
           drawViewport();
-          const a = document.createElement("a");
-          a.href = canvas.toDataURL("image/png");
-          a.download = `snapqc-${(currentReportNo || "hasil").toLowerCase()}.png`;
-          a.click();
-          showToast("Gambar PNG berhasil diunduh ✓");
+          canvas.toBlob((blob) => {
+            if (!blob) return showToast("Gagal membuat PNG.");
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `snapqc-${(currentReportNo || "hasil").toLowerCase()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            showToast("Gambar PNG berhasil diunduh ✓");
+          }, "image/png");
         };
+
+        // Safe Clipboard Copy with fallback
         document.getElementById("btn-copy-yolo").onclick = async () => {
           const txt = getYoloText();
           if (!txt) { showToast('Klik "✓ Benar" pada minimal satu temuan dulu.'); return; }
-          await navigator.clipboard.writeText(txt);
-          showToast("Label YOLO tersalin ke clipboard ✓");
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(txt);
+            } else {
+              throw new Error("fallback");
+            }
+          } catch {
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            ta.remove();
+          }
+          showToast("Label YOLO tersalin ✓");
         };
         document.getElementById("btn-dl-yolo").onclick = () => {
           const txt = getYoloText();
           if (!txt) { showToast('Klik "✓ Benar" pada minimal satu temuan dulu.'); return; }
           const blob = new Blob([txt + "\n"], { type: "text/plain;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
+          a.href = url;
           a.download = `snapqc-${(currentReportNo || "labels").toLowerCase()}.txt`;
+          document.body.appendChild(a);
           a.click();
-          URL.revokeObjectURL(a.href);
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
         };
 
-        // Report Modal & Print PDF
+        // Modal & Print PDF
         document.getElementById("btn-open-report").onclick = () => modal.classList.remove("hidden");
         document.getElementById("btn-close-modal").onclick = () => modal.classList.add("hidden");
         modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
@@ -1481,6 +1598,7 @@
             : `<tr><td colspan="5">Tidak ada temuan di atas sensitivitas ${Math.round(threshold * 100)}%.</td></tr>`;
           zoomLevel = prevZoom;
           drawViewport();
+          modal.classList.add("hidden");
           window.print();
         }
         document.getElementById("btn-print-qc").onclick = preparePrintSheet;
@@ -1527,18 +1645,57 @@
             showToast(`Laporan ${saved.reportNo} tersimpan ✓`);
             loadCommunityFeed();
           } catch (err) {
-            showToast(err.message);
+            showToast(err.message || "Gagal menyimpan laporan.");
           }
         };
 
-        // Community Feed (Real saved public posts + curated held-out showcase cards)
+        async function openSavedInspection(id) {
+          const r = await fetch(`/api/inspections/${encodeURIComponent(id)}`);
+          const it = await r.json();
+          if (!r.ok) return showToast(it.error || "Gagal memuat laporan.");
+          currentReportNo = it.reportNo;
+          currentSampleKey = null;
+          currentBlob = null;
+          document.getElementById("report-no-badge").textContent = it.reportNo;
+          document.getElementById("f-vessel").value = it.vesselName || "";
+          document.getElementById("f-block").value = it.blockLocation || "";
+          document.getElementById("f-joint").value = it.jointNo || "";
+          document.getElementById("f-wps").value = it.wpsNo || "";
+          document.getElementById("f-welder").value = it.welderId || "";
+          document.getElementById("f-standard").value = it.standardRef || "ISO 5817 Level B";
+          document.getElementById("f-inspector").value = it.inspectorName || "";
+          document.getElementById("f-verdict").value = it.verdict || "HOLD";
+          document.getElementById("f-notes").value = it.notes || "";
+          currentTitle = it.imageTitle || it.reportNo;
+          currentDetections = it.detections || [];
+          decisions.clear();
+          (it.decisions || []).forEach((dec) => {
+            const match = currentDetections.find((d) => d.id === dec.id);
+            if (match && (dec.status === "approved" || dec.status === "rejected")) decisions.set(dec.id, { status: dec.status, det: match });
+          });
+          if (it.annotatedDataUrl) {
+            const img = new Image();
+            img.onload = () => { currentImage = img; activateTab("kamera"); renderAll(); };
+            img.src = it.annotatedDataUrl;
+          } else {
+            activateTab("kamera");
+            renderAll();
+          }
+        }
+
+        async function deleteSavedInspection(id) {
+          await fetch(`/api/inspections/${encodeURIComponent(id)}`, { method: "DELETE" });
+          showToast("Laporan dihapus");
+          loadHistoryFromServer();
+          loadCommunityFeed();
+        }
+
         async function loadCommunityFeed() {
           const feedEl = document.getElementById("community-feed");
           let items = [];
           try {
             const res = await fetch("/api/feed", { cache: "no-store" });
-            const data = await res.json();
-            items = data.items || [];
+            items = (await res.json()).items || [];
           } catch {}
 
           const savedCards = items.map((it) => {
@@ -1572,11 +1729,11 @@
                 <div class="post-author">
                   <span class="avatar">SQ</span>
                   <div>
-                    <strong>Contoh Uji Nyata SnapQC</strong>
+                    <strong>Contoh Uji Nyata</strong>
                     <small>${escHtml(s.title)}</small>
                   </div>
                 </div>
-                <button type="button" class="btn btn-sm" data-load-sample="${k}">Buka di Scanner</button>
+                <button type="button" class="btn btn-sm" data-load-sample="${k}">Buka</button>
               </div>
               <img class="feed-post-img" src="${s.predImage}" alt="${escHtml(s.title)}" />
               <div class="post-body">
@@ -1591,17 +1748,16 @@
 
           feedEl.innerHTML = savedCards + showcaseCards;
           feedEl.querySelectorAll("[data-load-sample]").forEach((btn) => {
-            btn.onclick = () => {
-              loadSample(btn.dataset.loadSample);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            };
+            btn.onclick = () => { loadSample(btn.dataset.loadSample); window.scrollTo({ top: 0, behavior: "smooth" }); };
           });
         }
         document.getElementById("btn-refresh-feed").onclick = () => { loadCommunityFeed(); showToast("Feed diperbarui"); };
 
         async function loadHistoryFromServer() {
           const tbody = document.getElementById("history-body");
+          const cardsEl = document.getElementById("history-cards");
           tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Memuat riwayat…</td></tr>`;
+          cardsEl.innerHTML = `<div class="h-card" style="color:var(--muted)">Memuat riwayat…</div>`;
           try {
             const res = await fetch("/api/inspections", { cache: "no-store" });
             const data = await res.json();
@@ -1612,7 +1768,9 @@
             document.getElementById("db-kpi-accept").textContent = String(items.filter((x) => x.verdict === "ACCEPT").length);
             document.getElementById("db-kpi-scope").textContent = data.scope === "personal" ? "Akun Pribadi Anda" : "Mode Tamu Publik";
             if (!items.length) {
-              tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan. Klik <strong>Simpan &amp; Laporan QC</strong> di halaman Beranda.</td></tr>`;
+              const emptyMsg = "Belum ada laporan tersimpan. Klik Simpan & Laporan QC di halaman Beranda.";
+              tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">${emptyMsg}</td></tr>`;
+              cardsEl.innerHTML = `<div class="h-card" style="color:var(--muted)">${emptyMsg}</div>`;
               return;
             }
             tbody.innerHTML = items.map((it) => {
@@ -1630,47 +1788,26 @@
               </tr>`;
             }).join("");
 
-            tbody.querySelectorAll("[data-open-id]").forEach((btn) => {
-              btn.onclick = async () => {
-                const r = await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.openId)}`);
-                const it = await r.json();
-                if (!r.ok) return showToast(it.error || "Gagal memuat laporan.");
-                currentReportNo = it.reportNo;
-                document.getElementById("report-no-badge").textContent = it.reportNo;
-                document.getElementById("f-vessel").value = it.vesselName || "";
-                document.getElementById("f-block").value = it.blockLocation || "";
-                document.getElementById("f-joint").value = it.jointNo || "";
-                document.getElementById("f-wps").value = it.wpsNo || "";
-                document.getElementById("f-welder").value = it.welderId || "";
-                document.getElementById("f-standard").value = it.standardRef || "ISO 5817 Level B";
-                document.getElementById("f-inspector").value = it.inspectorName || "";
-                document.getElementById("f-verdict").value = it.verdict || "HOLD";
-                document.getElementById("f-notes").value = it.notes || "";
-                currentTitle = it.imageTitle || it.reportNo;
-                currentDetections = it.detections || [];
-                decisions.clear();
-                (it.decisions || []).forEach((dec) => {
-                  const match = currentDetections.find((d) => d.id === dec.id);
-                  if (match && (dec.status === "approved" || dec.status === "rejected")) decisions.set(dec.id, { status: dec.status, det: match });
-                });
-                if (it.annotatedDataUrl) {
-                  const img = new Image();
-                  img.onload = () => { currentImage = img; activateTab("kamera"); renderAll(); };
-                  img.src = it.annotatedDataUrl;
-                } else {
-                  activateTab("kamera");
-                  renderAll();
-                }
-              };
-            });
-            tbody.querySelectorAll("[data-del-id]").forEach((btn) => {
-              btn.onclick = async () => {
-                await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.delId)}`, { method: "DELETE" });
-                showToast("Laporan dihapus");
-                loadHistoryFromServer();
-                loadCommunityFeed();
-              };
-            });
+            cardsEl.innerHTML = items.map((it) => {
+              const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-warn";
+              return `<div class="h-card">
+                <div class="h-card-top">
+                  <div><strong>${escHtml(it.reportNo)}</strong><br><small style="color:var(--muted)">${escHtml(it.createdAt.replace("T", " ").slice(0, 16))} UTC</small></div>
+                  <span class="badge ${vCls}">${escHtml(it.verdict)}</span>
+                </div>
+                <div style="font-size:13px;margin-bottom:8px">
+                  <strong>${escHtml(it.vesselName || "Tanpa Nama Kapal")}</strong> · ${escHtml(it.jointNo || "-")}<br>
+                  <span style="color:var(--muted)">${escHtml(it.inspectorName || "-")} · ${it.detections.length} area (${it.approvedCount} benar)</span>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-sm" style="flex:1" type="button" data-open-id="${escHtml(it.id)}">Buka &amp; Cetak</button>
+                  <button class="btn btn-sm btn-danger" type="button" data-del-id="${escHtml(it.id)}">Hapus</button>
+                </div>
+              </div>`;
+            }).join("");
+
+            document.querySelectorAll("[data-open-id]").forEach((btn) => { btn.onclick = () => openSavedInspection(btn.dataset.openId); });
+            document.querySelectorAll("[data-del-id]").forEach((btn) => { btn.onclick = () => deleteSavedInspection(btn.dataset.delId); });
           } catch {}
         }
         document.getElementById("btn-refresh-db").onclick = loadHistoryFromServer;
@@ -1695,7 +1832,7 @@
         const relEl = document.getElementById("releases-container");
         if (typeof SnapQCReleases !== "undefined") {
           relEl.innerHTML = SnapQCReleases.map(
-            (r) => `<article class="card card-pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><h3 style="margin:0;font-size:15.5px">${escHtml(r.title)}</h3><span class="badge b-info">v${escHtml(r.version)} · ${escHtml(r.date)} · ${escHtml(r.category)}</span></div><p style="margin:0;color:var(--ink-soft);font-size:13.5px">${escHtml(r.summary)}</p></article>`,
+            (r) => `<article class="card card-pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><h3 style="margin:0;font-size:15px">${escHtml(r.title)}</h3><span class="badge b-info">v${escHtml(r.version)} · ${escHtml(r.date)} · ${escHtml(r.category)}</span></div><p style="margin:0;color:var(--ink-soft);font-size:13.5px">${escHtml(r.summary)}</p></article>`,
           ).join("");
         }
 
