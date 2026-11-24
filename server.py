@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     PyJWK = None
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 METRICS_V1_PATH = ROOT / "models" / "metrics-v1.json"
 METRICS_V2_PATH = ROOT / "models" / "metrics-v2.json"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -288,7 +288,13 @@ def run_onnx_detect(image_bytes: bytes, conf_thres: float = 0.35, iou_thres: flo
 
 
 def _http_json(url: str, data: bytes | None = None, headers: dict | None = None, timeout: float = 10.0) -> dict:
-    req = urllib.request.Request(url, data=data, headers=headers or {}, method="POST" if data is not None else "GET")
+    req_headers = {
+        "User-Agent": f"SnapQC/{VERSION} (+https://snapqc.icxhnk.com)",
+        "Accept": "application/json",
+    }
+    if headers:
+        req_headers.update(headers)
+    req = urllib.request.Request(url, data=data, headers=req_headers, method="POST" if data is not None else "GET")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 

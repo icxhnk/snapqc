@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.4.1",
+    date: "2026-11-24",
+    category: "Perbaikan",
+    title: "Perbaikan header koneksi server-to-server saat memulai login SSO",
+    summary:
+      "Menambahkan header User-Agent dan Accept eksplisit pada permintaan discovery/token OAuth backend agar koneksi ke layanan SSO berjalan mulus melewati proteksi edge.",
+  },
+  {
     version: "0.4.0",
     date: "2026-11-24",
     category: "Baru",
