@@ -101,11 +101,11 @@
       .btn-ok { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
       .btn-danger { background: var(--danger-pale); border-color: #fca5a5; color: var(--danger); }
 
-      .grid-inspect { display: grid; grid-template-columns: 1.35fr 0.95fr; gap: 18px; align-items: start; }
-      .stack { display: flex; flex-direction: column; gap: 16px; }
+      .grid-inspect { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr); gap: 18px; align-items: start; }
+      .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
       .card {
         background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-        padding: 18px; box-shadow: 0 1px 3px rgba(16, 36, 50, 0.04);
+        padding: 18px; box-shadow: 0 1px 3px rgba(16, 36, 50, 0.04); min-width: 0;
       }
       .card h2 { margin: 0 0 8px; font-size: 16px; }
       .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -267,7 +267,7 @@
         </a>
       </nav>
       <div class="rail-foot">
-        <strong>SnapQC v0.3.0</strong>
+        <strong>SnapQC v0.3.1</strong>
         <span id="rail-model-meta">ONNX Runtime · SQLite QC</span>
       </div>
     </aside>

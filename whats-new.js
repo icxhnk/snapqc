@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.3.1",
+    date: "2026-11-24",
+    category: "Perbaikan",
+    title: "Perbaikan tata letak grid agar panel verifikasi tidak meluber ke samping",
+    summary:
+      "Memperbaiki batas lebar minimum kolom grid dan kotak pratinjau YOLO agar seluruh teks verifikasi tampil pas tanpa scroll horizontal pada layar laptop 1100–1366px.",
+  },
+  {
     version: "0.3.0",
     date: "2026-11-24",
     category: "Baru",
