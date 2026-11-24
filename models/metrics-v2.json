@@ -1,0 +1,221 @@
+{
+  "model": "SnapQC Welding v2 (YOLO11s @ 960px)",
+  "promoted_as_default": false,
+  "dataset": "rikkarth/welding-defect-object-detection (CC0 Public Domain)",
+  "hardware": "NVIDIA GeForce RTX 5060",
+  "imgsz": 960,
+  "epochs_requested": 45,
+  "train_seconds": 2253.9,
+  "onnx_path": "models/snapqc-welding-v2.onnx",
+  "onnx_size_mb": 36.34,
+  "onnx_cpu_latency_ms": 178.7,
+  "onnx_output_shape": [
+    1,
+    7,
+    18900
+  ],
+  "classes": {
+    "0": "Bad Weld",
+    "1": "Good Weld",
+    "2": "Defect"
+  },
+  "validation": {
+    "precision": 0.5816,
+    "recall": 0.6078,
+    "mAP50": 0.5945,
+    "mAP50_95": 0.3166,
+    "per_class": {
+      "Bad Weld": {
+        "ap50": 0.7006,
+        "ap50_95": 0.3821
+      },
+      "Good Weld": {
+        "ap50": 0.7261,
+        "ap50_95": 0.4193
+      },
+      "Defect": {
+        "ap50": 0.3567,
+        "ap50_95": 0.1482
+      }
+    }
+  },
+  "test_held_out": {
+    "precision": 0.5105,
+    "recall": 0.603,
+    "mAP50": 0.5657,
+    "mAP50_95": 0.2811,
+    "per_class": {
+      "Bad Weld": {
+        "ap50": 0.7543,
+        "ap50_95": 0.3946
+      },
+      "Good Weld": {
+        "ap50": 0.6582,
+        "ap50_95": 0.3326
+      },
+      "Defect": {
+        "ap50": 0.2847,
+        "ap50_95": 0.116
+      }
+    }
+  },
+  "comparison_vs_v1": {
+    "v1_test_mAP50": 0.5971,
+    "v2_test_mAP50": 0.5657,
+    "v1_test_defect_ap50": 0.2739,
+    "v2_test_defect_ap50": 0.2847
+  },
+  "samples": [
+    {
+      "id": "test-01",
+      "image": "samples/test-01.jpg",
+      "predictedImage": "samples/test-01-pred.jpg",
+      "detections": []
+    },
+    {
+      "id": "test-02",
+      "image": "samples/test-02.jpg",
+      "predictedImage": "samples/test-02-pred.jpg",
+      "detections": [
+        {
+          "clsId": 1,
+          "label": "Good Weld",
+          "conf": 0.572,
+          "box": [
+            0.0,
+            0.3258,
+            0.9063,
+            0.3317
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test-03",
+      "image": "samples/test-03.jpg",
+      "predictedImage": "samples/test-03-pred.jpg",
+      "detections": [
+        {
+          "clsId": 0,
+          "label": "Bad Weld",
+          "conf": 0.6814,
+          "box": [
+            0.268,
+            0.3532,
+            0.318,
+            0.2092
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test-04",
+      "image": "samples/test-04.jpg",
+      "predictedImage": "samples/test-04-pred.jpg",
+      "detections": [
+        {
+          "clsId": 0,
+          "label": "Bad Weld",
+          "conf": 0.8258,
+          "box": [
+            0.4235,
+            0.3543,
+            0.2802,
+            0.262
+          ]
+        },
+        {
+          "clsId": 2,
+          "label": "Defect",
+          "conf": 0.8027,
+          "box": [
+            0.4491,
+            0.5174,
+            0.0729,
+            0.0726
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test-05",
+      "image": "samples/test-05.jpg",
+      "predictedImage": "samples/test-05-pred.jpg",
+      "detections": [
+        {
+          "clsId": 0,
+          "label": "Bad Weld",
+          "conf": 0.8121,
+          "box": [
+            0.4363,
+            0.3862,
+            0.1456,
+            0.1024
+          ]
+        },
+        {
+          "clsId": 1,
+          "label": "Good Weld",
+          "conf": 0.7033,
+          "box": [
+            0.2704,
+            0.3378,
+            0.1247,
+            0.0854
+          ]
+        },
+        {
+          "clsId": 1,
+          "label": "Good Weld",
+          "conf": 0.5804,
+          "box": [
+            0.6379,
+            0.4482,
+            0.1533,
+            0.1074
+          ]
+        },
+        {
+          "clsId": 2,
+          "label": "Defect",
+          "conf": 0.5367,
+          "box": [
+            0.5269,
+            0.4357,
+            0.0364,
+            0.0287
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test-06",
+      "image": "samples/test-06.jpg",
+      "predictedImage": "samples/test-06-pred.jpg",
+      "detections": [
+        {
+          "clsId": 0,
+          "label": "Bad Weld",
+          "conf": 0.8573,
+          "box": [
+            0.436,
+            0.3818,
+            0.2199,
+            0.1911
+          ]
+        },
+        {
+          "clsId": 2,
+          "label": "Defect",
+          "conf": 0.7428,
+          "box": [
+            0.4596,
+            0.5015,
+            0.0519,
+            0.0514
+          ]
+        }
+      ]
+    }
+  ]
+}

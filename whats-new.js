@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.3.0",
+    date: "2026-11-24",
+    category: "Baru",
+    title: "Laporan QC Galangan (SQLite + Cetak PDF), Mode Detail Mikro SAHI 2×2, & Upgrade UI/UX",
+    summary:
+      "Menambahkan Formulir Laporan QC Galangan (kapal, blok/frame, joint, WPS, welder ID, standar ISO 5817/AWS D1.1/BKI, keputusan ACCEPT/REPAIR/HOLD) yang tersimpan permanen di database SQLite lengkap dengan ekspor CSV, ekspor dataset Active Learning JSON, dan cetak PDF laporan resmi A4. Menambahkan mode Detail Mikro (SAHI 2×2 tiling), drag-and-drop serta tempel Ctrl+V foto las, penempatan label kotak anti-tumpuk, tombol unduh PNG beranotasi dan salin/unduh label YOLO .txt, serta benchmark jujur Champion (YOLO11n 640px, 59,7% mAP@50) vs Challenger eksperimen (YOLO11s 960px, 56,6% mAP@50, +1,1% Defect).",
+  },
+  {
     version: "0.2.2",
     date: "2026-11-23",
     category: "Perbaikan",

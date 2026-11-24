@@ -2,11 +2,14 @@
 .venv
 datasets
 runs
+data
 tests
 __pycache__
 *.pyc
 .env
 .env.*
-yolo11n.pt
+yolo11*.pt
 models/*.pt
+models/snapqc-welding-v2.onnx
+*.sqlite*
 Start-SnapQC.ps1

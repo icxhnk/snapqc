@@ -1,9 +1,9 @@
 # SnapQC — Resume & Interview Kit (Phase 1 Trained Model: Welding v1)
 
 **Pemilik Proyek:** Miftahul Ikhsan Tahir
-**Produk:** SnapQC — Custom Deep Learning Visual Welding Inspection (`v0.2.1`)
+**Produk:** SnapQC — Custom Deep Learning Visual Welding Inspection & Maritime QC Reporting (`v0.3.0`)
 **Live App:** `https://snapqc.icxhnk.com` · **GitHub (Public):** `https://github.com/icxhnk/snapqc`
-**Model Terlatih:** `YOLO11n` → `ONNX` (10,13 MB), dilatih lokal di **NVIDIA GeForce RTX 5060**
+**Model Produksi (Champion):** `YOLO11n @ 640px` → `ONNX` (10,13 MB) + mode inferensi **SAHI 2×2 tiling**; dibandingkan secara otomatis melawan Challenger `YOLO11s @ 960px` (36,34 MB) di **NVIDIA GeForce RTX 5060**
 **Dataset:** `rikkarth/welding-defect-object-detection` (CC0 Public Domain · 2.028 foto nyata · 5.686 label kotak)
 
 ---

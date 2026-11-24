@@ -9,11 +9,15 @@ __pycache__/
 .env.*
 !.env.example
 
-# Training datasets, base weights, & scratch runs (reproducible via ml/ scripts)
+# Training datasets, base weights, unpromoted experimental ONNX, runtime DB, & scratch runs
 datasets/
 runs/
-yolo11n.pt
+data/
+yolo11*.pt
 models/*.pt
+models/snapqc-welding-v2.onnx
+*.sqlite
+*.sqlite-*
 
 # OS & editor junk
 .DS_Store

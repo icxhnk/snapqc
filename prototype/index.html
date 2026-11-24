@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#0f2433" />
-    <title>SnapQC — Inspeksi Cacat Las AI (YOLO11n ONNX)</title>
-    <link rel="icon" href="../mark.svg" type="image/svg+xml" />
+    <title>SnapQC — Inspeksi Cacat Las AI (YOLO11 ONNX)</title>
+    <link rel="icon" href="/mark.svg" type="image/svg+xml" />
     <style>
       :root {
         --bg: #eef3f6;
@@ -33,7 +33,7 @@
         color: var(--ink);
         background: var(--bg);
         display: grid;
-        grid-template-columns: 248px 1fr;
+        grid-template-columns: 252px 1fr;
         min-height: 100vh;
       }
       .rail {
@@ -48,47 +48,25 @@
         height: 100vh;
       }
       .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 4px 8px;
-        color: #fff;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 17px;
+        display: flex; align-items: center; gap: 10px; padding: 4px 8px;
+        color: #fff; text-decoration: none; font-weight: 700; font-size: 17px;
       }
       .brand small { display: block; font-size: 11px; font-weight: 500; color: #96b4c4; }
       .menu-toggle {
-        display: none;
-        background: var(--rail-soft);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-weight: 600;
-        cursor: pointer;
+        display: none; background: var(--rail-soft); color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 8px;
+        padding: 8px 12px; font-weight: 600; cursor: pointer;
       }
       nav.rail-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-      nav.rail-nav button {
-        width: 100%;
-        text-align: left;
-        background: transparent;
-        border: 0;
-        color: #c5d9e4;
-        padding: 10px 12px;
-        border-radius: 9px;
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+      nav.rail-nav button, nav.rail-nav a {
+        width: 100%; text-align: left; background: transparent; border: 0;
+        color: #c5d9e4; padding: 10px 12px; border-radius: 9px; font: inherit;
+        font-weight: 600; cursor: pointer; display: flex; align-items: center;
+        gap: 10px; text-decoration: none;
       }
-      nav.rail-nav button:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+      nav.rail-nav button:hover, nav.rail-nav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
       nav.rail-nav button[aria-current="page"] {
-        background: #16374d;
-        color: #fff;
-        box-shadow: inset 3px 0 0 var(--cyan-bright);
+        background: #16374d; color: #fff; box-shadow: inset 3px 0 0 var(--cyan-bright);
       }
       nav.rail-nav svg { width: 18px; height: 18px; flex: none; }
       .rail-foot { border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 12px; font-size: 12px; color: #9cb8c7; }
@@ -96,75 +74,84 @@
 
       .workspace { display: flex; flex-direction: column; min-width: 0; }
       .status-banner {
-        background: #e6f7fb;
-        border-bottom: 1px solid #b6e3ee;
-        color: #0b4a5c;
-        padding: 9px 24px;
-        font-size: 13px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
+        background: #e6f7fb; border-bottom: 1px solid #b6e3ee; color: #0b4a5c;
+        padding: 9px 24px; font-size: 13px; display: flex;
+        justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
       }
-      main { padding: 24px; max-width: 1240px; width: 100%; margin: 0 auto; }
+      main { padding: 22px 24px 40px; max-width: 1260px; width: 100%; margin: 0 auto; }
       .page-head {
         display: flex; justify-content: space-between; align-items: flex-end;
         gap: 14px; margin-bottom: 18px; flex-wrap: wrap;
       }
-      .page-head h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.02em; }
+      .page-head h1 { margin: 0 0 4px; font-size: 23px; letter-spacing: -0.02em; }
       .page-head p { margin: 0; color: var(--ink-soft); }
 
       .btn {
-        display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px;
-        border-radius: 8px; font: 600 13.5px/1.2 inherit; border: 1px solid var(--line);
-        background: #fff; color: var(--ink); cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px;
+        border-radius: 8px; font: 600 13px/1.2 inherit; border: 1px solid var(--line);
+        background: #fff; color: var(--ink); cursor: pointer; text-decoration: none;
       }
       .btn:hover { border-color: var(--cyan); }
+      .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+      .btn-sm { padding: 5px 10px; font-size: 12px; }
       .btn-primary { background: var(--cyan); border-color: var(--cyan); color: #fff; }
       .btn-primary:hover { background: #0e7490; }
+      .btn-dark { background: #0f2433; border-color: #0f2433; color: #fff; }
+      .btn-dark:hover { background: #1a3950; }
       .btn-ok { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
       .btn-danger { background: var(--danger-pale); border-color: #fca5a5; color: var(--danger); }
 
       .grid-inspect { display: grid; grid-template-columns: 1.35fr 0.95fr; gap: 18px; align-items: start; }
+      .stack { display: flex; flex-direction: column; gap: 16px; }
       .card {
         background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
         padding: 18px; box-shadow: 0 1px 3px rgba(16, 36, 50, 0.04);
       }
-      .card h2 { margin: 0 0 10px; font-size: 16.5px; }
-      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+      .card h2 { margin: 0 0 8px; font-size: 16px; }
+      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 
-      .sample-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      .sample-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
       .chip {
         padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line);
-        background: #f6fafc; color: var(--ink-soft); font: 600 12.5px/1.2 inherit; cursor: pointer;
+        background: #f6fafc; color: var(--ink-soft); font: 600 12px/1.2 inherit; cursor: pointer;
       }
       .chip.active { background: #0f2433; border-color: #0f2433; color: #fff; }
 
       .viewport {
         position: relative; background: #0a1620; border-radius: 10px; overflow: hidden;
-        border: 1px solid #1e3a4c; aspect-ratio: 4 / 3;
+        border: 2px solid #1e3a4c; aspect-ratio: 4 / 3; transition: border-color 0.15s;
       }
+      .viewport.drag-over { border-color: var(--cyan-bright); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25); }
       .viewport canvas, .viewport video { width: 100%; height: 100%; display: block; object-fit: contain; }
       .viewport-hud {
         position: absolute; top: 10px; left: 10px; right: 10px;
-        display: flex; justify-content: space-between; pointer-events: none; font-size: 11.5px; gap: 8px;
+        display: flex; justify-content: space-between; pointer-events: none; font-size: 11.5px; gap: 8px; flex-wrap: wrap;
       }
       .hud-pill {
-        background: rgba(13, 32, 46, 0.86); color: #e6f4f8; padding: 4px 10px;
+        background: rgba(13, 32, 46, 0.88); color: #e6f4f8; padding: 4px 10px;
         border-radius: 999px; border: 1px solid rgba(34, 211, 238, 0.35); font-weight: 600;
+      }
+      .drop-hint {
+        margin-top: 8px; font-size: 12px; color: var(--muted);
+        display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
       }
 
       .controls-bar {
-        display: flex; justify-content: space-between; align-items: center; gap: 12px;
-        flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+        display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);
       }
       .slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+      .toggle-wrap {
+        display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px;
+        font-weight: 600; color: var(--ink); background: #f3f9fb; border: 1px solid var(--line);
+        padding: 5px 10px; border-radius: 8px; cursor: pointer;
+      }
+
       .detection-list { display: flex; flex-direction: column; gap: 10px; }
-      .det-item { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fbfdfe; }
+      .det-item { border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; background: #fbfdfe; }
       .det-item.approved { border-left: 4px solid var(--ok); background: #f4fcf6; }
       .det-item.rejected { border-left: 4px solid var(--danger); opacity: 0.7; }
-      .det-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .det-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
       .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
       .b-high { background: var(--danger-pale); color: var(--danger); }
       .b-med { background: var(--amber-pale); color: #92400e; }
@@ -173,13 +160,28 @@
       .det-meta { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 8px; }
       .det-actions { display: flex; gap: 6px; flex-wrap: wrap; }
       .det-actions button { padding: 5px 10px; font-size: 12px; }
+
       pre.yolo-box {
         background: #0d202e; color: #b5eef7; padding: 12px; border-radius: 8px;
-        font-size: 12px; overflow-x: auto; margin: 10px 0 0;
+        font-size: 12px; overflow-x: auto; margin: 10px 0 0; max-height: 180px;
       }
-      table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-      th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { background: #edf4f7; font-size: 12.5px; }
+
+      .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .field { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+      .field.full { grid-column: 1 / -1; }
+      .field label { font-weight: 600; color: var(--ink-soft); }
+      .field input, .field select, .field textarea {
+        font: 13.5px/1.4 inherit; padding: 8px 10px; border: 1px solid var(--line);
+        border-radius: 8px; background: #fff; color: var(--ink);
+      }
+      .field input:focus, .field select:focus, .field textarea:focus {
+        outline: 2px solid rgba(8, 145, 178, 0.25); border-color: var(--cyan);
+      }
+      .save-status { font-size: 12.5px; font-weight: 600; color: var(--ok); }
+
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { background: #edf4f7; font-size: 12px; }
       .notice {
         margin-top: 12px; padding: 11px 13px; border-radius: 8px;
         background: #f4f9fb; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft);
@@ -187,20 +189,47 @@
       .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
       .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-      .kpi strong { display: block; font-size: 22px; color: #0e7490; }
+      .kpi strong { display: block; font-size: 21px; color: #0e7490; }
       .kpi span { display: block; font-size: 12.5px; font-weight: 700; margin-top: 2px; }
       .kpi small { color: var(--muted); font-size: 11.5px; }
       .plot-img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
       .hidden { display: none !important; }
 
-      @media (max-width: 900px) {
+      /* Formal Maritime Weld QC Print Report (hidden on screen, rendered cleanly on Print/PDF) */
+      #print-report { display: none; }
+      @media print {
+        @page { size: A4; margin: 12mm; }
+        body { display: block; background: #fff; color: #0f172a; }
+        .rail, .workspace { display: none !important; }
+        #print-report { display: block !important; font: 12px/1.45 "Segoe UI", Arial, sans-serif; }
+        .pr-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f2433; padding-bottom: 10px; margin-bottom: 12px; }
+        .pr-title h1 { margin: 0 0 2px; font-size: 18px; color: #0f2433; }
+        .pr-title p { margin: 0; color: #475569; font-size: 11px; }
+        .pr-verdict { padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 14px; border: 2px solid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .pr-v-ACCEPT { background: #dcfce7; color: #15803d; border-color: #15803d; }
+        .pr-v-REPAIR { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
+        .pr-v-HOLD { background: #fef3c7; color: #92400e; border-color: #d97706; }
+        .pr-meta { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11.5px; }
+        .pr-meta td { border: 1px solid #cbd5e1; padding: 5px 8px; }
+        .pr-meta td.k { background: #f1f5f9; font-weight: 700; width: 17%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .pr-img-wrap { border: 1px solid #cbd5e1; padding: 6px; margin-bottom: 12px; text-align: center; }
+        .pr-img-wrap img { max-width: 100%; max-height: 92mm; object-fit: contain; display: block; margin: 0 auto; }
+        .pr-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11px; }
+        .pr-table th, .pr-table td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; }
+        .pr-table th { background: #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .pr-sign { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; font-size: 11px; }
+        .pr-sign-box { border: 1px solid #cbd5e1; padding: 8px 10px; min-height: 24mm; display: flex; flex-direction: column; justify-content: space-between; }
+        .pr-foot { margin-top: 10px; font-size: 10px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 6px; }
+      }
+
+      @media (max-width: 960px) {
         body { grid-template-columns: 1fr; }
         .rail { position: static; height: auto; padding: 12px 16px; }
         .rail-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .menu-toggle { display: inline-flex; }
         nav.rail-nav, .rail-foot { display: none; }
         .rail.open nav.rail-nav, .rail.open .rail-foot { display: flex; }
-        .grid-inspect, .two-col { grid-template-columns: 1fr; }
+        .grid-inspect, .two-col, .form-grid { grid-template-columns: 1fr; }
         .kpi-row { grid-template-columns: repeat(2, 1fr); }
         main { padding: 16px; }
       }
@@ -209,9 +238,9 @@
   <body>
     <aside class="rail" id="rail">
       <div class="rail-top">
-        <a class="brand" href="#kamera">
-          <img src="../mark.svg" width="32" height="32" alt="" />
-          <span>SnapQC<small>Welding AI v1 · ONNX</small></span>
+        <a class="brand" href="/">
+          <img src="/mark.svg" width="32" height="32" alt="" />
+          <span>SnapQC<small id="brand-sub">Welding AI · ONNX</small></span>
         </a>
         <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="rail-nav">Menu</button>
       </div>
@@ -222,81 +251,163 @@
         </button>
         <button type="button" data-tab="model">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg>
-          Evaluasi Model v1
+          Evaluasi Model AI
         </button>
         <button type="button" data-tab="riwayat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
-          Riwayat Verifikasi
+          Riwayat &amp; Database QC
         </button>
         <button type="button" data-tab="whats-new">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
           What's New
         </button>
+        <a href="/portfolio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Studi Kasus / PDF
+        </a>
       </nav>
       <div class="rail-foot">
-        <strong>SnapQC v0.2.2</strong>
-        <span>YOLO11n ONNX · 10,13 MB</span>
+        <strong>SnapQC v0.3.0</strong>
+        <span id="rail-model-meta">ONNX Runtime · SQLite QC</span>
       </div>
     </aside>
 
     <div class="workspace">
       <div class="status-banner">
-        <span id="engine-banner"><strong>Model Terlatih Aktif:</strong> SnapQC Welding v1 (YOLO11n ONNX · 2.028 foto las publik CC0). Memeriksa koneksi server deteksi lokal…</span>
-        <span>Asisten visual · keputusan akhir tetap oleh inspector</span>
+        <span id="engine-banner"><strong>Memeriksa server deteksi ONNX…</strong></span>
+        <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span>Asisten visual · keputusan akhir tetap oleh inspector</span>
+          <a id="auth-btn" class="btn btn-sm hidden" href="/api/auth/oidc/start">Sign in to SnapQC</a>
+        </span>
       </div>
 
       <main>
         <section id="tab-kamera">
           <div class="page-head">
             <div>
-              <h1>Inspeksi Cacat Las (Model Deep Learning v1)</h1>
-              <p>Pilih foto uji nyata (belum pernah dilihat model saat latihan) atau unggah/jepret foto las Anda sendiri untuk menjalankan deteksi ONNX.</p>
+              <h1>Inspeksi Cacat Las &amp; Laporan QC Galangan</h1>
+              <p>Pilih foto uji nyata, <strong>seret &amp; lepas (drag-drop)</strong>, tekan <strong>Ctrl+V</strong>, atau jepret kamera untuk menjalankan deteksi ONNX secara langsung.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn" type="button" id="btn-live-cam">Buka Kamera</button>
               <label class="btn btn-primary" style="margin:0">Unggah Foto Las<input id="file-upload" type="file" accept="image/*" capture="environment" hidden /></label>
-              <button class="btn" type="button" onclick="window.print()">Cetak Lembar</button>
+              <button class="btn" type="button" id="btn-download-png">Unduh PNG</button>
+              <button class="btn btn-dark" type="button" id="btn-print-qc">Cetak / PDF Laporan QC</button>
             </div>
           </div>
 
           <div class="grid-inspect">
-            <div class="card">
-              <div class="card-head">
-                <h2 id="scene-title">Foto Uji Nyata 1 · Fillet Weld Campuran (Good + Bad + Defect)</h2>
-                <span class="badge b-info" id="model-badge">YOLO11n ONNX · Held-Out Test</span>
-              </div>
+            <div class="stack">
+              <div class="card">
+                <div class="card-head">
+                  <h2 id="scene-title">Foto Uji Nyata 1 · Fillet Weld Campuran (Good + Bad + Defect)</h2>
+                  <span class="badge b-info" id="model-badge">YOLO11 ONNX</span>
+                </div>
 
-              <div class="sample-tabs" role="tablist" aria-label="Pilih foto uji nyata">
-                <button class="chip active" type="button" data-sample="test-05">Uji 1 · Fillet Campuran</button>
-                <button class="chip" type="button" data-sample="test-04">Uji 2 · Bad Weld + 2 Defect</button>
-                <button class="chip" type="button" data-sample="test-06">Uji 3 · Cacat Permukaan</button>
-                <button class="chip" type="button" data-sample="test-03">Uji 4 · Bad Weld</button>
-              </div>
+                <div class="sample-tabs" role="tablist" aria-label="Pilih foto uji nyata">
+                  <button class="chip active" type="button" data-sample="test-05">Uji 1 · Fillet Campuran</button>
+                  <button class="chip" type="button" data-sample="test-04">Uji 2 · Bad Weld + 2 Defect</button>
+                  <button class="chip" type="button" data-sample="test-06">Uji 3 · Cacat Permukaan</button>
+                  <button class="chip" type="button" data-sample="test-03">Uji 4 · Bad Weld</button>
+                </div>
 
-              <div class="viewport">
-                <canvas id="inspect-canvas" width="960" height="720"></canvas>
-                <video id="live-video" class="hidden" autoplay playsinline muted></video>
-                <div class="viewport-hud">
-                  <span class="hud-pill" id="hud-mode">SnapQC Welding v1 (YOLO11n ONNX)</span>
-                  <span class="hud-pill" id="hud-count">Memuat…</span>
+                <div class="viewport" id="drop-zone">
+                  <canvas id="inspect-canvas" width="960" height="720"></canvas>
+                  <video id="live-video" class="hidden" autoplay playsinline muted></video>
+                  <div class="viewport-hud">
+                    <span class="hud-pill" id="hud-mode">SnapQC ONNX</span>
+                    <span class="hud-pill" id="hud-count">Memuat…</span>
+                  </div>
+                </div>
+                <div class="drop-hint">
+                  <span>Tip: Seret file foto las ke kotak di atas atau tempel langsung dengan <strong>Ctrl+V</strong>.</span>
+                  <button class="btn btn-sm" type="button" id="btn-rerun-live">Jalankan Ulang Live (ONNX)</button>
+                </div>
+
+                <div class="controls-bar">
+                  <label class="slider-wrap">
+                    Batas keyakinan: <strong id="conf-label">45%</strong>
+                    <input id="conf-slider" type="range" min="25" max="90" value="45" step="5" />
+                  </label>
+                  <label class="toggle-wrap" title="Membelah foto menjadi 4 petak tumpang-tindih (SAHI 2x2) agar cacat mikro seperti lubang porositas kecil lebih mudah tertangkap">
+                    <input id="tile-toggle" type="checkbox" />
+                    Mode Detail Mikro (SAHI 2×2)
+                  </label>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-primary hidden" type="button" id="btn-capture">Jepret &amp; Deteksi AI</button>
+                    <button class="btn hidden" type="button" id="btn-stop-cam">Tutup Kamera</button>
+                  </div>
+                </div>
+
+                <div class="notice">
+                  <strong>Catatan Keselamatan QC:</strong> Deteksi ini dihasilkan oleh model Deep Learning mandiri SnapQC sebagai skrining visual awal. Pengukuran <em>welding gauge</em>, pengujian NDT (MT/PT/UT/RT), serta keputusan penerimaan tetap berada pada inspector berwenang.
                 </div>
               </div>
 
-              <div class="controls-bar">
-                <label class="slider-wrap">
-                  Batas keyakinan AI: <strong id="conf-label">45%</strong>
-                  <input id="conf-slider" type="range" min="25" max="90" value="45" step="5" />
-                </label>
-                <button class="btn hidden" type="button" id="btn-capture">Jepret &amp; Deteksi AI</button>
-                <button class="btn hidden" type="button" id="btn-stop-cam">Tutup Kamera</button>
-              </div>
-
-              <div class="notice">
-                <strong>Catatan Keselamatan QC:</strong> Deteksi di atas dihasilkan oleh model Deep Learning <strong>SnapQC Welding v1</strong> yang benar-benar dilatih pada dataset publik CC0. Gunakan sebagai alat bantu skrining awal; pemeriksaan gauge, NDT, dan persetujuan class/flag tetap dilakukan oleh inspector berwenang.
+              <div class="card">
+                <div class="card-head">
+                  <h2>Formulir Laporan QC Galangan (Simpan &amp; Cetak PDF)</h2>
+                  <span class="badge b-info" id="report-no-badge">Draft Baru</span>
+                </div>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="f-vessel">Nama Kapal / Proyek</label>
+                    <input id="f-vessel" type="text" placeholder="Contoh: TB Samudra Nusantara 24" />
+                  </div>
+                  <div class="field">
+                    <label for="f-block">Blok / Frame / Lokasi</label>
+                    <input id="f-block" type="text" placeholder="Contoh: Bottom Shell Fr. 28–34 (Port)" />
+                  </div>
+                  <div class="field">
+                    <label for="f-joint">Nomor Joint / Sambungan</label>
+                    <input id="f-joint" type="text" placeholder="Contoh: W-B04-12 (Fillet)" />
+                  </div>
+                  <div class="field">
+                    <label for="f-wps">WPS / Prosedur Las</label>
+                    <input id="f-wps" type="text" placeholder="Contoh: WPS-SMAW-04 / FCAW" />
+                  </div>
+                  <div class="field">
+                    <label for="f-welder">Welder ID / Stamp</label>
+                    <input id="f-welder" type="text" placeholder="Contoh: WLD-108 (3G/4G)" />
+                  </div>
+                  <div class="field">
+                    <label for="f-standard">Standar Acuan</label>
+                    <select id="f-standard">
+                      <option value="ISO 5817 Level B">ISO 5817 Level B</option>
+                      <option value="ISO 5817 Level C">ISO 5817 Level C</option>
+                      <option value="AWS D1.1 Structural">AWS D1.1 Structural</option>
+                      <option value="BKI Hull Construction">BKI Hull Construction</option>
+                      <option value="ASME Section IX">ASME Section IX</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="f-inspector">Nama Inspector</label>
+                    <input id="f-inspector" type="text" placeholder="Contoh: Miftahul Ikhsan Tahir" />
+                  </div>
+                  <div class="field">
+                    <label for="f-verdict">Keputusan Inspector</label>
+                    <select id="f-verdict">
+                      <option value="HOLD">HOLD — Perlu Verifikasi Gauge / NDT</option>
+                      <option value="REPAIR">REPAIR — Perlu Grinding &amp; Re-Weld</option>
+                      <option value="ACCEPT">ACCEPT — Memenuhi Kriteria Visual</option>
+                    </select>
+                  </div>
+                  <div class="field full">
+                    <label for="f-notes">Catatan Lapangan &amp; Tindak Lanjut</label>
+                    <textarea id="f-notes" rows="2" placeholder="Contoh: Indikasi porositas lokal & profil las kasar pada segmen tengah; lanjutkan pemeriksaan MT setelah grinding."></textarea>
+                  </div>
+                </div>
+                <div class="controls-bar">
+                  <span class="save-status" id="save-status"></span>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn btn-primary" type="button" id="btn-save-db">Simpan ke Database QC</button>
+                    <button class="btn btn-dark" type="button" id="btn-print-qc-2">Cetak / Simpan PDF</button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="stack">
               <div class="card">
                 <div class="card-head">
                   <h2>Verifikasi Inspector (Human-in-the-Loop)</h2>
@@ -309,9 +420,15 @@
               </div>
 
               <div class="card">
-                <h2>Ekspor Label YOLO (Active Learning)</h2>
+                <div class="card-head">
+                  <h2>Ekspor Label YOLO (Active Learning)</h2>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-sm" type="button" id="btn-copy-yolo">Salin</button>
+                    <button class="btn btn-sm" type="button" id="btn-dl-yolo">Unduh .txt</button>
+                  </div>
+                </div>
                 <p style="margin:0;font-size:12.5px;color:var(--ink-soft)">
-                  Label otomatis berformat YOLO (<code>class_id cx cy w h</code>) untuk memperkaya dataset versi berikutnya.
+                  Format label YOLO (<code>class_id cx cy w h</code>) dari deteksi yang Anda setujui untuk melatih model generasi berikutnya.
                 </p>
                 <pre class="yolo-box" id="yolo-preview"># Setujui minimal satu deteksi di atas untuk melihat format label YOLO</pre>
               </div>
@@ -322,28 +439,26 @@
         <section id="tab-model" class="hidden">
           <div class="page-head">
             <div>
-              <h1>Evaluasi Nyata — SnapQC Welding v1 (YOLO11n)</h1>
-              <p>Hasil terukur pada 126 foto uji terpisah (tidak pernah masuk data latih) setelah 40 epoch di NVIDIA RTX 5060.</p>
+              <h1 id="eval-title">Evaluasi Nyata — Model Deep Learning SnapQC</h1>
+              <p id="eval-sub">Hasil terukur pada 126 foto uji terpisah (held-out test set) yang tidak pernah masuk data latih.</p>
             </div>
           </div>
 
-          <div class="kpi-row">
+          <div class="kpi-row" id="eval-kpis">
             <div class="kpi"><strong>80,2%</strong><span>AP@50 Bad Weld</span><small>Uji terpisah (126 foto)</small></div>
             <div class="kpi"><strong>71,5%</strong><span>AP@50 Good Weld</span><small>Uji terpisah (126 foto)</small></div>
             <div class="kpi"><strong>59,7%</strong><span>mAP@50 Total</span><small>Val: 64,8% · Test: 59,7%</small></div>
-            <div class="kpi"><strong>10,13 MB</strong><span>Ukuran ONNX</span><small>Jalan lokal tanpa API cloud</small></div>
+            <div class="kpi"><strong>10,13 MB</strong><span>Ukuran ONNX</span><small>Jalan lokal &amp; server CPU</small></div>
           </div>
 
           <div class="card" style="margin-bottom:16px">
-            <h2>Rincian Evaluasi per Kelas (Validation vs Held-Out Test)</h2>
+            <h2>Perbandingan Versi Model (Held-Out Test 126 Foto)</h2>
             <table>
               <thead>
-                <tr><th>Kelas</th><th>AP@50 Validasi (283 foto)</th><th>AP@50 Uji Terpisah (126 foto)</th><th>Analisis Rekayasa</th></tr>
+                <tr><th>Versi &amp; Arsitektur</th><th>Resolusi</th><th>Bad Weld AP@50</th><th>Good Weld AP@50</th><th>Defect (Mikro) AP@50</th><th>mAP@50 Test</th><th>Ukuran ONNX</th></tr>
               </thead>
-              <tbody>
-                <tr><td><strong>Bad Weld</strong></td><td>74,6%</td><td><strong>80,2%</strong></td><td>Kuat mengenali jalur las kasar/tidak rata secara keseluruhan.</td></tr>
-                <tr><td><strong>Good Weld</strong></td><td>77,0%</td><td><strong>71,5%</strong></td><td>Baik membedakan jalur las rapi dari area las bermasalah.</td></tr>
-                <tr><td><strong>Defect (titik cacat kecil)</strong></td><td>42,8%</td><td><strong>27,4%</strong></td><td>Cacat mikro (porositas/lubang kecil 20–40 px) lebih menantang pada input 640px; target peningkatan v2 lewat resolusi 1024px / tiling (SAHI) + Active Learning.</td></tr>
+              <tbody id="eval-compare-body">
+                <tr><td colspan="7" style="color:var(--muted)">Memuat data metrik dari server…</td></tr>
               </tbody>
             </table>
           </div>
@@ -351,11 +466,11 @@
           <div class="two-col">
             <div class="card">
               <h2>Confusion Matrix (Ternormalisasi)</h2>
-              <img class="plot-img" src="../models/confusion_matrix_normalized.png" alt="Confusion matrix ternormalisasi SnapQC Welding v1" />
+              <img class="plot-img" src="/models/confusion_matrix_normalized.png" alt="Confusion matrix ternormalisasi SnapQC" />
             </div>
             <div class="card">
-              <h2>Kurva Pelatihan 40 Epoch</h2>
-              <img class="plot-img" src="../models/results.png" alt="Kurva loss dan mAP pelatihan SnapQC Welding v1" />
+              <h2>Kurva Pelatihan</h2>
+              <img class="plot-img" src="/models/results.png" alt="Kurva loss dan mAP pelatihan SnapQC" />
             </div>
           </div>
         </section>
@@ -363,15 +478,30 @@
         <section id="tab-riwayat" class="hidden">
           <div class="page-head">
             <div>
-              <h1>Riwayat Verifikasi Inspector</h1>
-              <p>Keputusan validasi Anda pada sesi ini.</p>
+              <h1>Riwayat &amp; Database Inspeksi QC (SQLite)</h1>
+              <p>Seluruh laporan inspeksi dan label <em>Active Learning</em> yang tersimpan permanen di server.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" type="button" id="btn-refresh-db">Muat Ulang</button>
+              <a class="btn" href="/api/inspections.csv">Ekspor CSV Laporan</a>
+              <a class="btn btn-primary" href="/api/active-learning/export">Ekspor Active Learning (JSON)</a>
             </div>
           </div>
+
+          <div class="kpi-row">
+            <div class="kpi"><strong id="db-kpi-count">0</strong><span>Laporan QC Tersimpan</span><small>Database SQLite persisten</small></div>
+            <div class="kpi"><strong id="db-kpi-labels">0</strong><span>Kotak Label Disetujui</span><small>Siap latih ulang Active Learning</small></div>
+            <div class="kpi"><strong id="db-kpi-repair">0</strong><span>Status REPAIR</span><small>Butuh perbaikan pengelasan</small></div>
+            <div class="kpi"><strong id="db-kpi-accept">0</strong><span>Status ACCEPT</span><small>Lolos skrining visual</small></div>
+          </div>
+
           <div class="card">
             <table>
-              <thead><tr><th>Foto</th><th>Kelas Model</th><th>Skor AI</th><th>Keputusan Inspector</th></tr></thead>
+              <thead>
+                <tr><th>No. Laporan &amp; Tanggal</th><th>Kapal / Blok / Joint</th><th>Standar &amp; Inspector</th><th>Keputusan</th><th>Deteksi / Valid</th><th>Aksi</th></tr>
+              </thead>
               <tbody id="history-body">
-                <tr><td colspan="4" style="color:var(--muted)">Belum ada verifikasi pada sesi ini.</td></tr>
+                <tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan di database.</td></tr>
               </tbody>
             </table>
           </div>
@@ -389,14 +519,69 @@
       </main>
     </div>
 
-    <script src="../whats-new.js"></script>
+    <!-- Dedicated Print / PDF Formal Maritime QC Inspection Sheet -->
+    <section id="print-report" aria-hidden="true">
+      <div class="pr-head">
+        <div class="pr-title">
+          <h1>SNAPQC — MARITIME WELD VISUAL INSPECTION REPORT</h1>
+          <p id="pr-sub">Laporan Pemeriksaan Visual Pengelasan Berbantuan Deep Learning (ONNX)</p>
+        </div>
+        <div id="pr-verdict" class="pr-verdict pr-v-HOLD">HOLD</div>
+      </div>
+      <table class="pr-meta">
+        <tr>
+          <td class="k">No. Laporan</td><td id="pr-report-no">-</td>
+          <td class="k">Tanggal (UTC)</td><td id="pr-date">-</td>
+        </tr>
+        <tr>
+          <td class="k">Nama Kapal</td><td id="pr-vessel">-</td>
+          <td class="k">Blok / Frame</td><td id="pr-block">-</td>
+        </tr>
+        <tr>
+          <td class="k">Nomor Joint</td><td id="pr-joint">-</td>
+          <td class="k">WPS / Prosedur</td><td id="pr-wps">-</td>
+        </tr>
+        <tr>
+          <td class="k">Welder ID</td><td id="pr-welder">-</td>
+          <td class="k">Standar Acuan</td><td id="pr-standard">-</td>
+        </tr>
+        <tr>
+          <td class="k">Inspector</td><td id="pr-inspector">-</td>
+          <td class="k">Model AI</td><td id="pr-model">-</td>
+        </tr>
+      </table>
+      <div class="pr-img-wrap">
+        <img id="pr-image" alt="Foto las beranotasi" />
+      </div>
+      <table class="pr-table">
+        <thead>
+          <tr><th>#</th><th>Kelas Deteksi AI</th><th>Keyakinan</th><th>Koordinat Normalisasi (x, y, w, h)</th><th>Verifikasi Inspector</th></tr>
+        </thead>
+        <tbody id="pr-det-body"></tbody>
+      </table>
+      <div style="border:1px solid #cbd5e1;padding:7px 9px;margin-bottom:10px">
+        <strong>Catatan Inspector:</strong>
+        <div id="pr-notes" style="margin-top:3px">-</div>
+      </div>
+      <div class="pr-sign">
+        <div class="pr-sign-box"><strong>QC Inspector</strong><span id="pr-sign-inspector">Nama &amp; Tanda Tangan</span></div>
+        <div class="pr-sign-box"><strong>Owner Superintendent</strong><span>Nama &amp; Tanda Tangan</span></div>
+        <div class="pr-sign-box"><strong>Class Surveyor (BKI / IACS)</strong><span>Nama &amp; Tanda Tangan</span></div>
+      </div>
+      <div class="pr-foot">
+        Catatan Keselamatan QC: Hasil deteksi AI SnapQC merupakan alat bantu skrining visual. Penerimaan akhir, pengukuran welding gauge, dan pengujian NDT tetap menjadi tanggung jawab inspector bersertifikat.
+      </div>
+    </section>
+
+    <script src="/whats-new.js"></script>
     <script>
       (function () {
         "use strict";
+        const DRAFT_KEY = "snapqc_draft_v030";
         const REAL_SAMPLES = {
           "test-05": {
             title: "Foto Uji Nyata 1 · Fillet Weld Campuran (Good + Bad + Defect)",
-            image: "samples/test-05.jpg",
+            image: "/samples/test-05.jpg",
             detections: [
               { id: "s5-1", clsId: 0, label: "Bad Weld", conf: 0.8931, box: [0.4345, 0.38, 0.1488, 0.1098] },
               { id: "s5-2", clsId: 1, label: "Good Weld", conf: 0.8626, box: [0.2701, 0.3301, 0.122, 0.0927] },
@@ -406,7 +591,7 @@
           },
           "test-04": {
             title: "Foto Uji Nyata 2 · Sambungan Las Kasar + 2 Titik Defect",
-            image: "samples/test-04.jpg",
+            image: "/samples/test-04.jpg",
             detections: [
               { id: "s4-1", clsId: 0, label: "Bad Weld", conf: 0.8277, box: [0.4202, 0.3599, 0.2934, 0.2524] },
               { id: "s4-2", clsId: 2, label: "Defect", conf: 0.7885, box: [0.4499, 0.5102, 0.0734, 0.0794] },
@@ -415,7 +600,7 @@
           },
           "test-06": {
             title: "Foto Uji Nyata 3 · Bad Weld & Titik Cacat Permukaan",
-            image: "samples/test-06.jpg",
+            image: "/samples/test-06.jpg",
             detections: [
               { id: "s6-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.4457, 0.3776, 0.2057, 0.1999] },
               { id: "s6-2", clsId: 2, label: "Defect", conf: 0.5999, box: [0.4628, 0.4947, 0.0535, 0.0593] },
@@ -423,7 +608,7 @@
           },
           "test-03": {
             title: "Foto Uji Nyata 4 · Jalur Las Bermasalah (Bad Weld)",
-            image: "samples/test-03.jpg",
+            image: "/samples/test-03.jpg",
             detections: [
               { id: "s3-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.2698, 0.361, 0.3169, 0.1868] },
             ],
@@ -437,10 +622,15 @@
         };
 
         let serverLive = false;
+        let activeModelName = "SnapQC Welding ONNX";
         let currentTitle = REAL_SAMPLES["test-05"].title;
         let currentImage = null;
+        let currentBlob = null;
+        let currentSampleKey = "test-05";
         let currentDetections = REAL_SAMPLES["test-05"].detections;
         let currentLatency = null;
+        let currentTileUsed = false;
+        let currentReportNo = "";
         let threshold = 0.45;
         let stream = null;
         const decisions = new Map();
@@ -450,6 +640,12 @@
         const video = document.getElementById("live-video");
         const rail = document.getElementById("rail");
         const menuToggle = document.getElementById("menu-toggle");
+        const tileToggle = document.getElementById("tile-toggle");
+        const dropZone = document.getElementById("drop-zone");
+
+        function escHtml(s) {
+          return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        }
 
         menuToggle.addEventListener("click", () => {
           const open = !rail.classList.contains("open");
@@ -467,7 +663,8 @@
           });
           rail.classList.remove("open");
           menuToggle.setAttribute("aria-expanded", "false");
-          if (tab === "riwayat") renderHistory();
+          if (tab === "riwayat") loadHistoryFromServer();
+          if (tab === "model") loadMetricsFromServer();
         }
 
         document.querySelectorAll("[data-tab]").forEach((btn) => {
@@ -483,28 +680,81 @@
 
         async function checkServer() {
           const banner = document.getElementById("engine-banner");
-          if (location.protocol === "file:") {
-            banner.innerHTML = "<strong>Mode Pratinjau File Lokal:</strong> Menampilkan hasil nyata model ONNX pada foto uji terpisah. Untuk deteksi langsung foto baru Anda, jalankan <code>Start-SnapQC.ps1</code> lalu buka <code>http://127.0.0.1:57840</code>.";
-            return;
-          }
           try {
             const res = await fetch("/healthz", { cache: "no-store" });
             const data = await res.json();
+            if (data.modelName) {
+              activeModelName = data.modelName;
+              document.getElementById("model-badge").textContent = `${data.modelName} · ${data.modelInputSize || 640}px`;
+              document.getElementById("rail-model-meta").textContent = `${data.modelFile || "ONNX"} · ${data.modelInputSize || 640}px`;
+            }
             if (data.modelLoaded) {
               serverLive = true;
               const loc = location.hostname === "127.0.0.1" || location.hostname === "localhost" ? "Live Lokal" : "Live";
-              banner.innerHTML = `<strong>Model ONNX Aktif (${loc}):</strong> SnapQC Welding v1 siap mendeteksi foto kamera &amp; unggahan baru secara nyata.`;
+              banner.innerHTML = `<strong>Model ONNX Aktif (${loc}):</strong> ${escHtml(activeModelName)} siap mendeteksi foto kamera, drag-drop, &amp; Ctrl+V secara nyata.`;
             } else if (data.modelLoading) {
-              banner.innerHTML = "<strong>Server Aktif · Memuat Model ONNX…</strong> Anda sudah bisa melihat foto uji; deteksi unggahan foto baru akan aktif otomatis dalam beberapa detik.";
+              banner.innerHTML = "<strong>Server Aktif · Memuat Model ONNX…</strong> Deteksi unggahan baru akan aktif otomatis dalam beberapa detik.";
               setTimeout(checkServer, 2000);
             } else if (data.modelError) {
-              banner.innerHTML = "<strong>Model ONNX Gagal Dimuat:</strong> " + String(data.modelError);
+              banner.innerHTML = "<strong>Model ONNX Gagal Dimuat:</strong> " + escHtml(data.modelError);
+            }
+            const authRes = await fetch("/api/auth/status", { cache: "no-store" });
+            const auth = await authRes.json();
+            const authBtn = document.getElementById("auth-btn");
+            if (auth.identityEnabled && !auth.authenticated) {
+              authBtn.classList.remove("hidden");
             }
           } catch {}
         }
 
+        function saveDraftLocal() {
+          try {
+            const draft = {
+              vessel: document.getElementById("f-vessel").value,
+              block: document.getElementById("f-block").value,
+              joint: document.getElementById("f-joint").value,
+              wps: document.getElementById("f-wps").value,
+              welder: document.getElementById("f-welder").value,
+              standard: document.getElementById("f-standard").value,
+              inspector: document.getElementById("f-inspector").value,
+              verdict: document.getElementById("f-verdict").value,
+              notes: document.getElementById("f-notes").value,
+              decisions: [...decisions.entries()],
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+          } catch {}
+        }
+
+        function restoreDraftLocal() {
+          try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            const d = JSON.parse(raw);
+            if (d.vessel) document.getElementById("f-vessel").value = d.vessel;
+            if (d.block) document.getElementById("f-block").value = d.block;
+            if (d.joint) document.getElementById("f-joint").value = d.joint;
+            if (d.wps) document.getElementById("f-wps").value = d.wps;
+            if (d.welder) document.getElementById("f-welder").value = d.welder;
+            if (d.standard) document.getElementById("f-standard").value = d.standard;
+            if (d.inspector) document.getElementById("f-inspector").value = d.inspector;
+            if (d.verdict) document.getElementById("f-verdict").value = d.verdict;
+            if (d.notes) document.getElementById("f-notes").value = d.notes;
+            if (Array.isArray(d.decisions)) {
+              d.decisions.forEach(([k, v]) => decisions.set(k, v));
+            }
+          } catch {}
+        }
+
+        ["f-vessel", "f-block", "f-joint", "f-wps", "f-welder", "f-standard", "f-inspector", "f-verdict", "f-notes"].forEach((id) => {
+          document.getElementById(id).addEventListener("input", saveDraftLocal);
+        });
+
         function visibleDetections() {
           return currentDetections.filter((d) => d.conf >= threshold);
+        }
+
+        function rectsOverlap(a, b) {
+          return !(a.x + a.w + 3 <= b.x || b.x + b.w + 3 <= a.x || a.y + a.h + 2 <= b.y || b.y + b.h + 2 <= a.y);
         }
 
         function drawViewport() {
@@ -518,7 +768,10 @@
           ctx.drawImage(currentImage, ox, oy, dw, dh);
 
           const list = visibleDetections();
-          list.forEach((d) => {
+          const placedLabels = [];
+
+          // Draw boxes first so labels always stay readable on top
+          const boxCoords = list.map((d) => {
             const st = decisions.get(d.id)?.status;
             const [x, y, bw, bh] = d.box;
             const px = ox + x * dw, py = oy + y * dh, pw = bw * dw, ph = bh * dh;
@@ -529,17 +782,48 @@
             if (st === "rejected") ctx.setLineDash([6, 6]);
             ctx.strokeRect(px, py, pw, ph);
             ctx.setLineDash([]);
-            const tag = `${d.label} ${Math.round(d.conf * 100)}%`;
-            ctx.font = "bold 14px Segoe UI, Arial, sans-serif";
-            const tw = ctx.measureText(tag).width + 14;
-            ctx.fillStyle = color;
-            ctx.fillRect(px, Math.max(oy, py - 24), tw, 24);
-            ctx.fillStyle = "#0b1720";
-            ctx.fillText(tag, px + 7, Math.max(oy + 17, py - 7));
+            return { d, px, py, pw, ph, color };
           });
+
+          // Anti-overlap label placement
+          ctx.font = "bold 14px Segoe UI, Arial, sans-serif";
+          boxCoords.forEach(({ d, px, py, pw, ph, color }) => {
+            const tag = `${d.label} ${Math.round(d.conf * 100)}%`;
+            const tw = ctx.measureText(tag).width + 14;
+            const th = 24;
+            const candidates = [
+              { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.max(4, py - th - 2) },
+              { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.min(h - th - 4, py + ph + 3) },
+              { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.max(4, py - th - 2) },
+              { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.min(h - th - 4, py + ph + 3) },
+              { x: Math.min(w - tw - 4, Math.max(4, px + 4)), y: Math.min(h - th - 4, py + 4) },
+            ];
+            let chosen = candidates[0];
+            for (const cand of candidates) {
+              const r = { x: cand.x, y: cand.y, w: tw, h: th };
+              if (!placedLabels.some((p) => rectsOverlap(r, p))) {
+                chosen = cand;
+                break;
+              }
+            }
+            // Final vertical nudge if still colliding
+            let guard = 0;
+            while (placedLabels.some((p) => rectsOverlap({ x: chosen.x, y: chosen.y, w: tw, h: th }, p)) && guard < 6) {
+              chosen = { x: chosen.x, y: Math.min(h - th - 4, chosen.y + th + 3) };
+              guard++;
+            }
+            placedLabels.push({ x: chosen.x, y: chosen.y, w: tw, h: th });
+
+            ctx.fillStyle = color;
+            ctx.fillRect(chosen.x, chosen.y, tw, th);
+            ctx.fillStyle = "#0b1720";
+            ctx.fillText(tag, chosen.x + 7, chosen.y + 17);
+          });
+
+          const tileTag = currentTileUsed ? " · SAHI 2×2" : "";
           document.getElementById("hud-mode").textContent = currentLatency !== null
-            ? `ONNX Live · ${currentLatency} ms`
-            : "SnapQC Welding v1 (YOLO11n ONNX)";
+            ? `ONNX Live${tileTag} · ${currentLatency} ms`
+            : activeModelName;
           document.getElementById("hud-count").textContent = `${list.length} deteksi (≥ ${Math.round(threshold * 100)}%)`;
         }
 
@@ -547,20 +831,20 @@
           const listEl = document.getElementById("detection-list");
           const list = visibleDetections();
           if (!list.length) {
-            listEl.innerHTML = `<p style="margin:0;color:var(--muted);font-size:13px">Tidak ada deteksi di atas ${Math.round(threshold * 100)}%. Coba turunkan slider batas keyakinan.</p>`;
+            listEl.innerHTML = `<p style="margin:0;color:var(--muted);font-size:13px">Tidak ada deteksi di atas ${Math.round(threshold * 100)}%. Coba turunkan slider batas keyakinan atau aktifkan Mode Detail Mikro (SAHI 2×2).</p>`;
           } else {
             listEl.innerHTML = list.map((d) => {
               const st = decisions.get(d.id)?.status || "";
               const info = CLASS_INFO[d.label] || { badge: "b-info", desc: "Perlu tinjauan inspector." };
               return `<article class="det-item ${st}">
                 <div class="det-top">
-                  <strong>${d.label}</strong>
+                  <strong>${escHtml(d.label)}</strong>
                   <span class="badge ${info.badge}">${Math.round(d.conf * 100)}%</span>
                 </div>
-                <p class="det-meta">${info.desc}</p>
+                <p class="det-meta">${escHtml(info.desc)}</p>
                 <div class="det-actions">
-                  <button type="button" class="btn btn-ok" data-decide="approved" data-id="${d.id}">${st === "approved" ? "✓ Disetujui" : "Setujui (Valid)"}</button>
-                  <button type="button" class="btn btn-danger" data-decide="rejected" data-id="${d.id}">${st === "rejected" ? "× Ditolak" : "Tolak (False Positive)"}</button>
+                  <button type="button" class="btn btn-ok" data-decide="approved" data-id="${escHtml(d.id)}">${st === "approved" ? "✓ Disetujui" : "Setujui (Valid)"}</button>
+                  <button type="button" class="btn btn-danger" data-decide="rejected" data-id="${escHtml(d.id)}">${st === "rejected" ? "× Ditolak" : "Tolak (False Positive)"}</button>
                 </div>
               </article>`;
             }).join("");
@@ -568,23 +852,20 @@
               b.onclick = () => {
                 const det = currentDetections.find((x) => x.id === b.dataset.id);
                 decisions.set(det.id, { status: b.dataset.decide, scene: currentTitle, det });
+                saveDraftLocal();
                 renderAll();
               };
             });
           }
-          const approvedCount = [...decisions.values()].filter((x) => x.status === "approved").length;
+          const approvedCount = [...decisions.values()].filter((x) => x.status === "approved" && currentDetections.some((d) => d.id === x.det.id)).length;
           document.getElementById("verified-badge").textContent = `${approvedCount} disetujui`;
           updateYolo();
         }
 
-        function updateYolo() {
-          const box = document.getElementById("yolo-preview");
+        function getYoloText() {
           const approved = [...decisions.values()].filter((x) => x.status === "approved" && currentDetections.some((d) => d.id === x.det.id));
-          if (!approved.length) {
-            box.textContent = "# Setujui minimal satu deteksi di atas untuk melihat format label YOLO";
-            return;
-          }
-          box.textContent = approved
+          if (!approved.length) return "";
+          return approved
             .map(({ det }) => {
               const [x, y, w, h] = det.box;
               return `${det.clsId} ${(x + w / 2).toFixed(4)} ${(y + h / 2).toFixed(4)} ${w.toFixed(4)} ${h.toFixed(4)}  # ${det.label}`;
@@ -592,13 +873,10 @@
             .join("\n");
         }
 
-        function renderHistory() {
-          const tbody = document.getElementById("history-body");
-          const rows = [...decisions.values()];
-          if (!rows.length) return;
-          tbody.innerHTML = rows
-            .map((r) => `<tr><td>${r.scene}</td><td><strong>${r.det.label}</strong></td><td>${Math.round(r.det.conf * 100)}%</td><td><span class="badge ${r.status === "approved" ? "b-ok" : "b-high"}">${r.status === "approved" ? "Disetujui (Valid)" : "Ditolak"}</span></td></tr>`)
-            .join("");
+        function updateYolo() {
+          const box = document.getElementById("yolo-preview");
+          const txt = getYoloText();
+          box.textContent = txt || "# Setujui minimal satu deteksi di atas untuk melihat format label YOLO";
         }
 
         function renderAll() {
@@ -607,44 +885,67 @@
           renderDetections();
         }
 
+        async function runLiveInference(blob, titleText) {
+          currentBlob = blob;
+          currentTitle = titleText;
+          if (!serverLive) {
+            renderAll();
+            return;
+          }
+          document.getElementById("hud-count").textContent = tileToggle.checked ? "Mendeteksi ONNX (SAHI 2×2)…" : "Mendeteksi dengan ONNX…";
+          try {
+            const tile = tileToggle.checked ? "1" : "0";
+            const res = await fetch(`/api/detect?conf=0.25&tile=${tile}`, { method: "POST", body: blob });
+            const data = await res.json();
+            if (!res.ok) throw Error(data.error || "Deteksi gagal");
+            currentLatency = data.latencyMs;
+            currentTileUsed = Boolean(data.tileMode);
+            if (data.model) activeModelName = data.model;
+            currentDetections = data.detections.map((d, i) => ({ ...d, id: "live-" + Date.now() + "-" + i }));
+            renderAll();
+          } catch (err) {
+            alert(err.message);
+          }
+        }
+
+        async function detectUploadedBlob(blob, titleText) {
+          currentSampleKey = null;
+          currentReportNo = "";
+          document.getElementById("report-no-badge").textContent = "Draft Baru";
+          const img = new Image();
+          const url = URL.createObjectURL(blob);
+          img.onload = async () => {
+            currentImage = img;
+            URL.revokeObjectURL(url);
+            await runLiveInference(blob, titleText);
+          };
+          img.src = url;
+        }
+
         function loadSample(key) {
           const s = REAL_SAMPLES[key];
+          currentSampleKey = key;
+          currentBlob = null;
           currentTitle = s.title;
           currentDetections = s.detections;
           currentLatency = null;
+          currentTileUsed = false;
+          currentReportNo = "";
+          document.getElementById("report-no-badge").textContent = "Draft Baru";
           const img = new Image();
           img.onload = () => { currentImage = img; renderAll(); };
           img.src = s.image;
         }
 
-        async function detectUploadedBlob(blob, titleText) {
-          const img = new Image();
-          const url = URL.createObjectURL(blob);
-          img.onload = async () => {
-            currentImage = img;
-            currentTitle = titleText;
-            URL.revokeObjectURL(url);
-            if (!serverLive) {
-              currentDetections = [];
-              currentLatency = null;
-              renderAll();
-              document.getElementById("detection-list").innerHTML = `<div class="det-item"><strong>Jalankan server lokal untuk deteksi foto baru</strong><p class="det-meta">Buka <code>Start-SnapQC.ps1</code> lalu akses <code>http://127.0.0.1:57840</code> agar foto Anda diproses langsung oleh model <code>snapqc-welding-v1.onnx</code>.</p></div>`;
-              return;
-            }
-            document.getElementById("hud-count").textContent = "Mendeteksi dengan ONNX…";
-            try {
-              const res = await fetch("/api/detect?conf=0.25", { method: "POST", body: blob });
-              const data = await res.json();
-              if (!res.ok) throw Error(data.error || "Deteksi gagal");
-              currentLatency = data.latencyMs;
-              currentDetections = data.detections.map((d, i) => ({ ...d, id: "live-" + Date.now() + "-" + i }));
-              renderAll();
-            } catch (err) {
-              alert(err.message);
-            }
-          };
-          img.src = url;
-        }
+        document.getElementById("btn-rerun-live").onclick = async () => {
+          if (currentBlob) {
+            await runLiveInference(currentBlob, currentTitle);
+          } else if (currentSampleKey && REAL_SAMPLES[currentSampleKey]) {
+            const resp = await fetch(REAL_SAMPLES[currentSampleKey].image);
+            const blob = await resp.blob();
+            await runLiveInference(blob, REAL_SAMPLES[currentSampleKey].title);
+          }
+        };
 
         document.querySelectorAll("[data-sample]").forEach((chip) => {
           chip.onclick = () => {
@@ -664,6 +965,268 @@
           if (file) detectUploadedBlob(file, "Foto Unggahan · " + file.name);
         });
 
+        // Drag & drop support
+        ["dragenter", "dragover"].forEach((ev) => {
+          dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+        });
+        ["dragleave", "drop"].forEach((ev) => {
+          dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove("drag-over"); });
+        });
+        dropZone.addEventListener("drop", (e) => {
+          const file = e.dataTransfer?.files?.[0];
+          if (file && file.type.startsWith("image/")) {
+            detectUploadedBlob(file, "Foto Drag-Drop · " + file.name);
+          }
+        });
+
+        // Clipboard Ctrl+V paste support
+        window.addEventListener("paste", (e) => {
+          const items = e.clipboardData?.items;
+          if (!items) return;
+          for (const it of items) {
+            if (it.type.startsWith("image/")) {
+              const file = it.getAsFile();
+              if (file) {
+                e.preventDefault();
+                detectUploadedBlob(file, "Foto Clipboard (Ctrl+V)");
+                break;
+              }
+            }
+          }
+        });
+
+        // Download annotated PNG
+        document.getElementById("btn-download-png").onclick = () => {
+          drawViewport();
+          const a = document.createElement("a");
+          a.href = canvas.toDataURL("image/png");
+          a.download = `snapqc-${(currentReportNo || "deteksi").toLowerCase()}.png`;
+          a.click();
+        };
+
+        // Copy & download YOLO labels
+        document.getElementById("btn-copy-yolo").onclick = async () => {
+          const txt = getYoloText();
+          if (!txt) { alert("Setujui minimal satu deteksi terlebih dahulu."); return; }
+          await navigator.clipboard.writeText(txt);
+          const btn = document.getElementById("btn-copy-yolo");
+          btn.textContent = "Tersalin ✓";
+          setTimeout(() => { btn.textContent = "Salin"; }, 1800);
+        };
+        document.getElementById("btn-dl-yolo").onclick = () => {
+          const txt = getYoloText();
+          if (!txt) { alert("Setujui minimal satu deteksi terlebih dahulu."); return; }
+          const blob = new Blob([txt + "\n"], { type: "text/plain;charset=utf-8" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `snapqc-${(currentReportNo || "labels").toLowerCase()}.txt`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        };
+
+        // Build & trigger formal Maritime QC Print / PDF Sheet
+        function preparePrintSheet() {
+          drawViewport();
+          const verdict = document.getElementById("f-verdict").value;
+          const vEl = document.getElementById("pr-verdict");
+          vEl.textContent = verdict;
+          vEl.className = "pr-verdict pr-v-" + verdict;
+          document.getElementById("pr-report-no").textContent = currentReportNo || "DRAFT-UNSAVED";
+          document.getElementById("pr-date").textContent = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+          document.getElementById("pr-vessel").textContent = document.getElementById("f-vessel").value || "-";
+          document.getElementById("pr-block").textContent = document.getElementById("f-block").value || "-";
+          document.getElementById("pr-joint").textContent = document.getElementById("f-joint").value || "-";
+          document.getElementById("pr-wps").textContent = document.getElementById("f-wps").value || "-";
+          document.getElementById("pr-welder").textContent = document.getElementById("f-welder").value || "-";
+          document.getElementById("pr-standard").textContent = document.getElementById("f-standard").value || "-";
+          const inspName = document.getElementById("f-inspector").value || "-";
+          document.getElementById("pr-inspector").textContent = inspName;
+          document.getElementById("pr-sign-inspector").textContent = inspName !== "-" ? inspName : "Nama & Tanda Tangan";
+          document.getElementById("pr-model").textContent = `${activeModelName}${currentTileUsed ? " (SAHI 2×2)" : ""}`;
+          document.getElementById("pr-notes").textContent = document.getElementById("f-notes").value || "-";
+          document.getElementById("pr-image").src = canvas.toDataURL("image/jpeg", 0.9);
+
+          const rows = visibleDetections();
+          const tbody = document.getElementById("pr-det-body");
+          tbody.innerHTML = rows.length
+            ? rows.map((d, idx) => {
+                const st = decisions.get(d.id)?.status || "Belum diverifikasi";
+                const labelSt = st === "approved" ? "Disetujui (Valid)" : st === "rejected" ? "Ditolak (False Positive)" : "Menunggu";
+                return `<tr><td>${idx + 1}</td><td><strong>${escHtml(d.label)}</strong></td><td>${Math.round(d.conf * 100)}%</td><td>${d.box.map((n) => Number(n).toFixed(3)).join(", ")}</td><td>${labelSt}</td></tr>`;
+              }).join("")
+            : `<tr><td colspan="5">Tidak ada deteksi di atas batas keyakinan ${Math.round(threshold * 100)}%.</td></tr>`;
+          window.print();
+        }
+        document.getElementById("btn-print-qc").onclick = preparePrintSheet;
+        document.getElementById("btn-print-qc-2").onclick = preparePrintSheet;
+
+        // Save QC inspection to persistent SQLite DB
+        document.getElementById("btn-save-db").onclick = async () => {
+          const statusEl = document.getElementById("save-status");
+          statusEl.textContent = "Menyimpan ke database…";
+          try {
+            drawViewport();
+            const list = visibleDetections();
+            const decList = list.map((d) => ({
+              id: d.id,
+              label: d.label,
+              conf: d.conf,
+              status: decisions.get(d.id)?.status || "pending",
+            }));
+            const payload = {
+              vesselName: document.getElementById("f-vessel").value,
+              blockLocation: document.getElementById("f-block").value,
+              jointNo: document.getElementById("f-joint").value,
+              wpsNo: document.getElementById("f-wps").value,
+              welderId: document.getElementById("f-welder").value,
+              inspectorName: document.getElementById("f-inspector").value,
+              standardRef: document.getElementById("f-standard").value,
+              verdict: document.getElementById("f-verdict").value,
+              notes: document.getElementById("f-notes").value,
+              imageTitle: currentTitle,
+              modelVersion: activeModelName,
+              tileMode: currentTileUsed,
+              confThreshold: threshold,
+              detections: list,
+              decisions: decList,
+              yoloLabels: getYoloText(),
+              annotatedDataUrl: canvas.toDataURL("image/jpeg", 0.78),
+            };
+            const res = await fetch("/api/inspections", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const saved = await res.json();
+            if (!res.ok) throw Error(saved.error || "Gagal menyimpan laporan.");
+            currentReportNo = saved.reportNo;
+            document.getElementById("report-no-badge").textContent = saved.reportNo;
+            statusEl.textContent = `Tersimpan permanen: ${saved.reportNo} ✓`;
+          } catch (err) {
+            statusEl.textContent = "";
+            alert(err.message);
+          }
+        };
+
+        // Persistent History & DB tab
+        async function loadHistoryFromServer() {
+          const tbody = document.getElementById("history-body");
+          tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Memuat riwayat dari SQLite…</td></tr>`;
+          try {
+            const res = await fetch("/api/inspections", { cache: "no-store" });
+            const data = await res.json();
+            const items = data.items || [];
+            document.getElementById("db-kpi-count").textContent = String(items.length);
+            document.getElementById("db-kpi-labels").textContent = String(data.stats?.approvedLabels || 0);
+            document.getElementById("db-kpi-repair").textContent = String(items.filter((x) => x.verdict === "REPAIR").length);
+            document.getElementById("db-kpi-accept").textContent = String(items.filter((x) => x.verdict === "ACCEPT").length);
+            if (!items.length) {
+              tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan. Isi formulir QC di tab Kamera lalu klik Simpan ke Database QC.</td></tr>`;
+              return;
+            }
+            tbody.innerHTML = items.map((it) => {
+              const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-med";
+              return `<tr>
+                <td><strong>${escHtml(it.reportNo)}</strong><br><small style="color:var(--muted)">${escHtml(it.createdAt.replace("T", " ").slice(0, 16))} UTC</small></td>
+                <td><strong>${escHtml(it.vesselName || "-")}</strong><br><small style="color:var(--ink-soft)">${escHtml(it.blockLocation || "-")} · Joint ${escHtml(it.jointNo || "-")}</small></td>
+                <td>${escHtml(it.standardRef)}<br><small style="color:var(--muted)">${escHtml(it.inspectorName || "-")}</small></td>
+                <td><span class="badge ${vCls}">${escHtml(it.verdict)}</span></td>
+                <td>${it.detections.length} deteksi · <strong>${it.approvedCount} valid</strong></td>
+                <td style="white-space:nowrap">
+                  <button class="btn btn-sm" type="button" data-open-id="${escHtml(it.id)}">Buka</button>
+                  <button class="btn btn-sm btn-danger" type="button" data-del-id="${escHtml(it.id)}">Hapus</button>
+                </td>
+              </tr>`;
+            }).join("");
+
+            tbody.querySelectorAll("[data-open-id]").forEach((btn) => {
+              btn.onclick = async () => {
+                const r = await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.openId)}`);
+                const it = await r.json();
+                if (!r.ok) return alert(it.error || "Gagal memuat laporan.");
+                currentReportNo = it.reportNo;
+                document.getElementById("report-no-badge").textContent = it.reportNo;
+                document.getElementById("f-vessel").value = it.vesselName || "";
+                document.getElementById("f-block").value = it.blockLocation || "";
+                document.getElementById("f-joint").value = it.jointNo || "";
+                document.getElementById("f-wps").value = it.wpsNo || "";
+                document.getElementById("f-welder").value = it.welderId || "";
+                document.getElementById("f-standard").value = it.standardRef || "ISO 5817 Level B";
+                document.getElementById("f-inspector").value = it.inspectorName || "";
+                document.getElementById("f-verdict").value = it.verdict || "HOLD";
+                document.getElementById("f-notes").value = it.notes || "";
+                currentTitle = it.imageTitle || it.reportNo;
+                currentDetections = it.detections || [];
+                decisions.clear();
+                (it.decisions || []).forEach((dec) => {
+                  const match = currentDetections.find((d) => d.id === dec.id);
+                  if (match && (dec.status === "approved" || dec.status === "rejected")) {
+                    decisions.set(dec.id, { status: dec.status, scene: currentTitle, det: match });
+                  }
+                });
+                if (it.annotatedDataUrl) {
+                  const img = new Image();
+                  img.onload = () => { currentImage = img; activateTab("kamera"); renderAll(); };
+                  img.src = it.annotatedDataUrl;
+                } else {
+                  activateTab("kamera");
+                  renderAll();
+                }
+              };
+            });
+
+            tbody.querySelectorAll("[data-del-id]").forEach((btn) => {
+              btn.onclick = async () => {
+                if (!confirm("Hapus laporan QC ini dari database?")) return;
+                await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.delId)}`, { method: "DELETE" });
+                loadHistoryFromServer();
+              };
+            });
+          } catch {
+            tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Gagal memuat database inspeksi.</td></tr>`;
+          }
+        }
+        document.getElementById("btn-refresh-db").onclick = loadHistoryFromServer;
+
+        // Dynamic Model Evaluation tab (auto-shows v1 + v2 comparison when v2 is ready)
+        async function loadMetricsFromServer() {
+          const tbody = document.getElementById("eval-compare-body");
+          try {
+            const res = await fetch("/api/metrics", { cache: "no-store" });
+            const data = await res.json();
+            const fmt = (v) => (typeof v === "number" ? (v * 100).toFixed(1).replace(".", ",") + "%" : "-");
+            const rows = [];
+            if (data.v2) rows.push({ tag: data.v2.promoted_as_default ? "v2 (Aktif)" : "v2 (Eksperimen)", m: data.v2, sz: data.v2.imgsz || 960 });
+            if (data.v1) rows.push({ tag: data.v2?.promoted_as_default ? "v1 (Baseline)" : "v1 (Aktif)", m: data.v1, sz: 640 });
+            if (rows.length) {
+              const primary = rows[0].m;
+              const t = primary.test_held_out || {};
+              const pc = t.per_class || {};
+              document.getElementById("eval-title").textContent = `Evaluasi Nyata — ${primary.model}`;
+              document.getElementById("eval-kpis").innerHTML = `
+                <div class="kpi"><strong>${fmt(pc["Bad Weld"]?.ap50)}</strong><span>AP@50 Bad Weld</span><small>Uji terpisah (126 foto)</small></div>
+                <div class="kpi"><strong>${fmt(pc["Good Weld"]?.ap50)}</strong><span>AP@50 Good Weld</span><small>Uji terpisah (126 foto)</small></div>
+                <div class="kpi"><strong>${fmt(pc["Defect"]?.ap50)}</strong><span>AP@50 Defect Mikro</span><small>Total mAP@50 Test: ${fmt(t.mAP50)}</small></div>
+                <div class="kpi"><strong>${primary.onnx_size_mb} MB</strong><span>Ukuran ONNX</span><small>Input ${rows[0].sz}px · + SAHI 2×2</small></div>
+              `;
+              tbody.innerHTML = rows.map(({ tag, m, sz }) => {
+                const th = m.test_held_out || {};
+                const p = th.per_class || {};
+                return `<tr>
+                  <td><strong>${escHtml(tag)}</strong><br><small style="color:var(--muted)">${escHtml(m.model)}</small></td>
+                  <td>${sz}px</td>
+                  <td><strong>${fmt(p["Bad Weld"]?.ap50)}</strong></td>
+                  <td><strong>${fmt(p["Good Weld"]?.ap50)}</strong></td>
+                  <td><strong>${fmt(p["Defect"]?.ap50)}</strong></td>
+                  <td><strong>${fmt(th.mAP50)}</strong></td>
+                  <td>${m.onnx_size_mb} MB</td>
+                </tr>`;
+              }).join("");
+            }
+          } catch {}
+        }
+
+        // Camera controls
         async function stopCamera() {
           if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
           video.classList.add("hidden");
@@ -671,7 +1234,6 @@
           document.getElementById("btn-capture").classList.add("hidden");
           document.getElementById("btn-stop-cam").classList.add("hidden");
         }
-
         document.getElementById("btn-live-cam").onclick = async () => {
           if (!navigator.mediaDevices?.getUserMedia) { alert("Gunakan tombol Unggah Foto Las pada perangkat ini."); return; }
           try {
@@ -683,7 +1245,6 @@
             document.getElementById("btn-stop-cam").classList.remove("hidden");
           } catch { alert("Izin kamera ditolak atau kamera tidak tersedia."); }
         };
-
         document.getElementById("btn-capture").onclick = () => {
           const snap = document.createElement("canvas");
           snap.width = video.videoWidth || 960;
@@ -696,10 +1257,11 @@
         const relEl = document.getElementById("releases-container");
         if (typeof SnapQCReleases !== "undefined") {
           relEl.innerHTML = SnapQCReleases.map(
-            (r) => `<article class="card"><div class="card-head"><h2>${r.title}</h2><span class="badge b-info">v${r.version} · ${r.date} · ${r.category}</span></div><p style="margin:0;color:var(--ink-soft)">${r.summary}</p></article>`,
+            (r) => `<article class="card"><div class="card-head"><h2>${escHtml(r.title)}</h2><span class="badge b-info">v${escHtml(r.version)} · ${escHtml(r.date)} · ${escHtml(r.category)}</span></div><p style="margin:0;color:var(--ink-soft)">${escHtml(r.summary)}</p></article>`,
           ).join("");
         }
 
+        restoreDraftLocal();
         checkServer();
         loadSample("test-05");
         if (location.pathname === "/whats-new") activateTab("whats-new");

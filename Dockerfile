@@ -6,6 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000 \
     APP_ORIGIN=https://snapqc.icxhnk.com \
     PUBLIC_DEMO_ENABLED=true \
+    SNAPQC_DB_PATH=/data/snapqc.sqlite \
     IDENTITY_PLATFORM_ENABLED=false \
     IDENTITY_ISSUER=https://accounts.icxhnk.com \
     IDENTITY_CLIENT_ID=snapqc \
@@ -19,19 +20,20 @@ WORKDIR /app
 COPY requirements-runtime.txt ./
 RUN pip install --no-cache-dir -r requirements-runtime.txt
 
-COPY server.py whats-new.js mark.svg ./
+COPY server.py db.py whats-new.js mark.svg ./
 COPY prototype ./prototype
 COPY portfolio ./portfolio
-COPY models/snapqc-welding-v1.onnx models/metrics-v1.json models/confusion_matrix_normalized.png models/results.png ./models/
+COPY models ./models
 
-RUN useradd --create-home --shell /bin/sh snapqc \
-    && chown -R snapqc:snapqc /app
+RUN mkdir -p /data \
+    && useradd --create-home --shell /bin/sh snapqc \
+    && chown -R snapqc:snapqc /app /data
 
 USER snapqc
 
 EXPOSE 8000
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=25s --retries=3 \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+    CMD ["curl", "-fsS", "http://127.0.0.1:8000/healthz"]
 
 CMD ["python", "-u", "server.py"]
