@@ -3,256 +3,380 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#0f2433" />
-    <title>SnapQC — Cek Cacat Las AI &amp; Laporan QC</title>
+    <meta name="theme-color" content="#ffffff" />
+    <title>SnapQC — Deteksi Cacat Las AI</title>
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
     <style>
       :root {
-        --bg: #f1f5f8;
-        --panel: #ffffff;
-        --rail: #0d202e;
-        --rail-soft: #173245;
-        --ink: #102432;
-        --ink-soft: #435b6a;
-        --muted: #647b89;
-        --line: #d6e2e8;
-        --cyan: #0891b2;
-        --cyan-dark: #0e7490;
-        --cyan-bright: #22d3ee;
-        --amber: #d97706;
-        --amber-pale: #fef3c7;
+        --bg: #f4f6f9;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --ink: #0f172a;
+        --ink-soft: #475569;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --line-soft: #eef2f6;
+        --brand: #0891b2;
+        --brand-dark: #0e7490;
+        --brand-pale: #ecfeff;
         --danger: #dc2626;
-        --danger-pale: #fee2e2;
-        --ok: #15803d;
-        --ok-pale: #dcfce7;
-        --radius: 14px;
+        --danger-pale: #fef2f2;
+        --amber: #d97706;
+        --amber-pale: #fffbeb;
+        --ok: #16a34a;
+        --ok-pale: #f0fdf4;
+        --radius: 16px;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04);
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font: 14.5px/1.55 "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        font: 14.5px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
         color: var(--ink);
         background: var(--bg);
-        display: grid;
-        grid-template-columns: 246px 1fr;
-        min-height: 100vh;
+        font-variant-numeric: tabular-nums;
       }
-      .rail {
-        background: var(--rail);
-        color: #e6f1f6;
-        padding: 20px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        position: sticky;
-        top: 0;
-        height: 100vh;
+
+      /* Top Sticky Social Navigation */
+      .nav-bar {
+        position: sticky; top: 0; z-index: 40;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav-inner {
+        max-width: 1080px; margin: 0 auto; padding: 0 18px; height: 60px;
+        display: flex; align-items: center; justify-content: space-between; gap: 14px;
       }
       .brand {
-        display: flex; align-items: center; gap: 10px; padding: 4px 8px;
-        color: #fff; text-decoration: none; font-weight: 700; font-size: 18px;
+        display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+        color: var(--ink); font-weight: 800; font-size: 18px; letter-spacing: -0.025em;
       }
-      .brand small { display: block; font-size: 11px; font-weight: 500; color: #96b4c4; }
-      .menu-toggle {
-        display: none; background: var(--rail-soft); color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 8px;
-        padding: 8px 12px; font-weight: 600; cursor: pointer;
-      }
-      nav.rail-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-      nav.rail-nav button, nav.rail-nav a {
-        width: 100%; text-align: left; background: transparent; border: 0;
-        color: #c5d9e4; padding: 10px 12px; border-radius: 10px; font: inherit;
-        font-weight: 600; cursor: pointer; display: flex; align-items: center;
-        gap: 10px; text-decoration: none;
-      }
-      nav.rail-nav button:hover, nav.rail-nav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-      nav.rail-nav button[aria-current="page"] {
-        background: #16374d; color: #fff; box-shadow: inset 3px 0 0 var(--cyan-bright);
-      }
-      nav.rail-nav svg { width: 18px; height: 18px; flex: none; }
-      .rail-foot { border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 12px; font-size: 12px; color: #9cb8c7; }
-      .rail-foot strong { color: #fff; display: block; margin-bottom: 2px; }
+      .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
+      .live-dot.loading { background: #f59e0b; }
 
-      .workspace { display: flex; flex-direction: column; min-width: 0; }
-      .topbar {
-        background: #ffffff; border-bottom: 1px solid var(--line);
-        padding: 10px 24px; display: flex; justify-content: space-between;
-        align-items: center; gap: 12px; flex-wrap: wrap;
+      .nav-tabs { display: flex; align-items: center; gap: 4px; }
+      .nav-tabs button, .nav-tabs a {
+        border: 0; background: transparent; color: var(--ink-soft);
+        padding: 8px 13px; border-radius: 999px; font: 600 13.5px/1.2 inherit;
+        cursor: pointer; text-decoration: none; transition: background 0.15s, color 0.15s;
       }
-      .live-pill {
-        display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft);
+      .nav-tabs button:hover, .nav-tabs a:hover { background: var(--surface-soft); color: var(--ink); }
+      .nav-tabs button[aria-current="page"] { background: var(--ink); color: #fff; }
+
+      .nav-right { display: flex; align-items: center; gap: 8px; }
+      .menu-toggle {
+        display: none; border: 1px solid var(--line); background: #fff; color: var(--ink);
+        border-radius: 10px; padding: 7px 11px; font: 600 13px/1 inherit; cursor: pointer;
       }
-      .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; flex: none; }
-      .dot.loading { background: #f59e0b; }
-      .account-box { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-      .user-chip {
-        display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 5px;
-        border-radius: 999px; background: #edf6f9; border: 1px solid #c5e2ec; font-size: 13px; font-weight: 600;
+      .mobile-drawer {
+        display: none; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px 14px;
+      }
+      .mobile-drawer.open { display: flex; flex-direction: column; gap: 4px; }
+      .mobile-drawer button, .mobile-drawer a {
+        text-align: left; border: 0; background: transparent; padding: 10px 12px;
+        border-radius: 10px; font: 600 14px/1.2 inherit; color: var(--ink); text-decoration: none; cursor: pointer;
+      }
+      .mobile-drawer button[aria-current="page"] { background: var(--brand-pale); color: var(--brand-dark); }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 8px 14px; border-radius: 999px; font: 600 13px/1.2 inherit;
+        border: 1px solid var(--line); background: #fff; color: var(--ink);
+        cursor: pointer; text-decoration: none; transition: all 0.15s;
+      }
+      .btn:hover { border-color: #cbd5e1; background: #f8fafc; }
+      .btn-sm { padding: 6px 11px; font-size: 12.5px; }
+      .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+      .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+      .btn-dark { background: var(--ink); border-color: var(--ink); color: #fff; }
+      .btn-dark:hover { background: #1e293b; }
+      .btn-ghost { border-color: transparent; background: transparent; color: var(--ink-soft); }
+      .btn-ghost:hover { background: var(--surface-soft); color: var(--ink); }
+      .btn-danger { background: var(--danger-pale); border-color: #fecaca; color: var(--danger); }
+      .btn svg { width: 16px; height: 16px; flex: none; }
+
+      .user-pill {
+        display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 4px;
+        border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600;
       }
       .avatar {
-        width: 26px; height: 26px; border-radius: 50%; background: var(--cyan); color: #fff;
-        display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+        width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #0891b2, #0284c7);
+        color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none;
       }
-      .guest-tag { font-size: 12.5px; color: var(--muted); }
 
-      main { padding: 20px 24px 44px; max-width: 1240px; width: 100%; margin: 0 auto; }
-      .hero-head {
-        display: flex; justify-content: space-between; align-items: flex-end;
-        gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
-      }
-      .hero-head h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.02em; }
-      .hero-head p { margin: 0; color: var(--ink-soft); }
+      /* Main Centered Social Feed Layout */
+      .shell { max-width: 1080px; margin: 0 auto; padding: 18px 18px 80px; }
+      .feed-layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 22px; align-items: start; }
+      .feed-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .side-col { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-      .steps-strip {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
-      }
-      .step-pill {
-        background: #fff; border: 1px solid var(--line); border-radius: 11px;
-        padding: 10px 13px; display: flex; align-items: center; gap: 10px; font-size: 13px;
-      }
-      .step-num {
-        width: 24px; height: 24px; border-radius: 50%; background: #e0f4f9; color: var(--cyan-dark);
-        font-weight: 800; font-size: 12.5px; display: inline-flex; align-items: center; justify-content: center; flex: none;
-      }
-      .step-pill strong { display: block; font-size: 13px; color: var(--ink); }
-      .step-pill span { display: block; font-size: 11.5px; color: var(--muted); }
-
-      .btn {
-        display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
-        border-radius: 9px; font: 600 13px/1.2 inherit; border: 1px solid var(--line);
-        background: #fff; color: var(--ink); cursor: pointer; text-decoration: none;
-      }
-      .btn:hover { border-color: var(--cyan); }
-      .btn-sm { padding: 6px 10px; font-size: 12px; }
-      .btn-primary { background: var(--cyan); border-color: var(--cyan); color: #fff; }
-      .btn-primary:hover { background: var(--cyan-dark); }
-      .btn-dark { background: #0f2433; border-color: #0f2433; color: #fff; }
-      .btn-dark:hover { background: #1a3950; }
-      .btn-ok { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
-      .btn-danger { background: var(--danger-pale); border-color: #fca5a5; color: var(--danger); }
-
-      .grid-inspect { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.98fr); gap: 18px; align-items: start; }
-      .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
       .card {
-        background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-        padding: 18px; box-shadow: 0 1px 3px rgba(16, 36, 50, 0.04); min-width: 0;
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--shadow); overflow: hidden; min-width: 0;
       }
-      .card h2 { margin: 0 0 6px; font-size: 16px; }
-      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+      .card-pad { padding: 16px 18px; }
 
-      .sample-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
-      .sample-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 2px; }
-      .chip {
-        padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line);
-        background: #f6fafc; color: var(--ink-soft); font: 600 12px/1.2 inherit; cursor: pointer;
+      /* Stories / Quick Sample Strip */
+      .stories {
+        display: flex; gap: 12px; overflow-x: auto; padding: 14px 16px; scrollbar-width: none;
       }
-      .chip.active { background: #0f2433; border-color: #0f2433; color: #fff; }
+      .stories::-webkit-scrollbar { display: none; }
+      .story-item {
+        border: 0; background: transparent; padding: 0; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        width: 76px; flex: none; font: 600 11.5px/1.2 inherit; color: var(--ink-soft);
+      }
+      .story-ring {
+        width: 62px; height: 62px; border-radius: 50%; padding: 3px;
+        background: var(--line); display: flex; align-items: center; justify-content: center;
+        transition: transform 0.15s;
+      }
+      .story-item:hover .story-ring { transform: scale(1.04); }
+      .story-item.active .story-ring { background: linear-gradient(135deg, #06b6d4, #2563eb); }
+      .story-item.add-story .story-ring { background: none; border: 2px dashed var(--brand); }
+      .story-ring img, .story-ring .story-ico {
+        width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+        border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+        background: var(--brand-pale); color: var(--brand-dark);
+      }
+      .story-item span { max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-      .viewport {
-        position: relative; background: #0a1620; border-radius: 11px; overflow: hidden;
-        border: 2px solid #1e3a4c; aspect-ratio: 4 / 3; transition: border-color 0.15s;
+      /* Social Composer Card */
+      .composer { padding: 14px 16px; transition: background 0.15s, border-color 0.15s; }
+      .composer.drag-over { background: #ecfeff; border-color: var(--brand); }
+      .composer-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+      .composer-prompt {
+        flex: 1; padding: 10px 14px; border-radius: 999px; background: var(--surface-soft);
+        border: 1px solid var(--line-soft); color: var(--muted); font-size: 13.5px;
+        cursor: pointer; text-align: left; font-family: inherit;
       }
-      .viewport.drag-over { border-color: var(--cyan-bright); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25); }
-      .viewport canvas, .viewport video { width: 100%; height: 100%; display: block; object-fit: contain; }
-      .viewport-hud {
-        position: absolute; top: 10px; left: 10px; right: 10px;
-        display: flex; justify-content: space-between; pointer-events: none; font-size: 11.5px; gap: 8px; flex-wrap: wrap;
+      .composer-prompt:hover { background: #f1f5f9; color: var(--ink); }
+      .composer-bar {
+        display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line-soft);
       }
-      .hud-pill {
-        background: rgba(13, 32, 46, 0.88); color: #e6f4f8; padding: 4px 10px;
-        border-radius: 999px; border: 1px solid rgba(34, 211, 238, 0.35); font-weight: 600;
+      .composer-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .pill-toggle {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px;
+        border-radius: 999px; border: 1px solid var(--line); background: var(--surface-soft);
+        font-size: 12px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
       }
-      .drop-hint {
-        margin-top: 9px; font-size: 12.5px; color: var(--muted);
-        display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
-      }
-
-      .controls-bar {
-        display: flex; justify-content: space-between; align-items: center; gap: 10px;
-        flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);
-      }
-      .preset-group { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
+      .pill-toggle input { accent-color: var(--brand); margin: 0; }
+      .preset-bar { display: inline-flex; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
       .preset-btn {
-        padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line);
-        background: #f8fbfc; color: var(--ink-soft); font: 600 11.5px/1.2 inherit; cursor: pointer;
+        border: 0; background: transparent; padding: 4px 9px; border-radius: 999px;
+        font: 600 11.5px/1.2 inherit; color: var(--muted); cursor: pointer;
       }
-      .preset-btn.active { background: #e0f4f9; border-color: var(--cyan); color: var(--cyan-dark); }
-      .toggle-wrap {
-        display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px;
-        font-weight: 600; color: var(--ink); background: #f3f9fb; border: 1px solid var(--line);
-        padding: 5px 10px; border-radius: 8px; cursor: pointer;
+      .preset-btn.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+
+      /* Active Inspection Post Card */
+      .post-head {
+        padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      }
+      .post-author { display: flex; align-items: center; gap: 10px; min-width: 0; }
+      .post-author strong { display: block; font-size: 14px; line-height: 1.2; }
+      .post-author small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+
+      .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+      .b-warn { background: var(--amber-pale); color: #b45309; border: 1px solid #fde68a; }
+      .b-high { background: var(--danger-pale); color: var(--danger); border: 1px solid #fecaca; }
+      .b-ok { background: var(--ok-pale); color: var(--ok); border: 1px solid #bbf7d0; }
+      .b-info { background: var(--brand-pale); color: var(--brand-dark); border: 1px solid #a5f3fc; }
+
+      /* Dark Precision Media Stage */
+      .stage {
+        position: relative; background: #0a1017;
+        background-image: radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px);
+        background-size: 18px 18px;
+        aspect-ratio: 4 / 3; overflow: hidden; user-select: none;
+      }
+      .stage.drag-over { outline: 3px solid var(--brand); outline-offset: -3px; }
+      .stage canvas, .stage video { width: 100%; height: 100%; display: block; cursor: crosshair; }
+      .scan-beam {
+        position: absolute; left: 0; right: 0; height: 3px; top: 0;
+        background: linear-gradient(90deg, transparent, #22d3ee, #fff, #22d3ee, transparent);
+        box-shadow: 0 0 18px #22d3ee; opacity: 0; pointer-events: none;
+      }
+      .stage.scanning .scan-beam { opacity: 1; animation: scanSweep 1.1s ease-in-out infinite; }
+      @keyframes scanSweep { 0% { top: 4%; } 50% { top: 94%; } 100% { top: 4%; } }
+
+      .stage-hud-top {
+        position: absolute; top: 10px; left: 10px; right: 10px;
+        display: flex; justify-content: space-between; pointer-events: none; gap: 8px;
+      }
+      .hud-chip {
+        background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(6px);
+        color: #f1f5f9; padding: 4px 10px; border-radius: 999px;
+        font-size: 11.5px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .stage-tools {
+        position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+        display: inline-flex; align-items: center; gap: 3px;
+        background: rgba(15, 23, 42, 0.84); backdrop-filter: blur(8px);
+        padding: 4px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+      .stage-tools button {
+        border: 0; background: transparent; color: #e2e8f0;
+        padding: 5px 10px; border-radius: 999px; font: 600 11.5px/1 inherit;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+      }
+      .stage-tools button:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+      .stage-tools button.active { background: var(--brand); color: #fff; }
+
+      /* Social Action Bar under Photo */
+      .post-actions {
+        padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+        gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--line-soft);
+      }
+      .action-group { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+      .act-btn {
+        border: 0; background: transparent; color: var(--ink);
+        padding: 7px 11px; border-radius: 10px; font: 600 13px/1.2 inherit;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      }
+      .act-btn:hover { background: var(--surface-soft); }
+      .act-btn.primary { background: var(--brand-pale); color: var(--brand-dark); }
+      .act-btn.primary:hover { background: #cffafe; }
+      .act-btn svg { width: 17px; height: 17px; }
+
+      /* Caption Summary & Finding Comments */
+      .post-body { padding: 14px 16px 16px; }
+      .verdict-line {
+        font-size: 13.5px; margin: 0 0 12px; padding: 10px 13px; border-radius: 12px;
+      }
+      .verdict-line.warn { background: var(--amber-pale); color: #92400e; }
+      .verdict-line.ok { background: var(--ok-pale); color: #166534; }
+      .verdict-line.neutral { background: var(--surface-soft); color: var(--ink-soft); }
+
+      .finding-rows { display: flex; flex-direction: column; gap: 8px; }
+      .finding-row {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line-soft);
+        background: var(--surface-soft); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+      }
+      .finding-row:hover, .finding-row.selected { border-color: var(--brand); background: #f0fdff; }
+      .finding-row.approved { border-left: 3px solid var(--ok); background: var(--ok-pale); }
+      .finding-row.rejected { opacity: 0.55; }
+      .f-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+      .f-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+      .f-info { min-width: 0; flex: 1; }
+      .f-title { font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .f-sub { font-size: 12px; color: var(--muted); }
+      .f-bar { height: 4px; border-radius: 99px; background: #e2e8f0; margin-top: 5px; overflow: hidden; max-width: 160px; }
+      .f-bar i { display: block; height: 100%; border-radius: 99px; }
+      .f-btns { display: flex; gap: 5px; flex: none; }
+      .icon-pill {
+        border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
+        padding: 5px 10px; border-radius: 999px; font: 600 12px/1 inherit; cursor: pointer;
+      }
+      .icon-pill.ok.on, .icon-pill.ok:hover { background: var(--ok-pale); border-color: #86efac; color: var(--ok); }
+      .icon-pill.no.on, .icon-pill.no:hover { background: var(--danger-pale); border-color: #fecaca; color: var(--danger); }
+
+      .yolo-drawer {
+        margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft);
+      }
+      pre.yolo-box {
+        background: #0f172a; color: #a5f3fc; padding: 11px 12px; border-radius: 10px;
+        font-size: 12px; overflow-x: auto; margin: 8px 0 0; max-height: 150px;
       }
 
-      .summary-box {
-        border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 13.5px; border: 1px solid;
+      /* Community Feed Cards */
+      .section-label {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+        padding: 4px 4px 0;
       }
-      .summary-box strong { display: block; margin-bottom: 2px; }
-      .sum-warn { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
-      .sum-ok { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-      .sum-neutral { background: #f4f9fb; border-color: var(--line); color: var(--ink-soft); }
+      .feed-post-img { width: 100%; max-height: 360px; object-fit: cover; display: block; background: #0a1017; }
+      .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+      .hashtag { font-size: 12px; font-weight: 600; color: var(--brand-dark); background: var(--brand-pale); padding: 2px 8px; border-radius: 999px; }
 
-      .detection-list { display: flex; flex-direction: column; gap: 10px; }
-      .det-item { border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; background: #fbfdfe; }
-      .det-item.approved { border-left: 4px solid var(--ok); background: #f4fcf6; }
-      .det-item.rejected { border-left: 4px solid var(--danger); opacity: 0.72; }
-      .det-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
-      .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
-      .b-high { background: var(--danger-pale); color: var(--danger); }
-      .b-med { background: var(--amber-pale); color: #92400e; }
-      .b-ok { background: var(--ok-pale); color: var(--ok); }
-      .b-info { background: #e0f2fe; color: #0369a1; }
-      .det-meta { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 8px; }
-      .det-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-      .det-actions button { padding: 5px 11px; font-size: 12px; }
+      /* Right Sidebar Cards */
+      .side-card { padding: 16px; }
+      .side-card h3 { margin: 0 0 6px; font-size: 14.5px; }
+      .side-card p { margin: 0 0 12px; font-size: 13px; color: var(--ink-soft); }
+      .legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+      .legend-item { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); }
 
-      details.tech-box summary {
-        cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--ink); list-style: none;
+      /* Secondary Tabs (Riwayat, Performa AI, What's New) */
+      .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+      .page-head h1 { margin: 0 0 3px; font-size: 22px; letter-spacing: -0.02em; }
+      .page-head p { margin: 0; color: var(--ink-soft); }
+      .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+      .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+      .kpi strong { display: block; font-size: 22px; color: var(--brand-dark); }
+      .kpi span { display: block; font-size: 12.5px; font-weight: 700; margin-top: 2px; }
+      .kpi small { color: var(--muted); font-size: 11.5px; }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .plot-img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+      th { background: var(--surface-soft); font-size: 12px; color: var(--muted); }
+
+      /* QC Report Modal */
+      .modal-backdrop {
+        position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px;
+      }
+      .modal {
+        background: #fff; border-radius: 18px; width: 100%; max-width: 580px; max-height: 90vh;
+        overflow-y: auto; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25); border: 1px solid var(--line);
+      }
+      .modal-head {
+        padding: 15px 18px; border-bottom: 1px solid var(--line);
         display: flex; justify-content: space-between; align-items: center;
       }
-      details.tech-box summary::-webkit-details-marker { display: none; }
-      pre.yolo-box {
-        background: #0d202e; color: #b5eef7; padding: 12px; border-radius: 8px;
-        font-size: 12px; overflow-x: auto; margin: 10px 0 0; max-height: 170px;
-      }
-
+      .modal-head h2 { margin: 0; font-size: 16.5px; }
+      .modal-body { padding: 16px 18px; }
       .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .field { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
       .field.full { grid-column: 1 / -1; }
       .field label { font-weight: 600; color: var(--ink-soft); }
       .field input, .field select, .field textarea {
-        font: 13.5px/1.4 inherit; padding: 8px 10px; border: 1px solid var(--line);
-        border-radius: 8px; background: #fff; color: var(--ink); width: 100%;
+        font: 13.5px/1.4 inherit; padding: 9px 11px; border: 1px solid var(--line);
+        border-radius: 10px; background: #fff; color: var(--ink); width: 100%;
       }
       .field input:focus, .field select:focus, .field textarea:focus {
-        outline: 2px solid rgba(8, 145, 178, 0.25); border-color: var(--cyan);
+        outline: 2px solid rgba(8, 145, 178, 0.22); border-color: var(--brand);
       }
-      .save-status { font-size: 12.5px; font-weight: 600; color: var(--ok); }
-      .scope-banner {
+      .modal-foot {
+        padding: 13px 18px; border-top: 1px solid var(--line); background: var(--surface-soft);
         display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-        background: #f0f9fc; border: 1px solid #bae6fd; border-radius: 10px; padding: 11px 14px; margin-bottom: 14px; font-size: 13px;
       }
 
-      table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { background: #edf4f7; font-size: 12px; }
-      .notice {
-        margin-top: 12px; padding: 10px 13px; border-radius: 9px;
-        background: #f4f9fb; border: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft);
+      /* Mobile Bottom App Bar */
+      .bottom-bar {
+        display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
+        background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px);
+        border-top: 1px solid var(--line); padding: 6px 8px env(safe-area-inset-bottom, 6px);
+        grid-template-columns: repeat(4, 1fr); gap: 4px;
       }
-      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-      .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-      .kpi strong { display: block; font-size: 21px; color: var(--cyan-dark); }
-      .kpi span { display: block; font-size: 12.5px; font-weight: 700; margin-top: 2px; }
-      .kpi small { color: var(--muted); font-size: 11.5px; }
-      .plot-img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+      .bottom-bar button {
+        border: 0; background: transparent; color: var(--muted); padding: 6px 4px;
+        border-radius: 10px; font: 600 11px/1.2 inherit; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+      }
+      .bottom-bar button[aria-current="page"] { color: var(--brand-dark); }
+      .bottom-bar svg { width: 20px; height: 20px; }
+
+      /* Non-blocking Toast */
+      .toast {
+        position: fixed; right: 20px; bottom: 24px; z-index: 80;
+        background: #0f172a; color: #fff; padding: 11px 16px; border-radius: 12px;
+        font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+        opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s;
+      }
+      .toast.show { opacity: 1; transform: translateY(0); }
+
       .hidden { display: none !important; }
 
+      /* Formal Maritime QC Print / PDF Sheet */
       #print-report { display: none; }
       @media print {
         @page { size: A4; margin: 12mm; }
-        body { display: block; background: #fff; color: #0f172a; }
-        .rail, .workspace { display: none !important; }
+        body { background: #fff; color: #0f172a; }
+        .nav-bar, .mobile-drawer, .shell, .bottom-bar, .modal-backdrop, .toast { display: none !important; }
         #print-report { display: block !important; font: 12px/1.45 "Segoe UI", Arial, sans-serif; }
         .pr-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f2433; padding-bottom: 10px; margin-bottom: 12px; }
         .pr-title h1 { margin: 0 0 2px; font-size: 18px; color: #0f2433; }
@@ -274,340 +398,397 @@
         .pr-foot { margin-top: 10px; font-size: 10px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 6px; }
       }
 
-      @media (max-width: 960px) {
-        body { grid-template-columns: 1fr; }
-        .rail { position: static; height: auto; padding: 12px 16px; }
-        .rail-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+      @media (max-width: 880px) {
+        .nav-tabs { display: none; }
         .menu-toggle { display: inline-flex; }
-        nav.rail-nav, .rail-foot { display: none; }
-        .rail.open nav.rail-nav, .rail.open .rail-foot { display: flex; }
-        .grid-inspect, .two-col, .form-grid, .steps-strip { grid-template-columns: 1fr; }
+        .feed-layout { grid-template-columns: 1fr; }
+        .side-col { position: static; }
         .kpi-row { grid-template-columns: repeat(2, 1fr); }
-        main { padding: 14px; }
-        .topbar { padding: 10px 14px; }
+        .two-col, .form-grid { grid-template-columns: 1fr; }
+        .bottom-bar { display: grid; }
+        .shell { padding: 12px 12px 92px; }
+        .toast { bottom: 78px; right: 12px; left: 12px; text-align: center; }
       }
     </style>
   </head>
   <body>
-    <aside class="rail" id="rail">
-      <div class="rail-top">
+    <header class="nav-bar">
+      <div class="nav-inner">
         <a class="brand" href="/">
-          <img src="/mark.svg" width="32" height="32" alt="" />
-          <span>SnapQC<small>Asisten Cek Las AI</small></span>
+          <img src="/mark.svg" width="30" height="30" alt="" />
+          <span>SnapQC</span>
+          <span class="live-dot loading" id="live-dot" title="Status AI"></span>
         </a>
-        <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="rail-nav">Menu</button>
-      </div>
-      <nav class="rail-nav" id="rail-nav" aria-label="Navigasi SnapQC">
-        <button type="button" data-tab="kamera" aria-current="page">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="4"/></svg>
-          Cek Foto Las
-        </button>
-        <button type="button" data-tab="riwayat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
-          Riwayat Laporan
-        </button>
-        <button type="button" data-tab="model">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg>
-          Performa AI
-        </button>
-        <button type="button" data-tab="whats-new">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
-          What's New
-        </button>
-        <a href="/portfolio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Studi Kasus / PDF
-        </a>
-      </nav>
-      <div class="rail-foot">
-        <strong>SnapQC v0.4.1</strong>
-        <span id="rail-model-meta">AI Lokal · Siap Dipakai Siapa Saja</span>
-      </div>
-    </aside>
 
-    <div class="workspace">
-      <header class="topbar">
-        <div class="live-pill">
-          <span class="dot loading" id="live-dot"></span>
-          <span id="engine-banner">Menyiapkan AI deteksi las…</span>
+        <nav class="nav-tabs" aria-label="Navigasi utama">
+          <button type="button" data-tab="kamera" aria-current="page">Beranda</button>
+          <button type="button" data-tab="riwayat">Riwayat</button>
+          <button type="button" data-tab="model">Performa AI</button>
+          <button type="button" data-tab="whats-new">What's New</button>
+          <a href="/portfolio">Studi Kasus</a>
+        </nav>
+
+        <div class="nav-right">
+          <label class="btn btn-primary btn-sm" style="margin:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Cek Foto
+            <input id="file-upload" type="file" accept="image/*" capture="environment" hidden />
+          </label>
+          <a id="nav-signin" class="btn btn-sm hidden" href="/api/auth/oidc/start">Sign in to SnapQC</a>
+          <div id="nav-user" class="hidden" style="display:inline-flex;align-items:center;gap:6px">
+            <span class="user-pill"><span class="avatar" id="nav-avatar">U</span><span id="nav-username">User</span></span>
+            <button id="nav-signout" class="btn btn-ghost btn-sm" type="button">Keluar</button>
+          </div>
+          <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer">Menu</button>
         </div>
-        <div class="account-box" id="account-box">
-          <span class="guest-tag" id="guest-tag">Gratis · Langsung pakai tanpa login</span>
-          <a id="btn-signin" class="btn btn-primary btn-sm hidden" href="/api/auth/oidc/start">Sign in to SnapQC</a>
-          <div id="user-signed-in" class="hidden" style="display:inline-flex;align-items:center;gap:8px">
-            <span class="user-chip"><span class="avatar" id="user-avatar">U</span><span id="user-name">Pengguna</span></span>
-            <button id="btn-signout" class="btn btn-sm" type="button">Keluar</button>
+      </div>
+    </header>
+
+    <nav class="mobile-drawer" id="mobile-drawer" aria-label="Menu mobile">
+      <button type="button" data-tab="kamera" aria-current="page">Beranda &amp; Cek Las</button>
+      <button type="button" data-tab="riwayat">Riwayat Laporan</button>
+      <button type="button" data-tab="model">Performa AI</button>
+      <button type="button" data-tab="whats-new">What's New</button>
+      <a href="/portfolio">Studi Kasus / PDF</a>
+    </nav>
+
+    <div class="shell">
+      <!-- TAB 1: SOCIAL FEED & LIVE SCANNER -->
+      <section id="tab-kamera" class="feed-layout">
+        <div class="feed-col">
+          <!-- Stories / Sample Reels -->
+          <div class="card">
+            <div class="stories" role="tablist" aria-label="Pilih foto atau unggah baru">
+              <button type="button" class="story-item add-story" id="story-upload">
+                <div class="story-ring"><span class="story-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></span></div>
+                <span>Foto Baru</span>
+              </button>
+              <button type="button" class="story-item" id="story-cam">
+                <div class="story-ring"><span class="story-ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div>
+                <span>Kamera</span>
+              </button>
+              <button type="button" class="story-item active" data-sample="test-05">
+                <div class="story-ring"><img src="/samples/test-05.jpg" alt="Contoh Campuran" /></div>
+                <span>Campuran</span>
+              </button>
+              <button type="button" class="story-item" data-sample="test-04">
+                <div class="story-ring"><img src="/samples/test-04.jpg" alt="Contoh Las Kasar" /></div>
+                <span>Las Kasar</span>
+              </button>
+              <button type="button" class="story-item" data-sample="test-06">
+                <div class="story-ring"><img src="/samples/test-06.jpg" alt="Contoh Permukaan" /></div>
+                <span>Permukaan</span>
+              </button>
+              <button type="button" class="story-item" data-sample="test-03">
+                <div class="story-ring"><img src="/samples/test-03.jpg" alt="Contoh Bermasalah" /></div>
+                <span>Bermasalah</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <main>
-        <section id="tab-kamera">
-          <div class="hero-head">
-            <div>
-              <h1>Cek Kualitas Sambungan Las dengan AI</h1>
-              <p>Siapa saja bisa langsung mencoba — unggah foto las, jepret dari kamera, atau coba foto contoh di bawah ini.</p>
+          <!-- Quick Composer -->
+          <div class="card composer" id="composer-drop">
+            <div class="composer-top">
+              <span class="avatar" id="composer-avatar">S</span>
+              <button type="button" class="composer-prompt" id="composer-trigger">
+                Seret foto las ke sini, tempel (Ctrl+V), atau klik untuk cek otomatis…
+              </button>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <label class="btn btn-primary" style="margin:0">Unggah Foto Las<input id="file-upload" type="file" accept="image/*" capture="environment" hidden /></label>
-              <button class="btn" type="button" id="btn-live-cam">Buka Kamera</button>
-              <button class="btn" type="button" id="btn-download-png">Unduh PNG</button>
-              <button class="btn btn-dark" type="button" id="btn-print-qc">Cetak PDF</button>
+            <div class="composer-bar">
+              <div class="composer-actions">
+                <button type="button" class="btn btn-sm" id="btn-composer-upload">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  Galeri
+                </button>
+                <button type="button" class="btn btn-sm" id="btn-live-cam">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                  Kamera
+                </button>
+                <label class="pill-toggle" title="Memindai foto per bagian kecil agar lubang/porositas mikro lebih mudah tertangkap">
+                  <input id="tile-toggle" type="checkbox" />
+                  Scan Teliti
+                </label>
+              </div>
+              <div class="preset-bar" role="group" aria-label="Sensitivitas AI">
+                <button type="button" class="preset-btn" data-preset="30">Teliti</button>
+                <button type="button" class="preset-btn active" data-preset="45">Seimbang</button>
+                <button type="button" class="preset-btn" data-preset="65">Ketat</button>
+              </div>
             </div>
           </div>
 
-          <div class="steps-strip">
-            <div class="step-pill">
-              <span class="step-num">1</span>
-              <div><strong>Unggah atau Jepret Foto Las</strong><span>Klik tombol, seret file, atau tekan Ctrl+V</span></div>
+          <!-- Active Inspection Post Card -->
+          <article class="card">
+            <div class="post-head">
+              <div class="post-author">
+                <span class="avatar" id="post-avatar">AI</span>
+                <div>
+                  <strong id="post-author-name">SnapQC Scanner</strong>
+                  <small id="scene-title">Contoh 1 · Fillet Weld Campuran</small>
+                </div>
+              </div>
+              <span class="badge b-warn" id="post-verdict-pill">Perlu Periksa</span>
             </div>
-            <div class="step-pill">
-              <span class="step-num">2</span>
-              <div><strong>AI Tandai Area Las Otomatis</strong><span>Membedakan las rapi, perlu dicek, &amp; cacat kecil</span></div>
+
+            <div class="stage" id="drop-zone">
+              <canvas id="inspect-canvas" width="960" height="720"></canvas>
+              <video id="live-video" class="hidden" autoplay playsinline muted></video>
+              <div class="scan-beam"></div>
+              <div class="stage-hud-top">
+                <span class="hud-chip" id="hud-mode">SnapQC AI</span>
+                <span class="hud-chip" id="hud-count">Memuat…</span>
+              </div>
+              <div class="stage-tools" id="stage-tools">
+                <button type="button" id="btn-zoom-out" title="Perkecil">−</button>
+                <button type="button" id="btn-zoom-reset" title="Reset Zoom">100%</button>
+                <button type="button" id="btn-zoom-in" title="Perbesar">+</button>
+                <button type="button" id="btn-toggle-boxes" class="active" title="Tampilkan / sembunyikan kotak AI">Kotak AI</button>
+                <button type="button" id="btn-rerun-live" title="Scan ulang langsung via ONNX">Scan Ulang</button>
+              </div>
+              <div class="stage-tools hidden" id="cam-tools">
+                <button type="button" id="btn-capture" class="active">Jepret &amp; Cek AI</button>
+                <button type="button" id="btn-stop-cam">Tutup Kamera</button>
+              </div>
             </div>
-            <div class="step-pill">
-              <span class="step-num">3</span>
-              <div><strong>Konfirmasi &amp; Cetak Laporan</strong><span>Simpan ke riwayat akun Anda atau cetak PDF A4</span></div>
+
+            <div class="post-actions">
+              <div class="action-group">
+                <button type="button" class="act-btn primary" id="btn-open-report">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Simpan &amp; Laporan QC
+                </button>
+                <button type="button" class="act-btn" id="btn-print-qc">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  Cetak PDF
+                </button>
+                <button type="button" class="act-btn" id="btn-download-png">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  PNG
+                </button>
+              </div>
+              <button type="button" class="act-btn" id="btn-toggle-yolo" style="color:var(--muted);font-size:12px">
+                &lt;/&gt; Label YOLO
+              </button>
             </div>
-          </div>
 
-          <div class="grid-inspect">
-            <div class="stack">
-              <div class="card">
-                <div class="card-head">
-                  <h2 id="scene-title">Contoh 1 · Fillet Weld Campuran</h2>
-                  <span class="badge b-info" id="model-badge">AI Deteksi Las</span>
-                </div>
+            <div class="post-body">
+              <div id="ai-summary" class="verdict-line neutral">Memuat ringkasan hasil deteksi…</div>
+              <div class="finding-rows" id="detection-list"></div>
 
-                <div class="sample-tabs" role="tablist" aria-label="Pilih foto contoh">
-                  <span class="sample-label">Coba contoh:</span>
-                  <button class="chip active" type="button" data-sample="test-05">1 · Campuran</button>
-                  <button class="chip" type="button" data-sample="test-04">2 · Las Kasar + Cacat</button>
-                  <button class="chip" type="button" data-sample="test-06">3 · Cacat Permukaan</button>
-                  <button class="chip" type="button" data-sample="test-03">4 · Las Bermasalah</button>
-                </div>
-
-                <div class="viewport" id="drop-zone">
-                  <canvas id="inspect-canvas" width="960" height="720"></canvas>
-                  <video id="live-video" class="hidden" autoplay playsinline muted></video>
-                  <div class="viewport-hud">
-                    <span class="hud-pill" id="hud-mode">SnapQC AI</span>
-                    <span class="hud-pill" id="hud-count">Memuat…</span>
-                  </div>
-                </div>
-                <div class="drop-hint">
-                  <span>Tip: Seret foto las ke kotak di atas atau tempel langsung dengan <strong>Ctrl+V</strong>.</span>
-                  <button class="btn btn-sm" type="button" id="btn-rerun-live">Scan Ulang AI</button>
-                </div>
-
-                <div class="controls-bar">
-                  <div class="preset-group">
-                    <span>Sensitivitas:</span>
-                    <button type="button" class="preset-btn" data-preset="30">Teliti</button>
-                    <button type="button" class="preset-btn active" data-preset="45">Seimbang</button>
-                    <button type="button" class="preset-btn" data-preset="65">Ketat</button>
-                    <input id="conf-slider" type="range" min="25" max="90" value="45" step="5" style="width:90px" aria-label="Sensitivitas AI" />
-                    <strong id="conf-label">45%</strong>
-                  </div>
-                  <label class="toggle-wrap" title="Memeriksa foto per bagian kecil agar lubang/porositas mikro lebih mudah tertangkap">
-                    <input id="tile-toggle" type="checkbox" />
-                    Scan Lebih Teliti (Cacat Kecil)
-                  </label>
+              <div class="yolo-drawer hidden" id="yolo-drawer">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                  <strong style="font-size:12.5px">Label Format YOLO (Active Learning)</strong>
                   <div style="display:flex;gap:6px">
-                    <button class="btn btn-primary hidden" type="button" id="btn-capture">Jepret &amp; Cek AI</button>
-                    <button class="btn hidden" type="button" id="btn-stop-cam">Tutup Kamera</button>
-                  </div>
-                </div>
-
-                <div class="notice">
-                  <strong>Catatan QC:</strong> AI SnapQC adalah alat bantu skrining visual cepat. Keputusan akhir, pengukuran <em>welding gauge</em>, dan uji NDT tetap dilakukan oleh inspector berwenang.
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="card-head">
-                  <h2>Buat &amp; Simpan Laporan QC (Opsional)</h2>
-                  <span class="badge b-info" id="report-no-badge">Draft Baru</span>
-                </div>
-                <div class="form-grid">
-                  <div class="field">
-                    <label for="f-vessel">Nama Kapal / Proyek</label>
-                    <input id="f-vessel" type="text" placeholder="Contoh: TB Samudra Nusantara 24" />
-                  </div>
-                  <div class="field">
-                    <label for="f-block">Lokasi / Blok / Frame</label>
-                    <input id="f-block" type="text" placeholder="Contoh: Bottom Shell Fr. 28–34" />
-                  </div>
-                  <div class="field">
-                    <label for="f-joint">Nomor Joint / Sambungan</label>
-                    <input id="f-joint" type="text" placeholder="Contoh: W-B04-12" />
-                  </div>
-                  <div class="field">
-                    <label for="f-wps">WPS / Prosedur Las</label>
-                    <input id="f-wps" type="text" placeholder="Contoh: WPS-SMAW-04" />
-                  </div>
-                  <div class="field">
-                    <label for="f-welder">Welder ID</label>
-                    <input id="f-welder" type="text" placeholder="Contoh: WLD-108" />
-                  </div>
-                  <div class="field">
-                    <label for="f-standard">Standar Acuan</label>
-                    <select id="f-standard">
-                      <option value="ISO 5817 Level B">ISO 5817 Level B</option>
-                      <option value="ISO 5817 Level C">ISO 5817 Level C</option>
-                      <option value="AWS D1.1 Structural">AWS D1.1 Structural</option>
-                      <option value="BKI Hull Construction">BKI Hull Construction</option>
-                      <option value="ASME Section IX">ASME Section IX</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="f-inspector">Nama Inspector</label>
-                    <input id="f-inspector" type="text" placeholder="Nama pemeriksa" />
-                  </div>
-                  <div class="field">
-                    <label for="f-verdict">Keputusan Akhir</label>
-                    <select id="f-verdict">
-                      <option value="HOLD">HOLD — Perlu Cek Gauge / NDT</option>
-                      <option value="REPAIR">REPAIR — Perlu Perbaikan Las</option>
-                      <option value="ACCEPT">ACCEPT — Memenuhi Kriteria Visual</option>
-                    </select>
-                  </div>
-                  <div class="field full">
-                    <label for="f-notes">Catatan Lapangan</label>
-                    <textarea id="f-notes" rows="2" placeholder="Catatan singkat hasil pemeriksaan lapangan..."></textarea>
-                  </div>
-                </div>
-                <div class="controls-bar">
-                  <span class="save-status" id="save-status"></span>
-                  <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="btn btn-primary" type="button" id="btn-save-db">Simpan Laporan</button>
-                    <button class="btn btn-dark" type="button" id="btn-print-qc-2">Cetak / Simpan PDF</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="stack">
-              <div class="card">
-                <div class="card-head">
-                  <h2>Hasil Pemeriksaan AI</h2>
-                  <span class="badge b-ok" id="verified-badge">0 dikonfirmasi</span>
-                </div>
-                <div id="ai-summary" class="summary-box sum-neutral">Memuat ringkasan hasil deteksi…</div>
-                <p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)">
-                  Klik <strong>Benar ✓</strong> jika kotak AI tepat, atau <strong>Bukan Cacat ×</strong> jika deteksi meleset.
-                </p>
-                <div class="detection-list" id="detection-list"></div>
-              </div>
-
-              <div class="card">
-                <details class="tech-box">
-                  <summary>
-                    <span>Detail Teknis AI &amp; Ekspor Label YOLO</span>
-                    <span class="badge b-info">Opsional</span>
-                  </summary>
-                  <p style="margin:10px 0 8px;font-size:12.5px;color:var(--ink-soft)">
-                    Untuk tim AI/engineer: kotak yang Anda tandai <strong>Benar ✓</strong> otomatis diubah menjadi label format YOLO (<code>class_id cx cy w h</code>) untuk pelatihan ulang model.
-                  </p>
-                  <div style="display:flex;gap:6px;margin-bottom:6px">
-                    <button class="btn btn-sm" type="button" id="btn-copy-yolo">Salin Label</button>
+                    <button class="btn btn-sm" type="button" id="btn-copy-yolo">Salin</button>
                     <button class="btn btn-sm" type="button" id="btn-dl-yolo">Unduh .txt</button>
                   </div>
-                  <pre class="yolo-box" id="yolo-preview"># Klik "Benar ✓" pada minimal satu temuan untuk melihat label YOLO</pre>
-                </details>
+                </div>
+                <pre class="yolo-box" id="yolo-preview"># Klik "✓ Benar" pada temuan untuk menghasilkan label YOLO</pre>
               </div>
             </div>
-          </div>
-        </section>
+          </article>
 
-        <section id="tab-riwayat" class="hidden">
-          <div class="hero-head">
-            <div>
-              <h1>Riwayat Laporan QC</h1>
-              <p id="history-subtitle">Seluruh laporan inspeksi yang tersimpan.</p>
+          <!-- Community / Recent Inspection Feed -->
+          <div class="section-label">
+            <span>Feed Inspeksi Terbaru</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-feed">Segarkan</button>
+          </div>
+          <div id="community-feed" class="feed-col"></div>
+        </div>
+
+        <!-- Sticky Right Rail (like X / Instagram Web) -->
+        <aside class="side-col">
+          <div class="card side-card" id="side-auth-card">
+            <h3 id="side-auth-title">Gratis untuk Siapa Saja</h3>
+            <p id="side-auth-desc">Langsung unggah atau tempel foto las tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi &amp; bisa diakses kapan saja.</p>
+            <a id="side-signin-btn" class="btn btn-primary hidden" style="width:100%" href="/api/auth/oidc/start">Sign in to SnapQC</a>
+            <div id="side-signed-actions" class="hidden" style="display:flex;gap:8px">
+              <button type="button" class="btn btn-primary btn-sm" style="flex:1" id="btn-goto-riwayat">Riwayat Saya</button>
+              <button type="button" class="btn btn-sm" id="side-signout-btn">Keluar</button>
             </div>
+          </div>
+
+          <div class="card side-card">
+            <h3>Panduan Warna Deteksi</h3>
+            <div class="legend">
+              <div class="legend-item"><span class="f-dot" style="background:#ef4444"></span><span><strong>Las Perlu Dicek</strong> — profil las kasar / tidak rata</span></div>
+              <div class="legend-item"><span class="f-dot" style="background:#f59e0b"></span><span><strong>Titik Cacat Kecil</strong> — indikasi porositas / slag</span></div>
+              <div class="legend-item"><span class="f-dot" style="background:#22d3ee"></span><span><strong>Las Rapi</strong> — jalur las tampak baik secara visual</span></div>
+            </div>
+            <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">
+              Klik kotak di foto atau klik baris temuan untuk menyorot area secara langsung.
+            </p>
+          </div>
+
+          <div class="card side-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <h3 style="margin:0">Status Mesin AI</h3>
+              <span class="badge b-info" id="side-version">v0.5.0</span>
+            </div>
+            <p id="engine-banner" style="margin-bottom:10px">Menyiapkan model ONNX…</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn" type="button" id="btn-refresh-db">Muat Ulang</button>
-              <a class="btn" href="/api/inspections.csv">Unduh Excel / CSV</a>
-              <a class="btn btn-primary" href="/api/active-learning/export">Unduh Dataset AI (JSON)</a>
+              <button type="button" class="btn btn-sm" data-tab-jump="model">Lihat Akurasi</button>
+              <a class="btn btn-sm" href="/portfolio">Portofolio PDF</a>
             </div>
           </div>
+        </aside>
+      </section>
 
-          <div class="scope-banner" id="scope-banner">
-            <span id="scope-banner-text">Anda sedang di <strong>Mode Tamu</strong> — siapa saja bisa langsung mencoba. Masuk akun agar riwayat laporan Anda tersimpan terpisah secara pribadi.</span>
-            <a id="scope-signin-btn" class="btn btn-primary btn-sm hidden" href="/api/auth/oidc/start">Sign in to SnapQC</a>
+      <!-- TAB 2: RIWAYAT LAPORAN -->
+      <section id="tab-riwayat" class="hidden">
+        <div class="page-head">
+          <div>
+            <h1>Riwayat Laporan QC</h1>
+            <p id="history-subtitle">Laporan yang tersimpan permanen di database.</p>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" type="button" id="btn-refresh-db">Muat Ulang</button>
+            <a class="btn btn-sm" href="/api/inspections.csv">Unduh CSV</a>
+            <a class="btn btn-primary btn-sm" href="/api/active-learning/export">Dataset AI (JSON)</a>
+          </div>
+        </div>
 
-          <div class="kpi-row">
-            <div class="kpi"><strong id="db-kpi-count">0</strong><span>Laporan Tersimpan</span><small>Database permanen</small></div>
-            <div class="kpi"><strong id="db-kpi-labels">0</strong><span>Temuan Terkonfirmasi</span><small>Siap ekspor label AI</small></div>
-            <div class="kpi"><strong id="db-kpi-repair">0</strong><span>Perlu Repair</span><small>Status REPAIR</small></div>
-            <div class="kpi"><strong id="db-kpi-accept">0</strong><span>Lolos Visual</span><small>Status ACCEPT</small></div>
-          </div>
+        <div class="kpi-row">
+          <div class="kpi"><strong id="db-kpi-count">0</strong><span>Laporan Tersimpan</span><small id="db-kpi-scope">Mode Tamu</small></div>
+          <div class="kpi"><strong id="db-kpi-labels">0</strong><span>Temuan Benar</span><small>Siap ekspor YOLO</small></div>
+          <div class="kpi"><strong id="db-kpi-repair">0</strong><span>Perlu Repair</span><small>Status REPAIR</small></div>
+          <div class="kpi"><strong id="db-kpi-accept">0</strong><span>Lolos Visual</span><small>Status ACCEPT</small></div>
+        </div>
 
-          <div class="card">
-            <table>
-              <thead>
-                <tr><th>No. Laporan &amp; Waktu</th><th>Kapal / Lokasi / Joint</th><th>Standar &amp; Inspector</th><th>Keputusan</th><th>Temuan</th><th>Aksi</th></tr>
-              </thead>
-              <tbody id="history-body">
-                <tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <div class="card">
+          <table>
+            <thead>
+              <tr><th>No. Laporan</th><th>Kapal / Lokasi / Joint</th><th>Inspector &amp; Standar</th><th>Keputusan</th><th>Temuan</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="history-body">
+              <tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-        <section id="tab-model" class="hidden">
-          <div class="hero-head">
-            <div>
-              <h1 id="eval-title">Performa Model AI SnapQC</h1>
-              <p>Hasil pengujian jujur pada 126 foto las baru yang belum pernah dilihat model saat pelatihan.</p>
-            </div>
+      <!-- TAB 3: PERFORMA AI -->
+      <section id="tab-model" class="hidden">
+        <div class="page-head">
+          <div>
+            <h1>Performa Model AI SnapQC</h1>
+            <p>Evaluasi jujur pada 126 foto las uji terpisah (held-out test set).</p>
           </div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi"><strong>80,2%</strong><span>Las Bermasalah</span><small>AP@50 Bad Weld</small></div>
+          <div class="kpi"><strong>71,5%</strong><span>Las Rapi</span><small>AP@50 Good Weld</small></div>
+          <div class="kpi"><strong>59,7%</strong><span>Total mAP@50</span><small>Val 64,8% · Test 59,7%</small></div>
+          <div class="kpi"><strong>10,13 MB</strong><span>Model Ringan</span><small>Cepat di CPU + Scan Teliti</small></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-pad" style="padding-bottom:6px"><h2 style="margin:0;font-size:16px">Champion (v1) vs Eksperimen (v2)</h2></div>
+          <table>
+            <thead>
+              <tr><th>Model</th><th>Resolusi</th><th>Bad Weld</th><th>Good Weld</th><th>Cacat Kecil</th><th>mAP@50 Uji</th><th>Ukuran</th></tr>
+            </thead>
+            <tbody id="eval-compare-body">
+              <tr><td colspan="7" style="color:var(--muted)">Memuat data evaluasi…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="two-col">
+          <div class="card card-pad">
+            <h3 style="margin:0 0 10px">Confusion Matrix</h3>
+            <img class="plot-img" src="/models/confusion_matrix_normalized.png" alt="Confusion matrix SnapQC" />
+          </div>
+          <div class="card card-pad">
+            <h3 style="margin:0 0 10px">Kurva Pelatihan</h3>
+            <img class="plot-img" src="/models/results.png" alt="Kurva pelatihan SnapQC" />
+          </div>
+        </div>
+      </section>
 
-          <div class="kpi-row" id="eval-kpis">
-            <div class="kpi"><strong>80,2%</strong><span>Deteksi Las Bermasalah</span><small>AP@50 Bad Weld (126 foto)</small></div>
-            <div class="kpi"><strong>71,5%</strong><span>Deteksi Las Rapi</span><small>AP@50 Good Weld (126 foto)</small></div>
-            <div class="kpi"><strong>59,7%</strong><span>Skor Total mAP@50</span><small>Validasi 64,8% · Uji 59,7%</small></div>
-            <div class="kpi"><strong>10,13 MB</strong><span>Ukuran Model Ringan</span><small>Cepat di CPU + Scan Teliti</small></div>
+      <!-- TAB 4: WHAT'S NEW -->
+      <section id="tab-whats-new" class="hidden">
+        <div class="page-head">
+          <div>
+            <h1>What's New</h1>
+            <p>Pembaruan terbaru SnapQC.</p>
           </div>
-
-          <div class="card" style="margin-bottom:16px">
-            <h2>Perbandingan Model Champion (v1) vs Eksperimen (v2)</h2>
-            <table>
-              <thead>
-                <tr><th>Versi &amp; Arsitektur</th><th>Resolusi</th><th>Bad Weld</th><th>Good Weld</th><th>Cacat Kecil</th><th>mAP@50 Uji</th><th>Ukuran</th></tr>
-              </thead>
-              <tbody id="eval-compare-body">
-                <tr><td colspan="7" style="color:var(--muted)">Memuat data evaluasi…</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="two-col">
-            <div class="card">
-              <h2>Confusion Matrix (Ternormalisasi)</h2>
-              <img class="plot-img" src="/models/confusion_matrix_normalized.png" alt="Confusion matrix SnapQC" />
-            </div>
-            <div class="card">
-              <h2>Grafik Pelatihan Model</h2>
-              <img class="plot-img" src="/models/results.png" alt="Grafik pelatihan SnapQC" />
-            </div>
-          </div>
-        </section>
-
-        <section id="tab-whats-new" class="hidden">
-          <div class="hero-head">
-            <div>
-              <h1>What's New</h1>
-              <p>Catatan pembaruan terbaru SnapQC.</p>
-            </div>
-          </div>
-          <div id="releases-container" style="display:flex;flex-direction:column;gap:12px"></div>
-        </section>
-      </main>
+        </div>
+        <div id="releases-container" class="feed-col"></div>
+      </section>
     </div>
 
+    <!-- Mobile App Bottom Navigation -->
+    <nav class="bottom-bar" aria-label="Navigasi bawah mobile">
+      <button type="button" data-tab="kamera" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        Beranda
+      </button>
+      <button type="button" id="bottom-upload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
+        Cek Las
+      </button>
+      <button type="button" data-tab="riwayat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Riwayat
+      </button>
+      <button type="button" data-tab="whats-new">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
+        What's New
+      </button>
+    </nav>
+
+    <!-- Sleek QC Report & Save Modal -->
+    <div class="modal-backdrop hidden" id="report-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 id="modal-title">Simpan &amp; Cetak Laporan QC</h2>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-close-modal">Tutup ✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="field"><label for="f-vessel">Nama Kapal / Proyek</label><input id="f-vessel" type="text" placeholder="Contoh: TB Samudra Nusantara 24" /></div>
+            <div class="field"><label for="f-block">Blok / Frame / Lokasi</label><input id="f-block" type="text" placeholder="Contoh: Bottom Shell Fr. 28–34" /></div>
+            <div class="field"><label for="f-joint">Nomor Joint</label><input id="f-joint" type="text" placeholder="Contoh: W-B04-12" /></div>
+            <div class="field"><label for="f-wps">WPS / Prosedur Las</label><input id="f-wps" type="text" placeholder="Contoh: WPS-SMAW-04" /></div>
+            <div class="field"><label for="f-welder">Welder ID</label><input id="f-welder" type="text" placeholder="Contoh: WLD-108" /></div>
+            <div class="field">
+              <label for="f-standard">Standar Acuan</label>
+              <select id="f-standard">
+                <option value="ISO 5817 Level B">ISO 5817 Level B</option>
+                <option value="ISO 5817 Level C">ISO 5817 Level C</option>
+                <option value="AWS D1.1 Structural">AWS D1.1 Structural</option>
+                <option value="BKI Hull Construction">BKI Hull Construction</option>
+                <option value="ASME Section IX">ASME Section IX</option>
+              </select>
+            </div>
+            <div class="field"><label for="f-inspector">Nama Inspector</label><input id="f-inspector" type="text" placeholder="Nama pemeriksa" /></div>
+            <div class="field">
+              <label for="f-verdict">Keputusan Akhir</label>
+              <select id="f-verdict">
+                <option value="HOLD">HOLD — Perlu Cek Gauge / NDT</option>
+                <option value="REPAIR">REPAIR — Perlu Perbaikan Las</option>
+                <option value="ACCEPT">ACCEPT — Memenuhi Kriteria Visual</option>
+              </select>
+            </div>
+            <div class="field full"><label for="f-notes">Catatan Lapangan</label><textarea id="f-notes" rows="2" placeholder="Catatan singkat hasil pemeriksaan..."></textarea></div>
+            <div class="field full" id="public-toggle-wrap">
+              <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+                <input id="f-public" type="checkbox" style="width:auto" />
+                <span>Bagikan ke Feed Publik (jika tidak dicentang, hanya terlihat di Riwayat Pribadi akun Anda)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span style="font-size:12px;color:var(--muted)" id="report-no-badge">Draft Baru</span>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="btn" id="btn-modal-print">Cetak PDF A4</button>
+            <button type="button" class="btn btn-primary" id="btn-save-db">Simpan Laporan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formal Print / PDF Sheet -->
     <section id="print-report" aria-hidden="true">
       <div class="pr-head">
         <div class="pr-title">
@@ -642,15 +823,20 @@
       </div>
     </section>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <script src="/whats-new.js"></script>
     <script>
       (function () {
         "use strict";
-        const DRAFT_KEY = "snapqc_draft_v040";
+        const DRAFT_KEY = "snapqc_draft_v050";
         const REAL_SAMPLES = {
           "test-05": {
-            title: "Contoh 1 · Fillet Weld Campuran",
+            title: "Fillet Weld Campuran · Contoh Uji Nyata",
+            vessel: "TB Samudra Nusantara 24",
+            joint: "W-F05-01",
             image: "/samples/test-05.jpg",
+            predImage: "/samples/test-05-pred.jpg",
             detections: [
               { id: "s5-1", clsId: 0, label: "Bad Weld", conf: 0.8931, box: [0.4345, 0.38, 0.1488, 0.1098] },
               { id: "s5-2", clsId: 1, label: "Good Weld", conf: 0.8626, box: [0.2701, 0.3301, 0.122, 0.0927] },
@@ -659,8 +845,11 @@
             ],
           },
           "test-04": {
-            title: "Contoh 2 · Las Kasar + 2 Titik Cacat",
+            title: "Sambungan Las Kasar + 2 Titik Cacat",
+            vessel: "MV Bahari Jaya",
+            joint: "W-B04-12",
             image: "/samples/test-04.jpg",
+            predImage: "/samples/test-04-pred.jpg",
             detections: [
               { id: "s4-1", clsId: 0, label: "Bad Weld", conf: 0.8277, box: [0.4202, 0.3599, 0.2934, 0.2524] },
               { id: "s4-2", clsId: 2, label: "Defect", conf: 0.7885, box: [0.4499, 0.5102, 0.0734, 0.0794] },
@@ -668,16 +857,22 @@
             ],
           },
           "test-06": {
-            title: "Contoh 3 · Cacat Permukaan Las",
+            title: "Cacat Permukaan & Profil Las",
+            vessel: "SPOB Nusantara 08",
+            joint: "W-S06-09",
             image: "/samples/test-06.jpg",
+            predImage: "/samples/test-06-pred.jpg",
             detections: [
               { id: "s6-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.4457, 0.3776, 0.2057, 0.1999] },
               { id: "s6-2", clsId: 2, label: "Defect", conf: 0.5999, box: [0.4628, 0.4947, 0.0535, 0.0593] },
             ],
           },
           "test-03": {
-            title: "Contoh 4 · Jalur Las Bermasalah",
+            title: "Jalur Las Bermasalah",
+            vessel: "BG Kalimantan 19",
+            joint: "W-K03-04",
             image: "/samples/test-03.jpg",
+            predImage: "/samples/test-03-pred.jpg",
             detections: [
               { id: "s3-1", clsId: 0, label: "Bad Weld", conf: 0.7782, box: [0.2698, 0.361, 0.3169, 0.1868] },
             ],
@@ -685,24 +880,9 @@
         };
 
         const CLASS_INFO = {
-          "Bad Weld": {
-            friendly: "Las Perlu Dicek",
-            badge: "b-high",
-            color: "#ef4444",
-            desc: "Jalur las terlihat kurang rata atau bermasalah — sebaiknya dicek ulang dengan welding gauge.",
-          },
-          "Defect": {
-            friendly: "Titik Cacat Kecil",
-            badge: "b-med",
-            color: "#f59e0b",
-            desc: "Indikasi cacat lokal kecil (seperti lubang porositas / slag) — disarankan pemeriksaan lebih dekat atau NDT.",
-          },
-          "Good Weld": {
-            friendly: "Las Terlihat Rapi",
-            badge: "b-ok",
-            color: "#22d3ee",
-            desc: "Profil jalur las terlihat rapi secara visual — tetap pastikan sesuai kriteria standar proyek.",
-          },
+          "Bad Weld": { friendly: "Las Perlu Dicek", color: "#ef4444", desc: "Profil jalur las kasar atau kurang rata." },
+          "Defect": { friendly: "Titik Cacat Kecil", color: "#f59e0b", desc: "Indikasi porositas / slag lokal." },
+          "Good Weld": { friendly: "Las Rapi", color: "#22d3ee", desc: "Jalur las terlihat rapi secara visual." },
         };
 
         let serverLive = false;
@@ -717,24 +897,40 @@
         let currentTileUsed = false;
         let currentReportNo = "";
         let threshold = 0.45;
+        let zoomLevel = 1.0;
+        let showBoxes = true;
+        let selectedId = null;
+        let lastBoxRects = [];
         let stream = null;
+        let toastTimer = null;
         const decisions = new Map();
 
         const canvas = document.getElementById("inspect-canvas");
         const ctx = canvas.getContext("2d");
         const video = document.getElementById("live-video");
-        const rail = document.getElementById("rail");
-        const menuToggle = document.getElementById("menu-toggle");
+        const stage = document.getElementById("drop-zone");
+        const composer = document.getElementById("composer-drop");
+        const fileInput = document.getElementById("file-upload");
         const tileToggle = document.getElementById("tile-toggle");
-        const dropZone = document.getElementById("drop-zone");
+        const mobileDrawer = document.getElementById("mobile-drawer");
+        const menuToggle = document.getElementById("menu-toggle");
+        const modal = document.getElementById("report-modal");
 
         function escHtml(s) {
           return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
         }
 
+        function showToast(msg) {
+          const el = document.getElementById("toast");
+          el.textContent = msg;
+          el.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+        }
+
         menuToggle.addEventListener("click", () => {
-          const open = !rail.classList.contains("open");
-          rail.classList.toggle("open", open);
+          const open = !mobileDrawer.classList.contains("open");
+          mobileDrawer.classList.toggle("open", open);
           menuToggle.setAttribute("aria-expanded", String(open));
         });
 
@@ -746,65 +942,82 @@
           ["kamera", "riwayat", "model", "whats-new"].forEach((id) => {
             document.getElementById("tab-" + id).classList.toggle("hidden", id !== tab);
           });
-          rail.classList.remove("open");
+          mobileDrawer.classList.remove("open");
           menuToggle.setAttribute("aria-expanded", "false");
           if (tab === "riwayat") loadHistoryFromServer();
           if (tab === "model") loadMetricsFromServer();
+          if (location.protocol !== "file:") {
+            const targetPath = tab === "whats-new" ? "/whats-new" : "/";
+            if (location.pathname !== targetPath) history.replaceState(null, "", targetPath);
+          }
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
         document.querySelectorAll("[data-tab]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const tab = btn.dataset.tab;
-            activateTab(tab);
-            if (location.protocol !== "file:") {
-              const targetPath = tab === "whats-new" ? "/whats-new" : "/";
-              if (location.pathname !== targetPath) history.replaceState(null, "", targetPath);
-            }
-          });
+          btn.addEventListener("click", () => activateTab(btn.dataset.tab));
         });
+        document.querySelectorAll("[data-tab-jump]").forEach((btn) => {
+          btn.addEventListener("click", () => activateTab(btn.dataset.tabJump));
+        });
+        document.getElementById("btn-goto-riwayat").onclick = () => activateTab("riwayat");
 
         function renderAuthUI() {
-          const btnIn = document.getElementById("btn-signin");
-          const guestTag = document.getElementById("guest-tag");
-          const signedBox = document.getElementById("user-signed-in");
-          const scopeText = document.getElementById("scope-banner-text");
-          const scopeBtn = document.getElementById("scope-signin-btn");
+          const navIn = document.getElementById("nav-signin");
+          const navUser = document.getElementById("nav-user");
+          const sideBtn = document.getElementById("side-signin-btn");
+          const sideSigned = document.getElementById("side-signed-actions");
+          const sideTitle = document.getElementById("side-auth-title");
+          const sideDesc = document.getElementById("side-auth-desc");
+          const pubWrap = document.getElementById("public-toggle-wrap");
 
           if (authState.authenticated && authState.user) {
             const nm = authState.user.name || authState.user.email || "Pengguna";
-            guestTag.classList.add("hidden");
-            btnIn.classList.add("hidden");
-            signedBox.classList.remove("hidden");
-            document.getElementById("user-name").textContent = nm;
-            document.getElementById("user-avatar").textContent = nm.trim().charAt(0).toUpperCase() || "U";
+            const init = nm.trim().charAt(0).toUpperCase() || "U";
+            navIn.classList.add("hidden");
+            navUser.classList.remove("hidden");
+            document.getElementById("nav-username").textContent = nm;
+            document.getElementById("nav-avatar").textContent = init;
+            document.getElementById("composer-avatar").textContent = init;
+            document.getElementById("post-avatar").textContent = init;
+            document.getElementById("post-author-name").textContent = nm;
+
+            sideTitle.textContent = `Halo, ${nm}`;
+            sideDesc.textContent = "Laporan QC yang Anda simpan tersimpan aman di riwayat pribadi akun Anda.";
+            sideBtn.classList.add("hidden");
+            sideSigned.classList.remove("hidden");
+            pubWrap.classList.remove("hidden");
             const inspInput = document.getElementById("f-inspector");
             if (!inspInput.value.trim()) inspInput.value = nm;
-            scopeText.innerHTML = `Masuk sebagai <strong>${escHtml(nm)}</strong> — seluruh laporan QC yang Anda simpan bersifat pribadi di akun Anda.`;
-            scopeBtn.classList.add("hidden");
           } else {
-            signedBox.classList.add("hidden");
-            guestTag.classList.remove("hidden");
+            navUser.classList.add("hidden");
+            sideSigned.classList.add("hidden");
+            document.getElementById("composer-avatar").textContent = "S";
+            document.getElementById("post-avatar").textContent = "AI";
+            document.getElementById("post-author-name").textContent = "SnapQC Scanner";
+            sideTitle.textContent = "Gratis untuk Siapa Saja";
+            sideDesc.textContent = "Langsung unggah atau tempel foto las tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi.";
+            pubWrap.classList.add("hidden");
             if (authState.loginUrl) {
-              btnIn.href = authState.loginUrl;
-              btnIn.classList.remove("hidden");
-              scopeBtn.href = authState.loginUrl;
-              scopeBtn.classList.remove("hidden");
+              navIn.href = authState.loginUrl;
+              navIn.classList.remove("hidden");
+              sideBtn.href = authState.loginUrl;
+              sideBtn.classList.remove("hidden");
             } else {
-              btnIn.classList.add("hidden");
-              scopeBtn.classList.add("hidden");
+              navIn.classList.add("hidden");
+              sideBtn.classList.add("hidden");
             }
-            scopeText.innerHTML = "Anda sedang di <strong>Mode Tamu (Gratis)</strong> — langsung bisa digunakan siapa saja. Masuk akun jika ingin menyimpan riwayat laporan pribadi Anda.";
           }
         }
 
-        document.getElementById("btn-signout").onclick = async () => {
-          try {
-            await fetch("/api/auth/logout", { method: "POST" });
-          } catch {}
+        async function doLogout() {
+          try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
           authState = { ...authState, authenticated: false, user: null };
           renderAuthUI();
-          loadHistoryFromServer();
-        };
+          showToast("Anda telah keluar dari akun.");
+          loadCommunityFeed();
+        }
+        document.getElementById("nav-signout").onclick = doLogout;
+        document.getElementById("side-signout-btn").onclick = doLogout;
 
         async function checkServer() {
           const banner = document.getElementById("engine-banner");
@@ -817,21 +1030,15 @@
             const data = await hRes.json();
             authState = await aRes.json();
             renderAuthUI();
-
-            if (data.modelName) {
-              activeModelName = data.modelName;
-              document.getElementById("model-badge").textContent = "AI Siap · 640px";
-              document.getElementById("rail-model-meta").textContent = `${data.modelFile || "ONNX"} · ${authState.authenticated ? "Akun SSO" : "Terbuka untuk Semua"}`;
-            }
+            if (data.modelName) activeModelName = data.modelName;
+            if (data.version) document.getElementById("side-version").textContent = "v" + data.version;
             if (data.modelLoaded) {
               serverLive = true;
               dot.classList.remove("loading");
-              banner.innerHTML = "<strong>AI Deteksi Las Siap</strong> — unggah atau tempel foto las Anda untuk hasil instan.";
+              banner.textContent = `${activeModelName} aktif (${data.modelInputSize || 640}px) · siap memindai foto baru.`;
             } else if (data.modelLoading) {
-              banner.innerHTML = "<strong>Menyiapkan AI…</strong> Foto contoh sudah bisa dilihat; deteksi foto baru aktif sebentar lagi.";
+              banner.textContent = "Memuat model AI… sebentar lagi siap.";
               setTimeout(checkServer, 2000);
-            } else if (data.modelError) {
-              banner.textContent = "Model AI gagal dimuat: " + String(data.modelError);
             }
           } catch {}
         }
@@ -848,23 +1055,18 @@
               inspector: document.getElementById("f-inspector").value,
               verdict: document.getElementById("f-verdict").value,
               notes: document.getElementById("f-notes").value,
-              decisions: [...decisions.entries()],
             }));
           } catch {}
         }
-
         function restoreDraftLocal() {
           try {
-            const raw = localStorage.getItem(DRAFT_KEY);
-            if (!raw) return;
-            const d = JSON.parse(raw);
+            const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+            if (!d) return;
             ["vessel", "block", "joint", "wps", "welder", "standard", "inspector", "verdict", "notes"].forEach((k) => {
               if (d[k]) document.getElementById("f-" + k).value = d[k];
             });
-            if (Array.isArray(d.decisions)) d.decisions.forEach(([k, v]) => decisions.set(k, v));
           } catch {}
         }
-
         ["f-vessel", "f-block", "f-joint", "f-wps", "f-welder", "f-standard", "f-inspector", "f-verdict", "f-notes"].forEach((id) => {
           document.getElementById(id).addEventListener("input", saveDraftLocal);
         });
@@ -879,126 +1081,169 @@
 
         function drawViewport() {
           const w = canvas.width, h = canvas.height;
-          ctx.fillStyle = "#0a1620";
+          ctx.fillStyle = "#0a1017";
           ctx.fillRect(0, 0, w, h);
+          lastBoxRects = [];
           if (!currentImage) return;
-          const scale = Math.min(w / currentImage.width, h / currentImage.height);
+
+          const baseScale = Math.min(w / currentImage.width, h / currentImage.height);
+          const scale = baseScale * zoomLevel;
           const dw = currentImage.width * scale, dh = currentImage.height * scale;
           const ox = (w - dw) / 2, oy = (h - dh) / 2;
           ctx.drawImage(currentImage, ox, oy, dw, dh);
 
           const list = visibleDetections();
-          const placedLabels = [];
-          const boxCoords = list.map((d) => {
-            const st = decisions.get(d.id)?.status;
-            const [x, y, bw, bh] = d.box;
-            const px = ox + x * dw, py = oy + y * dh, pw = bw * dw, ph = bh * dh;
-            const baseColor = (CLASS_INFO[d.label] || { color: "#22d3ee" }).color;
-            const color = st === "approved" ? "#22c55e" : st === "rejected" ? "#94a3b8" : baseColor;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = st === "rejected" ? 2 : 3.5;
-            if (st === "rejected") ctx.setLineDash([6, 6]);
-            ctx.strokeRect(px, py, pw, ph);
-            ctx.setLineDash([]);
-            return { d, px, py, pw, ph, color };
-          });
+          if (showBoxes) {
+            const placedLabels = [];
+            const coords = list.map((d) => {
+              const st = decisions.get(d.id)?.status;
+              const [x, y, bw, bh] = d.box;
+              const px = ox + x * dw, py = oy + y * dh, pw = bw * dw, ph = bh * dh;
+              const baseColor = (CLASS_INFO[d.label] || { color: "#22d3ee" }).color;
+              const color = st === "approved" ? "#22c55e" : st === "rejected" ? "#94a3b8" : baseColor;
+              const isSel = selectedId === d.id;
 
-          ctx.font = "bold 14px Segoe UI, Arial, sans-serif";
-          boxCoords.forEach(({ d, px, py, pw, ph, color }) => {
-            const tag = `${d.label} ${Math.round(d.conf * 100)}%`;
-            const tw = ctx.measureText(tag).width + 14;
-            const th = 24;
-            const candidates = [
-              { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.max(4, py - th - 2) },
-              { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.min(h - th - 4, py + ph + 3) },
-              { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.max(4, py - th - 2) },
-              { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.min(h - th - 4, py + ph + 3) },
-              { x: Math.min(w - tw - 4, Math.max(4, px + 4)), y: Math.min(h - th - 4, py + 4) },
-            ];
-            let chosen = candidates[0];
-            for (const cand of candidates) {
-              if (!placedLabels.some((p) => rectsOverlap({ x: cand.x, y: cand.y, w: tw, h: th }, p))) {
-                chosen = cand;
-                break;
+              if (selectedId && !isSel) ctx.globalAlpha = 0.45;
+              ctx.strokeStyle = color;
+              ctx.lineWidth = isSel ? 5 : st === "rejected" ? 2 : 3.2;
+              if (st === "rejected") ctx.setLineDash([6, 6]);
+              ctx.strokeRect(px, py, pw, ph);
+              if (isSel) {
+                ctx.fillStyle = color + "24";
+                ctx.fillRect(px, py, pw, ph);
               }
-            }
-            let guard = 0;
-            while (placedLabels.some((p) => rectsOverlap({ x: chosen.x, y: chosen.y, w: tw, h: th }, p)) && guard < 6) {
-              chosen = { x: chosen.x, y: Math.min(h - th - 4, chosen.y + th + 3) };
-              guard++;
-            }
-            placedLabels.push({ x: chosen.x, y: chosen.y, w: tw, h: th });
+              ctx.setLineDash([]);
+              ctx.globalAlpha = 1;
+              lastBoxRects.push({ id: d.id, x: px, y: py, w: pw, h: ph });
+              return { d, px, py, pw, ph, color, isSel };
+            });
 
-            ctx.fillStyle = color;
-            ctx.fillRect(chosen.x, chosen.y, tw, th);
-            ctx.fillStyle = "#0b1720";
-            ctx.fillText(tag, chosen.x + 7, chosen.y + 17);
-          });
+            ctx.font = "bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif";
+            coords.forEach(({ d, px, py, pw, ph, color, isSel }) => {
+              const info = CLASS_INFO[d.label] || { friendly: d.label };
+              const tag = `${info.friendly} ${Math.round(d.conf * 100)}%`;
+              const tw = ctx.measureText(tag).width + 16;
+              const th = 25;
+              const candidates = [
+                { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.max(4, py - th - 3) },
+                { x: Math.min(w - tw - 4, Math.max(4, px)), y: Math.min(h - th - 4, py + ph + 4) },
+                { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.max(4, py - th - 3) },
+                { x: Math.min(w - tw - 4, Math.max(4, px + pw - tw)), y: Math.min(h - th - 4, py + ph + 4) },
+              ];
+              let chosen = candidates[0];
+              for (const cand of candidates) {
+                if (!placedLabels.some((p) => rectsOverlap({ x: cand.x, y: cand.y, w: tw, h: th }, p))) {
+                  chosen = cand;
+                  break;
+                }
+              }
+              let guard = 0;
+              while (placedLabels.some((p) => rectsOverlap({ x: chosen.x, y: chosen.y, w: tw, h: th }, p)) && guard < 6) {
+                chosen = { x: chosen.x, y: Math.min(h - th - 4, chosen.y + th + 3) };
+                guard++;
+              }
+              placedLabels.push({ x: chosen.x, y: chosen.y, w: tw, h: th });
+
+              ctx.globalAlpha = selectedId && !isSel ? 0.5 : 1;
+              ctx.fillStyle = color;
+              ctx.beginPath();
+              ctx.roundRect(chosen.x, chosen.y, tw, th, 6);
+              ctx.fill();
+              ctx.fillStyle = "#0b1720";
+              ctx.fillText(tag, chosen.x + 8, chosen.y + 17);
+              ctx.globalAlpha = 1;
+            });
+          }
 
           const tileTag = currentTileUsed ? " · Scan Teliti" : "";
           document.getElementById("hud-mode").textContent = currentLatency !== null
             ? `Live AI${tileTag} · ${currentLatency} ms`
             : "SnapQC AI";
-          document.getElementById("hud-count").textContent = `${list.length} area terdeteksi`;
+          document.getElementById("hud-count").textContent = `${list.length} area`;
         }
 
-        function renderSummary(list) {
-          const box = document.getElementById("ai-summary");
+        // Click on canvas box to focus finding!
+        canvas.addEventListener("click", (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+          const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+          const hit = lastBoxRects.find((b) => cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h);
+          selectedId = hit ? (selectedId === hit.id ? null : hit.id) : null;
+          renderAll();
+        });
+
+        function renderFindings() {
+          const list = visibleDetections();
           const bad = list.filter((d) => d.label === "Bad Weld").length;
           const def = list.filter((d) => d.label === "Defect").length;
           const good = list.filter((d) => d.label === "Good Weld").length;
 
+          const sumEl = document.getElementById("ai-summary");
+          const pillEl = document.getElementById("post-verdict-pill");
           if (!list.length) {
-            box.className = "summary-box sum-neutral";
-            box.innerHTML = "<strong>Belum ada area yang ditandai</strong>Coba ubah sensitivitas ke <em>Teliti</em> atau aktifkan <em>Scan Lebih Teliti</em>.";
-            return;
-          }
-          if (bad > 0 || def > 0) {
-            box.className = "summary-box sum-warn";
+            sumEl.className = "verdict-line neutral";
+            sumEl.textContent = "Belum ada area yang ditandai. Coba pilih sensitivitas Teliti atau aktifkan Scan Teliti.";
+            pillEl.className = "badge b-info";
+            pillEl.textContent = "Tidak Ada Temuan";
+          } else if (bad > 0 || def > 0) {
+            sumEl.className = "verdict-line warn";
             const parts = [];
             if (bad) parts.push(`${bad} jalur las perlu dicek`);
             if (def) parts.push(`${def} titik cacat kecil`);
             if (good) parts.push(`${good} jalur las rapi`);
-            box.innerHTML = `<strong>Perlu Pemeriksaan Lanjut</strong>AI mendeteksi ${parts.join(", ")}. Disarankan cek ulang dengan welding gauge atau NDT.`;
-            return;
+            sumEl.innerHTML = `<strong>Perlu Pemeriksaan Lanjut:</strong> ${parts.join(", ")}. Verifikasi dengan gauge atau NDT sebelum diterima.`;
+            pillEl.className = bad ? "badge b-high" : "badge b-warn";
+            pillEl.textContent = "Perlu Periksa";
+          } else {
+            sumEl.className = "verdict-line ok";
+            sumEl.innerHTML = `<strong>Terlihat Rapi:</strong> ${good} jalur las tampak rapi secara visual tanpa indikasi cacat mencolok.`;
+            pillEl.className = "badge b-ok";
+            pillEl.textContent = "Terlihat Rapi";
           }
-          box.className = "summary-box sum-ok";
-          box.innerHTML = `<strong>Terlihat Rapi Secara Visual</strong>AI menemukan ${good} jalur las rapi tanpa indikasi cacat mencolok pada foto ini.`;
-        }
 
-        function renderDetections() {
           const listEl = document.getElementById("detection-list");
-          const list = visibleDetections();
-          renderSummary(list);
           if (!list.length) {
-            listEl.innerHTML = `<p style="margin:0;color:var(--muted);font-size:13px">Tidak ada temuan di atas sensitivitas ${Math.round(threshold * 100)}%.</p>`;
+            listEl.innerHTML = "";
           } else {
             listEl.innerHTML = list.map((d) => {
               const st = decisions.get(d.id)?.status || "";
-              const info = CLASS_INFO[d.label] || { friendly: d.label, badge: "b-info", desc: "Perlu tinjauan inspector." };
-              return `<article class="det-item ${st}">
-                <div class="det-top">
-                  <strong>${escHtml(info.friendly)} <span style="font-weight:500;font-size:12px;color:var(--muted)">(${escHtml(d.label)})</span></strong>
-                  <span class="badge ${info.badge}">${Math.round(d.conf * 100)}%</span>
+              const info = CLASS_INFO[d.label] || { friendly: d.label, color: "#22d3ee", desc: "" };
+              const pct = Math.round(d.conf * 100);
+              return `<div class="finding-row ${st} ${selectedId === d.id ? "selected" : ""}" data-select-id="${escHtml(d.id)}">
+                <div class="f-left">
+                  <span class="f-dot" style="background:${info.color}"></span>
+                  <div class="f-info">
+                    <div class="f-title">${escHtml(info.friendly)} <span style="font-weight:600;color:var(--muted);font-size:12px">${pct}%</span></div>
+                    <div class="f-sub">${escHtml(info.desc)}</div>
+                    <div class="f-bar"><i style="width:${pct}%;background:${info.color}"></i></div>
+                  </div>
                 </div>
-                <p class="det-meta">${escHtml(info.desc)}</p>
-                <div class="det-actions">
-                  <button type="button" class="btn btn-ok" data-decide="approved" data-id="${escHtml(d.id)}">${st === "approved" ? "✓ Dikonfirmasi Benar" : "Benar ✓"}</button>
-                  <button type="button" class="btn btn-danger" data-decide="rejected" data-id="${escHtml(d.id)}">${st === "rejected" ? "× Ditandai Bukan Cacat" : "Bukan Cacat ×"}</button>
+                <div class="f-btns">
+                  <button type="button" class="icon-pill ok ${st === "approved" ? "on" : ""}" data-decide="approved" data-id="${escHtml(d.id)}">✓ Benar</button>
+                  <button type="button" class="icon-pill no ${st === "rejected" ? "on" : ""}" data-decide="rejected" data-id="${escHtml(d.id)}">× Bukan</button>
                 </div>
-              </article>`;
+              </div>`;
             }).join("");
-            listEl.querySelectorAll("[data-decide]").forEach((b) => {
-              b.onclick = () => {
-                const det = currentDetections.find((x) => x.id === b.dataset.id);
-                decisions.set(det.id, { status: b.dataset.decide, scene: currentTitle, det });
-                saveDraftLocal();
+
+            listEl.querySelectorAll("[data-select-id]").forEach((row) => {
+              row.onclick = (e) => {
+                if (e.target.closest("[data-decide]")) return;
+                const id = row.dataset.selectId;
+                selectedId = selectedId === id ? null : id;
+                renderAll();
+              };
+            });
+            listEl.querySelectorAll("[data-decide]").forEach((btn) => {
+              btn.onclick = (e) => {
+                e.stopPropagation();
+                const det = currentDetections.find((x) => x.id === btn.dataset.id);
+                const prev = decisions.get(det.id)?.status;
+                if (prev === btn.dataset.decide) decisions.delete(det.id);
+                else decisions.set(det.id, { status: btn.dataset.decide, det });
                 renderAll();
               };
             });
           }
-          const approvedCount = [...decisions.values()].filter((x) => x.status === "approved" && currentDetections.some((d) => d.id === x.det.id)).length;
-          document.getElementById("verified-badge").textContent = `${approvedCount} dikonfirmasi`;
           updateYolo();
         }
 
@@ -1010,38 +1255,44 @@
             return `${det.clsId} ${(x + w / 2).toFixed(4)} ${(y + h / 2).toFixed(4)} ${w.toFixed(4)} ${h.toFixed(4)}  # ${det.label}`;
           }).join("\n");
         }
-
         function updateYolo() {
-          const box = document.getElementById("yolo-preview");
-          box.textContent = getYoloText() || '# Klik "Benar ✓" pada minimal satu temuan untuk melihat label YOLO';
+          document.getElementById("yolo-preview").textContent = getYoloText() || '# Klik "✓ Benar" pada temuan untuk menghasilkan label YOLO';
         }
-
         function renderAll() {
           document.getElementById("scene-title").textContent = currentTitle;
+          document.getElementById("btn-zoom-reset").textContent = Math.round(zoomLevel * 100) + "%";
           drawViewport();
-          renderDetections();
+          renderFindings();
         }
 
-        function setThresholdPct(val) {
-          threshold = Number(val) / 100;
-          document.getElementById("conf-slider").value = String(val);
-          document.getElementById("conf-label").textContent = val + "%";
-          document.querySelectorAll("[data-preset]").forEach((b) => {
-            b.classList.toggle("active", Number(b.dataset.preset) === Number(val));
-          });
-          renderAll();
-        }
+        // Zoom & Overlay Controls
+        document.getElementById("btn-zoom-in").onclick = () => { zoomLevel = Math.min(2.5, zoomLevel + 0.25); renderAll(); };
+        document.getElementById("btn-zoom-out").onclick = () => { zoomLevel = Math.max(0.75, zoomLevel - 0.25); renderAll(); };
+        document.getElementById("btn-zoom-reset").onclick = () => { zoomLevel = 1.0; renderAll(); };
+        document.getElementById("btn-toggle-boxes").onclick = (e) => {
+          showBoxes = !showBoxes;
+          e.currentTarget.classList.toggle("active", showBoxes);
+          drawViewport();
+        };
+        document.getElementById("btn-toggle-yolo").onclick = () => {
+          document.getElementById("yolo-drawer").classList.toggle("hidden");
+        };
 
-        document.querySelectorAll("[data-preset]").forEach((b) => {
-          b.onclick = () => setThresholdPct(Number(b.dataset.preset));
+        document.querySelectorAll("[data-preset]").forEach((btn) => {
+          btn.onclick = () => {
+            threshold = Number(btn.dataset.preset) / 100;
+            document.querySelectorAll("[data-preset]").forEach((b) => b.classList.toggle("active", b === btn));
+            renderAll();
+          };
         });
-        document.getElementById("conf-slider").addEventListener("input", (e) => setThresholdPct(Number(e.target.value)));
 
         async function runLiveInference(blob, titleText) {
           currentBlob = blob;
           currentTitle = titleText;
+          selectedId = null;
           if (!serverLive) { renderAll(); return; }
-          document.getElementById("hud-count").textContent = tileToggle.checked ? "Memindai lebih teliti…" : "Menganalisis foto…";
+          stage.classList.add("scanning");
+          document.getElementById("hud-count").textContent = tileToggle.checked ? "Memindai lebih teliti…" : "Memindai…";
           try {
             const tile = tileToggle.checked ? "1" : "0";
             const res = await fetch(`/api/detect?conf=0.25&tile=${tile}`, { method: "POST", body: blob });
@@ -1052,15 +1303,20 @@
             if (data.model) activeModelName = data.model;
             currentDetections = data.detections.map((d, i) => ({ ...d, id: "live-" + Date.now() + "-" + i }));
             renderAll();
+            showToast(`Selesai dipindai (${data.latencyMs} ms) — ${visibleDetections().length} area ditemukan`);
           } catch (err) {
-            alert(err.message);
+            showToast(err.message);
+          } finally {
+            stage.classList.remove("scanning");
           }
         }
 
         async function detectUploadedBlob(blob, titleText) {
           currentSampleKey = null;
           currentReportNo = "";
+          zoomLevel = 1.0;
           document.getElementById("report-no-badge").textContent = "Draft Baru";
+          document.querySelectorAll("[data-sample]").forEach((c) => c.classList.remove("active"));
           const img = new Image();
           const url = URL.createObjectURL(blob);
           img.onload = async () => {
@@ -1080,12 +1336,18 @@
           currentLatency = null;
           currentTileUsed = false;
           currentReportNo = "";
+          selectedId = null;
+          zoomLevel = 1.0;
           document.getElementById("report-no-badge").textContent = "Draft Baru";
+          document.querySelectorAll("[data-sample]").forEach((c) => c.classList.toggle("active", c.dataset.sample === key));
           const img = new Image();
           img.onload = () => { currentImage = img; renderAll(); };
           img.src = s.image;
         }
 
+        document.querySelectorAll("[data-sample]").forEach((b) => {
+          b.onclick = () => loadSample(b.dataset.sample);
+        });
         document.getElementById("btn-rerun-live").onclick = async () => {
           if (currentBlob) await runLiveInference(currentBlob, currentTitle);
           else if (currentSampleKey && REAL_SAMPLES[currentSampleKey]) {
@@ -1094,27 +1356,24 @@
           }
         };
 
-        document.querySelectorAll("[data-sample]").forEach((chip) => {
-          chip.onclick = () => {
-            document.querySelectorAll("[data-sample]").forEach((c) => c.classList.toggle("active", c === chip));
-            loadSample(chip.dataset.sample);
-          };
-        });
-
-        document.getElementById("file-upload").addEventListener("change", (e) => {
+        // Upload / Drag-drop / Ctrl+V triggers
+        const openPicker = () => fileInput.click();
+        document.getElementById("story-upload").onclick = openPicker;
+        document.getElementById("composer-trigger").onclick = openPicker;
+        document.getElementById("btn-composer-upload").onclick = openPicker;
+        document.getElementById("bottom-upload").onclick = () => { activateTab("kamera"); openPicker(); };
+        fileInput.addEventListener("change", (e) => {
           const file = e.target.files?.[0];
-          if (file) detectUploadedBlob(file, "Foto Anda · " + file.name);
+          if (file) { detectUploadedBlob(file, "Foto Anda · " + file.name); fileInput.value = ""; }
         });
 
-        ["dragenter", "dragover"].forEach((ev) => {
-          dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
-        });
-        ["dragleave", "drop"].forEach((ev) => {
-          dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove("drag-over"); });
-        });
-        dropZone.addEventListener("drop", (e) => {
-          const file = e.dataTransfer?.files?.[0];
-          if (file && file.type.startsWith("image/")) detectUploadedBlob(file, "Foto Anda · " + file.name);
+        [stage, composer].forEach((zone) => {
+          ["dragenter", "dragover"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add("drag-over"); }));
+          ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove("drag-over"); }));
+          zone.addEventListener("drop", (e) => {
+            const file = e.dataTransfer?.files?.[0];
+            if (file && file.type.startsWith("image/")) detectUploadedBlob(file, "Foto Anda · " + file.name);
+          });
         });
         window.addEventListener("paste", (e) => {
           const items = e.clipboardData?.items;
@@ -1127,25 +1386,54 @@
           }
         });
 
+        // Camera
+        async function stopCamera() {
+          if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
+          video.classList.add("hidden");
+          canvas.classList.remove("hidden");
+          document.getElementById("cam-tools").classList.add("hidden");
+          document.getElementById("stage-tools").classList.remove("hidden");
+        }
+        async function startCamera() {
+          if (!navigator.mediaDevices?.getUserMedia) { showToast("Gunakan tombol Unggah Foto pada perangkat ini."); return; }
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            canvas.classList.add("hidden");
+            video.classList.remove("hidden");
+            document.getElementById("stage-tools").classList.add("hidden");
+            document.getElementById("cam-tools").classList.remove("hidden");
+          } catch { showToast("Izin kamera ditolak atau kamera tidak tersedia."); }
+        }
+        document.getElementById("btn-live-cam").onclick = startCamera;
+        document.getElementById("story-cam").onclick = startCamera;
+        document.getElementById("btn-stop-cam").onclick = () => { stopCamera(); renderAll(); };
+        document.getElementById("btn-capture").onclick = () => {
+          const snap = document.createElement("canvas");
+          snap.width = video.videoWidth || 960;
+          snap.height = video.videoHeight || 720;
+          snap.getContext("2d").drawImage(video, 0, 0, snap.width, snap.height);
+          snap.toBlob((blob) => { stopCamera(); if (blob) detectUploadedBlob(blob, "Jepretan Kamera"); }, "image/jpeg", 0.92);
+        };
+
+        // PNG & YOLO Export
         document.getElementById("btn-download-png").onclick = () => {
           drawViewport();
           const a = document.createElement("a");
           a.href = canvas.toDataURL("image/png");
           a.download = `snapqc-${(currentReportNo || "hasil").toLowerCase()}.png`;
           a.click();
+          showToast("Gambar PNG berhasil diunduh ✓");
         };
-
         document.getElementById("btn-copy-yolo").onclick = async () => {
           const txt = getYoloText();
-          if (!txt) { alert('Klik "Benar ✓" pada minimal satu temuan terlebih dahulu.'); return; }
+          if (!txt) { showToast('Klik "✓ Benar" pada minimal satu temuan dulu.'); return; }
           await navigator.clipboard.writeText(txt);
-          const btn = document.getElementById("btn-copy-yolo");
-          btn.textContent = "Tersalin ✓";
-          setTimeout(() => { btn.textContent = "Salin Label"; }, 1800);
+          showToast("Label YOLO tersalin ke clipboard ✓");
         };
         document.getElementById("btn-dl-yolo").onclick = () => {
           const txt = getYoloText();
-          if (!txt) { alert('Klik "Benar ✓" pada minimal satu temuan terlebih dahulu.'); return; }
+          if (!txt) { showToast('Klik "✓ Benar" pada minimal satu temuan dulu.'); return; }
           const blob = new Blob([txt + "\n"], { type: "text/plain;charset=utf-8" });
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
@@ -1154,7 +1442,14 @@
           URL.revokeObjectURL(a.href);
         };
 
+        // Report Modal & Print PDF
+        document.getElementById("btn-open-report").onclick = () => modal.classList.remove("hidden");
+        document.getElementById("btn-close-modal").onclick = () => modal.classList.add("hidden");
+        modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
+
         function preparePrintSheet() {
+          const prevZoom = zoomLevel;
+          zoomLevel = 1.0;
           drawViewport();
           const verdict = document.getElementById("f-verdict").value;
           const vEl = document.getElementById("pr-verdict");
@@ -1183,16 +1478,18 @@
                 const labelSt = st === "approved" ? "Dikonfirmasi Benar" : st === "rejected" ? "Bukan Cacat" : "Menunggu";
                 return `<tr><td>${idx + 1}</td><td><strong>${escHtml(info.friendly)}</strong> (${escHtml(d.label)})</td><td>${Math.round(d.conf * 100)}%</td><td>${d.box.map((n) => Number(n).toFixed(3)).join(", ")}</td><td>${labelSt}</td></tr>`;
               }).join("")
-            : `<tr><td colspan="5">Tidak ada temuan di atas batas sensitivitas ${Math.round(threshold * 100)}%.</td></tr>`;
+            : `<tr><td colspan="5">Tidak ada temuan di atas sensitivitas ${Math.round(threshold * 100)}%.</td></tr>`;
+          zoomLevel = prevZoom;
+          drawViewport();
           window.print();
         }
         document.getElementById("btn-print-qc").onclick = preparePrintSheet;
-        document.getElementById("btn-print-qc-2").onclick = preparePrintSheet;
+        document.getElementById("btn-modal-print").onclick = preparePrintSheet;
 
         document.getElementById("btn-save-db").onclick = async () => {
-          const statusEl = document.getElementById("save-status");
-          statusEl.textContent = "Menyimpan…";
           try {
+            const prevZoom = zoomLevel;
+            zoomLevel = 1.0;
             drawViewport();
             const list = visibleDetections();
             const payload = {
@@ -1205,6 +1502,7 @@
               standardRef: document.getElementById("f-standard").value,
               verdict: document.getElementById("f-verdict").value,
               notes: document.getElementById("f-notes").value,
+              isPublic: authState.authenticated ? document.getElementById("f-public").checked : true,
               imageTitle: currentTitle,
               modelVersion: activeModelName,
               tileMode: currentTileUsed,
@@ -1214,23 +1512,92 @@
               yoloLabels: getYoloText(),
               annotatedDataUrl: canvas.toDataURL("image/jpeg", 0.78),
             };
+            zoomLevel = prevZoom;
+            drawViewport();
             const res = await fetch("/api/inspections", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
             const saved = await res.json();
-            if (!res.ok) throw Error(saved.error || "Gagal menyimpan laporan.");
+            if (!res.ok) throw Error(saved.error || "Gagal menyimpan.");
             currentReportNo = saved.reportNo;
             document.getElementById("report-no-badge").textContent = saved.reportNo;
-            statusEl.textContent = authState.authenticated
-              ? `Tersimpan di akun Anda: ${saved.reportNo} ✓`
-              : `Tersimpan (Mode Tamu): ${saved.reportNo} ✓`;
+            modal.classList.add("hidden");
+            showToast(`Laporan ${saved.reportNo} tersimpan ✓`);
+            loadCommunityFeed();
           } catch (err) {
-            statusEl.textContent = "";
-            alert(err.message);
+            showToast(err.message);
           }
         };
+
+        // Community Feed (Real saved public posts + curated held-out showcase cards)
+        async function loadCommunityFeed() {
+          const feedEl = document.getElementById("community-feed");
+          let items = [];
+          try {
+            const res = await fetch("/api/feed", { cache: "no-store" });
+            const data = await res.json();
+            items = data.items || [];
+          } catch {}
+
+          const savedCards = items.map((it) => {
+            const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-warn";
+            const author = it.inspectorName || it.ownerName || "Inspector Tamu";
+            const init = author.trim().charAt(0).toUpperCase() || "I";
+            const tags = [it.vesselName, it.jointNo, it.standardRef].filter(Boolean).map((t) => `<span class="hashtag">#${escHtml(t)}</span>`).join("");
+            return `<article class="card">
+              <div class="post-head">
+                <div class="post-author">
+                  <span class="avatar">${escHtml(init)}</span>
+                  <div>
+                    <strong>${escHtml(author)}</strong>
+                    <small>${escHtml(it.reportNo)} · ${escHtml(it.createdAt.replace("T", " ").slice(0, 16))} UTC</small>
+                  </div>
+                </div>
+                <span class="badge ${vCls}">${escHtml(it.verdict)}</span>
+              </div>
+              ${it.annotatedDataUrl ? `<img class="feed-post-img" src="${it.annotatedDataUrl}" alt="Foto inspeksi ${escHtml(it.reportNo)}" />` : ""}
+              <div class="post-body">
+                <p style="margin:0 0 6px;font-size:13.5px">${escHtml(it.notes || it.imageTitle || "Laporan inspeksi visual las.")}</p>
+                <div class="tag-row">${tags}<span class="hashtag">${it.detections.length} temuan AI</span></div>
+              </div>
+            </article>`;
+          }).join("");
+
+          const showcaseCards = ["test-04", "test-06"].map((k) => {
+            const s = REAL_SAMPLES[k];
+            return `<article class="card">
+              <div class="post-head">
+                <div class="post-author">
+                  <span class="avatar">SQ</span>
+                  <div>
+                    <strong>Contoh Uji Nyata SnapQC</strong>
+                    <small>${escHtml(s.title)}</small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm" data-load-sample="${k}">Buka di Scanner</button>
+              </div>
+              <img class="feed-post-img" src="${s.predImage}" alt="${escHtml(s.title)}" />
+              <div class="post-body">
+                <div class="tag-row">
+                  <span class="hashtag">#${escHtml(s.vessel)}</span>
+                  <span class="hashtag">#${escHtml(s.joint)}</span>
+                  <span class="hashtag">${s.detections.length} temuan AI</span>
+                </div>
+              </div>
+            </article>`;
+          }).join("");
+
+          feedEl.innerHTML = savedCards + showcaseCards;
+          feedEl.querySelectorAll("[data-load-sample]").forEach((btn) => {
+            btn.onclick = () => {
+              loadSample(btn.dataset.loadSample);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            };
+          });
+        }
+        document.getElementById("btn-refresh-feed").onclick = () => { loadCommunityFeed(); showToast("Feed diperbarui"); };
 
         async function loadHistoryFromServer() {
           const tbody = document.getElementById("history-body");
@@ -1243,16 +1610,17 @@
             document.getElementById("db-kpi-labels").textContent = String(data.stats?.approvedLabels || 0);
             document.getElementById("db-kpi-repair").textContent = String(items.filter((x) => x.verdict === "REPAIR").length);
             document.getElementById("db-kpi-accept").textContent = String(items.filter((x) => x.verdict === "ACCEPT").length);
+            document.getElementById("db-kpi-scope").textContent = data.scope === "personal" ? "Akun Pribadi Anda" : "Mode Tamu Publik";
             if (!items.length) {
-              tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan. Kembali ke tab <strong>Cek Foto Las</strong> lalu klik <strong>Simpan Laporan</strong>.</td></tr>`;
+              tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Belum ada laporan tersimpan. Klik <strong>Simpan &amp; Laporan QC</strong> di halaman Beranda.</td></tr>`;
               return;
             }
             tbody.innerHTML = items.map((it) => {
-              const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-med";
+              const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-warn";
               return `<tr>
                 <td><strong>${escHtml(it.reportNo)}</strong><br><small style="color:var(--muted)">${escHtml(it.createdAt.replace("T", " ").slice(0, 16))} UTC</small></td>
-                <td><strong>${escHtml(it.vesselName || "-")}</strong><br><small style="color:var(--ink-soft)">${escHtml(it.blockLocation || "-")} · Joint ${escHtml(it.jointNo || "-")}</small></td>
-                <td>${escHtml(it.standardRef)}<br><small style="color:var(--muted)">${escHtml(it.inspectorName || "-")}</small></td>
+                <td><strong>${escHtml(it.vesselName || "-")}</strong><br><small style="color:var(--muted)">${escHtml(it.blockLocation || "-")} · ${escHtml(it.jointNo || "-")}</small></td>
+                <td>${escHtml(it.inspectorName || "-")}<br><small style="color:var(--muted)">${escHtml(it.standardRef)}</small></td>
                 <td><span class="badge ${vCls}">${escHtml(it.verdict)}</span></td>
                 <td>${it.detections.length} area · <strong>${it.approvedCount} benar</strong></td>
                 <td style="white-space:nowrap">
@@ -1266,7 +1634,7 @@
               btn.onclick = async () => {
                 const r = await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.openId)}`);
                 const it = await r.json();
-                if (!r.ok) return alert(it.error || "Gagal memuat laporan.");
+                if (!r.ok) return showToast(it.error || "Gagal memuat laporan.");
                 currentReportNo = it.reportNo;
                 document.getElementById("report-no-badge").textContent = it.reportNo;
                 document.getElementById("f-vessel").value = it.vesselName || "";
@@ -1283,9 +1651,7 @@
                 decisions.clear();
                 (it.decisions || []).forEach((dec) => {
                   const match = currentDetections.find((d) => d.id === dec.id);
-                  if (match && (dec.status === "approved" || dec.status === "rejected")) {
-                    decisions.set(dec.id, { status: dec.status, scene: currentTitle, det: match });
-                  }
+                  if (match && (dec.status === "approved" || dec.status === "rejected")) decisions.set(dec.id, { status: dec.status, det: match });
                 });
                 if (it.annotatedDataUrl) {
                   const img = new Image();
@@ -1297,17 +1663,15 @@
                 }
               };
             });
-
             tbody.querySelectorAll("[data-del-id]").forEach((btn) => {
               btn.onclick = async () => {
-                if (!confirm("Hapus laporan ini?")) return;
                 await fetch(`/api/inspections/${encodeURIComponent(btn.dataset.delId)}`, { method: "DELETE" });
+                showToast("Laporan dihapus");
                 loadHistoryFromServer();
+                loadCommunityFeed();
               };
             });
-          } catch {
-            tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Gagal memuat riwayat.</td></tr>`;
-          }
+          } catch {}
         }
         document.getElementById("btn-refresh-db").onclick = loadHistoryFromServer;
 
@@ -1319,62 +1683,26 @@
             const fmt = (v) => (typeof v === "number" ? (v * 100).toFixed(1).replace(".", ",") + "%" : "-");
             const rows = [];
             if (data.v1) rows.push({ tag: "v1 · Champion (Aktif)", m: data.v1, sz: 640 });
-            if (data.v2) rows.push({ tag: data.v2.promoted_as_default ? "v2 · Aktif" : "v2 · Eksperimen", m: data.v2, sz: data.v2.imgsz || 960 });
-            if (rows.length) {
-              tbody.innerHTML = rows.map(({ tag, m, sz }) => {
-                const th = m.test_held_out || {};
-                const p = th.per_class || {};
-                return `<tr>
-                  <td><strong>${escHtml(tag)}</strong><br><small style="color:var(--muted)">${escHtml(m.model)}</small></td>
-                  <td>${sz}px</td>
-                  <td><strong>${fmt(p["Bad Weld"]?.ap50)}</strong></td>
-                  <td><strong>${fmt(p["Good Weld"]?.ap50)}</strong></td>
-                  <td><strong>${fmt(p["Defect"]?.ap50)}</strong></td>
-                  <td><strong>${fmt(th.mAP50)}</strong></td>
-                  <td>${m.onnx_size_mb} MB</td>
-                </tr>`;
-              }).join("");
-            }
+            if (data.v2) rows.push({ tag: "v2 · Eksperimen", m: data.v2, sz: data.v2.imgsz || 960 });
+            tbody.innerHTML = rows.map(({ tag, m, sz }) => {
+              const th = m.test_held_out || {};
+              const p = th.per_class || {};
+              return `<tr><td><strong>${escHtml(tag)}</strong><br><small style="color:var(--muted)">${escHtml(m.model)}</small></td><td>${sz}px</td><td><strong>${fmt(p["Bad Weld"]?.ap50)}</strong></td><td><strong>${fmt(p["Good Weld"]?.ap50)}</strong></td><td><strong>${fmt(p["Defect"]?.ap50)}</strong></td><td><strong>${fmt(th.mAP50)}</strong></td><td>${m.onnx_size_mb} MB</td></tr>`;
+            }).join("");
           } catch {}
         }
-
-        async function stopCamera() {
-          if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
-          video.classList.add("hidden");
-          canvas.classList.remove("hidden");
-          document.getElementById("btn-capture").classList.add("hidden");
-          document.getElementById("btn-stop-cam").classList.add("hidden");
-        }
-        document.getElementById("btn-live-cam").onclick = async () => {
-          if (!navigator.mediaDevices?.getUserMedia) { alert("Gunakan tombol Unggah Foto Las pada perangkat ini."); return; }
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            video.srcObject = stream;
-            canvas.classList.add("hidden");
-            video.classList.remove("hidden");
-            document.getElementById("btn-capture").classList.remove("hidden");
-            document.getElementById("btn-stop-cam").classList.remove("hidden");
-          } catch { alert("Izin kamera ditolak atau kamera tidak tersedia."); }
-        };
-        document.getElementById("btn-capture").onclick = () => {
-          const snap = document.createElement("canvas");
-          snap.width = video.videoWidth || 960;
-          snap.height = video.videoHeight || 720;
-          snap.getContext("2d").drawImage(video, 0, 0, snap.width, snap.height);
-          snap.toBlob((blob) => { stopCamera(); if (blob) detectUploadedBlob(blob, "Jepretan Kamera"); }, "image/jpeg", 0.92);
-        };
-        document.getElementById("btn-stop-cam").onclick = () => { stopCamera(); renderAll(); };
 
         const relEl = document.getElementById("releases-container");
         if (typeof SnapQCReleases !== "undefined") {
           relEl.innerHTML = SnapQCReleases.map(
-            (r) => `<article class="card"><div class="card-head"><h2>${escHtml(r.title)}</h2><span class="badge b-info">v${escHtml(r.version)} · ${escHtml(r.date)} · ${escHtml(r.category)}</span></div><p style="margin:0;color:var(--ink-soft)">${escHtml(r.summary)}</p></article>`,
+            (r) => `<article class="card card-pad"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><h3 style="margin:0;font-size:15.5px">${escHtml(r.title)}</h3><span class="badge b-info">v${escHtml(r.version)} · ${escHtml(r.date)} · ${escHtml(r.category)}</span></div><p style="margin:0;color:var(--ink-soft);font-size:13.5px">${escHtml(r.summary)}</p></article>`,
           ).join("");
         }
 
         restoreDraftLocal();
         checkServer();
         loadSample("test-05");
+        loadCommunityFeed();
         if (location.pathname === "/whats-new") activateTab("whats-new");
       })();
     </script>

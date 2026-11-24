@@ -94,6 +94,8 @@ class SnapQCStore:
                     conn.execute("ALTER TABLE inspections ADD COLUMN owner_sub TEXT NOT NULL DEFAULT ''")
                 if "owner_name" not in cols:
                     conn.execute("ALTER TABLE inspections ADD COLUMN owner_name TEXT NOT NULL DEFAULT ''")
+                if "is_public" not in cols:
+                    conn.execute("ALTER TABLE inspections ADD COLUMN is_public INTEGER NOT NULL DEFAULT 1")
                 conn.execute(
                     "CREATE INDEX IF NOT EXISTS idx_inspections_owner_created ON inspections (owner_sub, created_at DESC)"
                 )
@@ -116,12 +118,20 @@ class SnapQCStore:
         if len(annotated) > 2_000_000 or (annotated and not annotated.startswith("data:image/")):
             annotated = ""
 
+        owner_clean = str(owner_sub or "").strip()[:120]
+        # Signed-in users default to private unless they explicitly choose public; guests post to public demo feed
+        if "isPublic" in payload:
+            is_public = 1 if payload.get("isPublic") else 0
+        else:
+            is_public = 0 if owner_clean else 1
+
         row = {
             "id": insp_id,
             "report_no": report_no,
             "created_at": created_at,
-            "owner_sub": str(owner_sub or "").strip()[:120],
+            "owner_sub": owner_clean,
             "owner_name": str(owner_name or "").strip()[:120],
+            "is_public": is_public,
             "vessel_name": str(payload.get("vesselName") or "").strip()[:120],
             "block_location": str(payload.get("blockLocation") or "").strip()[:120],
             "joint_no": str(payload.get("jointNo") or "").strip()[:80],
@@ -148,13 +158,13 @@ class SnapQCStore:
                 conn.execute(
                     """
                     INSERT INTO inspections (
-                        id, report_no, created_at, owner_sub, owner_name, vessel_name, block_location,
+                        id, report_no, created_at, owner_sub, owner_name, is_public, vessel_name, block_location,
                         joint_no, wps_no, welder_id, inspector_name, standard_ref, verdict, notes,
                         image_title, model_version, tile_mode, conf_threshold,
                         detections_json, decisions_json, yolo_labels,
                         approved_count, rejected_count, annotated_data_url
                     ) VALUES (
-                        :id, :report_no, :created_at, :owner_sub, :owner_name, :vessel_name, :block_location,
+                        :id, :report_no, :created_at, :owner_sub, :owner_name, :is_public, :vessel_name, :block_location,
                         :joint_no, :wps_no, :welder_id, :inspector_name, :standard_ref, :verdict, :notes,
                         :image_title, :model_version, :tile_mode, :conf_threshold,
                         :detections_json, :decisions_json, :yolo_labels,
@@ -172,6 +182,7 @@ class SnapQCStore:
             "createdAt": r["created_at"],
             "ownerScope": "personal" if r["owner_sub"] else "public-demo",
             "ownerName": r["owner_name"],
+            "isPublic": bool(r["is_public"]) if "is_public" in r.keys() else (not bool(r["owner_sub"])),
             "vesselName": r["vessel_name"],
             "blockLocation": r["block_location"],
             "jointNo": r["joint_no"],
@@ -195,6 +206,16 @@ class SnapQCStore:
         if include_image:
             out["annotatedDataUrl"] = r["annotated_data_url"]
         return out
+
+    def list_public_feed(self, limit: int = 30) -> list[dict]:
+        limit = max(1, min(60, int(limit)))
+        with DB_LOCK:
+            with self._connect() as conn:
+                rows = conn.execute(
+                    "SELECT * FROM inspections WHERE is_public = 1 ORDER BY created_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+        return [self._row_to_dict(r, include_image=True) for r in rows]
 
     def list_inspections(self, owner_sub: str = "", limit: int = 100) -> list[dict]:
         limit = max(1, min(200, int(limit)))

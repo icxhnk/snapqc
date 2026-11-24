@@ -257,6 +257,13 @@ class SnapQCServerTest(unittest.TestCase):
         st_del_forbid, _, _ = self._req(f"/api/inspections/{alice_id}", method="DELETE")
         self.assertEqual(st_del_forbid, 404)
 
+        # Public feed must include guest public post and NEVER leak Alice's private post
+        st_feed, _, b_feed = self._req("/api/feed")
+        self.assertEqual(st_feed, 200)
+        feed_ids = [it["id"] for it in json.loads(b_feed)["items"]]
+        self.assertIn(guest_id, feed_ids)
+        self.assertNotIn(alice_id, feed_ids)
+
     def test_public_demo_rate_limit(self):
         os.environ["SNAPQC_RATE_LIMIT_PER_MIN"] = "2"
         img_bytes = SAMPLE_IMG.read_bytes()

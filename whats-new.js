@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.5.0",
+    date: "2026-11-24",
+    category: "Baru",
+    title: "Tampilan gaya sosial media yang modern, interaktif, dan instan dipakai siapa saja",
+    summary:
+      "Merombak total antarmuka SnapQC menjadi pengalaman bergaya sosial media & studio inspeksi matang: navigasi atas ramping + bottom bar mobile, bar cerita (stories) foto las nyata yang bisa langsung diketuk, kotak unggah/kamera instan (drag-drop & Ctrl+V) dengan animasi scan laser, kontrol zoom & tombol tampil/sembunyikan kotak AI, klik kotak langsung sinkron dengan kartu temuan, modal Laporan QC & PDF A4 yang rapi, notifikasi toast non-blocking, serta feed inspeksi publik/pribadi.",
+  },
+  {
     version: "0.4.1",
     date: "2026-11-24",
     category: "Perbaikan",

@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     PyJWK = None
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "0.4.1"
+VERSION = "0.5.0"
 METRICS_V1_PATH = ROOT / "models" / "metrics-v1.json"
 METRICS_V2_PATH = ROOT / "models" / "metrics-v2.json"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -722,6 +722,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "v1": v1,
                 "v2": v2,
             })
+
+        if path == "/api/feed":
+            code, msg, _ = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            store = get_store(cfg)
+            return self.send_json(200, {"items": store.list_public_feed(limit=24)})
 
         if path == "/api/inspections":
             code, msg, sess = self._require_access(cfg)
