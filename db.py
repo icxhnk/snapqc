@@ -1,5 +1,5 @@
-"""Persistent SQLite storage for SnapQC inspections, Active Learning labels,
-and server-side OAuth sessions."""
+"""Persistent SQLite storage for SnapQC inspections (per-user & public demo isolation),
+Active Learning YOLO labels, and server-side OAuth sessions."""
 
 import csv
 import io
@@ -49,6 +49,8 @@ class SnapQCStore:
                         id TEXT PRIMARY KEY,
                         report_no TEXT NOT NULL,
                         created_at TEXT NOT NULL,
+                        owner_sub TEXT NOT NULL DEFAULT '',
+                        owner_name TEXT NOT NULL DEFAULT '',
                         vessel_name TEXT NOT NULL DEFAULT '',
                         block_location TEXT NOT NULL DEFAULT '',
                         joint_no TEXT NOT NULL DEFAULT '',
@@ -86,8 +88,17 @@ class SnapQCStore:
                     );
                     """
                 )
+                # Idempotent column migration for existing v0.3.x SQLite databases
+                cols = {r["name"] for r in conn.execute("PRAGMA table_info(inspections)").fetchall()}
+                if "owner_sub" not in cols:
+                    conn.execute("ALTER TABLE inspections ADD COLUMN owner_sub TEXT NOT NULL DEFAULT ''")
+                if "owner_name" not in cols:
+                    conn.execute("ALTER TABLE inspections ADD COLUMN owner_name TEXT NOT NULL DEFAULT ''")
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_inspections_owner_created ON inspections (owner_sub, created_at DESC)"
+                )
 
-    def create_inspection(self, payload: dict) -> dict:
+    def create_inspection(self, payload: dict, owner_sub: str = "", owner_name: str = "") -> dict:
         insp_id = uuid.uuid4().hex[:12]
         created_at = utc_now_iso()
         date_compact = created_at[:10].replace("-", "")
@@ -101,7 +112,6 @@ class SnapQCStore:
         approved_count = sum(1 for d in decisions if isinstance(d, dict) and d.get("status") == "approved")
         rejected_count = sum(1 for d in decisions if isinstance(d, dict) and d.get("status") == "rejected")
 
-        # Keep optional annotated JPEG data URL capped safely (~1.5 MB)
         annotated = str(payload.get("annotatedDataUrl") or "")
         if len(annotated) > 2_000_000 or (annotated and not annotated.startswith("data:image/")):
             annotated = ""
@@ -110,12 +120,14 @@ class SnapQCStore:
             "id": insp_id,
             "report_no": report_no,
             "created_at": created_at,
+            "owner_sub": str(owner_sub or "").strip()[:120],
+            "owner_name": str(owner_name or "").strip()[:120],
             "vessel_name": str(payload.get("vesselName") or "").strip()[:120],
             "block_location": str(payload.get("blockLocation") or "").strip()[:120],
             "joint_no": str(payload.get("jointNo") or "").strip()[:80],
             "wps_no": str(payload.get("wpsNo") or "").strip()[:80],
             "welder_id": str(payload.get("welderId") or "").strip()[:80],
-            "inspector_name": str(payload.get("inspectorName") or "").strip()[:120],
+            "inspector_name": str(payload.get("inspectorName") or owner_name or "").strip()[:120],
             "standard_ref": str(payload.get("standardRef") or "ISO 5817 Level B").strip()[:80],
             "verdict": verdict,
             "notes": str(payload.get("notes") or "").strip()[:2000],
@@ -136,14 +148,14 @@ class SnapQCStore:
                 conn.execute(
                     """
                     INSERT INTO inspections (
-                        id, report_no, created_at, vessel_name, block_location, joint_no,
-                        wps_no, welder_id, inspector_name, standard_ref, verdict, notes,
+                        id, report_no, created_at, owner_sub, owner_name, vessel_name, block_location,
+                        joint_no, wps_no, welder_id, inspector_name, standard_ref, verdict, notes,
                         image_title, model_version, tile_mode, conf_threshold,
                         detections_json, decisions_json, yolo_labels,
                         approved_count, rejected_count, annotated_data_url
                     ) VALUES (
-                        :id, :report_no, :created_at, :vessel_name, :block_location, :joint_no,
-                        :wps_no, :welder_id, :inspector_name, :standard_ref, :verdict, :notes,
+                        :id, :report_no, :created_at, :owner_sub, :owner_name, :vessel_name, :block_location,
+                        :joint_no, :wps_no, :welder_id, :inspector_name, :standard_ref, :verdict, :notes,
                         :image_title, :model_version, :tile_mode, :conf_threshold,
                         :detections_json, :decisions_json, :yolo_labels,
                         :approved_count, :rejected_count, :annotated_data_url
@@ -158,6 +170,8 @@ class SnapQCStore:
             "id": r["id"],
             "reportNo": r["report_no"],
             "createdAt": r["created_at"],
+            "ownerScope": "personal" if r["owner_sub"] else "public-demo",
+            "ownerName": r["owner_name"],
             "vesselName": r["vessel_name"],
             "blockLocation": r["block_location"],
             "jointNo": r["joint_no"],
@@ -182,30 +196,39 @@ class SnapQCStore:
             out["annotatedDataUrl"] = r["annotated_data_url"]
         return out
 
-    def list_inspections(self, limit: int = 100) -> list[dict]:
+    def list_inspections(self, owner_sub: str = "", limit: int = 100) -> list[dict]:
         limit = max(1, min(200, int(limit)))
+        owner_sub = str(owner_sub or "").strip()
         with DB_LOCK:
             with self._connect() as conn:
                 rows = conn.execute(
-                    "SELECT * FROM inspections ORDER BY created_at DESC LIMIT ?",
-                    (limit,),
+                    "SELECT * FROM inspections WHERE owner_sub = ? ORDER BY created_at DESC LIMIT ?",
+                    (owner_sub, limit),
                 ).fetchall()
         return [self._row_to_dict(r, include_image=False) for r in rows]
 
-    def get_inspection(self, insp_id: str) -> dict | None:
+    def get_inspection(self, insp_id: str, owner_sub: str = "") -> dict | None:
+        owner_sub = str(owner_sub or "").strip()
         with DB_LOCK:
             with self._connect() as conn:
-                r = conn.execute("SELECT * FROM inspections WHERE id = ?", (insp_id,)).fetchone()
+                r = conn.execute(
+                    "SELECT * FROM inspections WHERE id = ? AND owner_sub = ?",
+                    (insp_id, owner_sub),
+                ).fetchone()
         return self._row_to_dict(r, include_image=True) if r else None
 
-    def delete_inspection(self, insp_id: str) -> bool:
+    def delete_inspection(self, insp_id: str, owner_sub: str = "") -> bool:
+        owner_sub = str(owner_sub or "").strip()
         with DB_LOCK:
             with self._connect() as conn:
-                cur = conn.execute("DELETE FROM inspections WHERE id = ?", (insp_id,))
+                cur = conn.execute(
+                    "DELETE FROM inspections WHERE id = ? AND owner_sub = ?",
+                    (insp_id, owner_sub),
+                )
                 return cur.rowcount > 0
 
-    def export_csv(self) -> str:
-        items = self.list_inspections(limit=200)
+    def export_csv(self, owner_sub: str = "") -> str:
+        items = self.list_inspections(owner_sub=owner_sub, limit=200)
         buf = io.StringIO()
         writer = csv.writer(buf)
         writer.writerow([
@@ -222,8 +245,8 @@ class SnapQCStore:
             ])
         return buf.getvalue()
 
-    def export_active_learning(self) -> dict:
-        items = self.list_inspections(limit=200)
+    def export_active_learning(self, owner_sub: str = "") -> dict:
+        items = self.list_inspections(owner_sub=owner_sub, limit=200)
         samples = []
         total_boxes = 0
         for it in items:
@@ -252,15 +275,20 @@ class SnapQCStore:
             "samples": samples,
         }
 
-    def stats(self) -> dict:
+    def stats(self, owner_sub: str | None = None) -> dict:
         with DB_LOCK:
             with self._connect() as conn:
-                r = conn.execute(
-                    "SELECT COUNT(*) AS cnt, COALESCE(SUM(approved_count), 0) AS app FROM inspections"
-                ).fetchone()
+                if owner_sub is None:
+                    r = conn.execute(
+                        "SELECT COUNT(*) AS cnt, COALESCE(SUM(approved_count), 0) AS app FROM inspections"
+                    ).fetchone()
+                else:
+                    r = conn.execute(
+                        "SELECT COUNT(*) AS cnt, COALESCE(SUM(approved_count), 0) AS app FROM inspections WHERE owner_sub = ?",
+                        (str(owner_sub or "").strip(),),
+                    ).fetchone()
         return {"inspections": int(r["cnt"]), "approvedLabels": int(r["app"])}
 
-    # --- Persistent OAuth Sessions ---
     def put_session(self, sid: str, sess: dict):
         with DB_LOCK:
             with self._connect() as conn:

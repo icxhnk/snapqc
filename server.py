@@ -1,8 +1,8 @@
-"""SnapQC production & local inference server (v0.3.0):
-- Real YOLO11 ONNX detection (auto-detects 640px v1 or 960px v2 input size)
-- Optional SAHI-style 2x2 overlapping tiled inference (?tile=1) for micro-defects
-- Persistent SQLite store for maritime QC inspection reports, Active Learning YOLO labels, and OAuth sessions
-- OAuth 2.0 Authorization Code + PKCE S256 (RS256 JWKS) with fail-closed mode
+"""SnapQC production & local inference server (v0.4.0):
+- Real YOLO11 ONNX detection + optional SAHI 2x2 overlapping tiled micro-defect inference (?tile=1)
+- Hybrid open access: anyone can use SnapQC immediately as a guest, OR sign in via SSO (OAuth 2.0 + PKCE S256)
+  for private per-user SQLite QC report history
+- Fail-closed maintenance mode when both IDENTITY_PLATFORM_ENABLED and PUBLIC_DEMO_ENABLED are false
 """
 
 import base64
@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     PyJWK = None
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "0.3.1"
+VERSION = "0.4.0"
 METRICS_V1_PATH = ROOT / "models" / "metrics-v1.json"
 METRICS_V2_PATH = ROOT / "models" / "metrics-v2.json"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -86,7 +86,8 @@ def get_config() -> dict:
     client_id = (os.environ.get("IDENTITY_CLIENT_ID") or "snapqc").strip()
     client_secret = (os.environ.get("IDENTITY_CLIENT_SECRET") or "").strip()
     redirect_uri = (os.environ.get("IDENTITY_REDIRECT_URI") or "").strip()
-    required_roles_raw = os.environ.get("IDENTITY_REQUIRED_ROLES", "snapqc:user,snapqc:admin")
+    # Default empty so any authenticated user granted product access by Identity can sign in
+    required_roles_raw = os.environ.get("IDENTITY_REQUIRED_ROLES", "")
     required_roles = {r.strip() for r in required_roles_raw.split(",") if r.strip()}
     identity_enabled = env_bool("IDENTITY_PLATFORM_ENABLED", False)
     public_demo_enabled = env_bool("PUBLIC_DEMO_ENABLED", True)
@@ -95,7 +96,9 @@ def get_config() -> dict:
     db_path = Path(os.environ.get("SNAPQC_DB_PATH") or (ROOT / "data" / "snapqc.sqlite"))
     rate_limit = max(1, int(os.environ.get("SNAPQC_RATE_LIMIT_PER_MIN", "30")))
     identity_configured = bool(issuer and client_id and client_secret and redirect_uri)
-    if identity_enabled:
+    if identity_enabled and public_demo_enabled:
+        auth_mode = "hybrid" if identity_configured else "public-demo"
+    elif identity_enabled:
         auth_mode = "identity" if identity_configured else "identity-misconfigured"
     elif public_demo_enabled:
         auth_mode = "public-demo"
@@ -184,7 +187,6 @@ def letterbox(img, new_shape=640):
 
 
 def _infer_single_crop(img_bgr: np.ndarray, conf_thres: float):
-    """Run one ONNX forward pass on a BGR image and return raw pixel boxes (x1, y1, w, h), confs, cls_ids."""
     h, w = img_bgr.shape[:2]
     padded, ratio, pad_x, pad_y = letterbox(img_bgr, MODEL_INPUT_SIZE)
     blob = padded[:, :, ::-1].transpose(2, 0, 1).astype(np.float32) / 255.0
@@ -248,7 +250,7 @@ def run_onnx_detect(image_bytes: bytes, conf_thres: float = 0.35, iou_thres: flo
     if SESSION is None and MODEL_LOADING:
         MODEL_READY.wait(timeout=60)
     if SESSION is None:
-        raise RuntimeError(MODEL_ERROR or "Model ONNX belum tersedia. Jalankan ml/train_welding.py terlebih dahulu.")
+        raise RuntimeError(MODEL_ERROR or "Model ONNX belum tersedia.")
     arr = np.frombuffer(image_bytes, dtype=np.uint8)
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if img is None:
@@ -258,7 +260,6 @@ def run_onnx_detect(image_bytes: bytes, conf_thres: float = 0.35, iou_thres: flo
     t0 = time.perf_counter()
     all_boxes, all_confs, all_cids = _infer_single_crop(img, conf_thres)
 
-    # SAHI-style 2x2 overlapping tiles to boost micro-defect recall
     if tile_mode and orig_w >= 320 and orig_h >= 320:
         tile_w = int(orig_w * 0.58)
         tile_h = int(orig_h * 0.58)
@@ -439,18 +440,26 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return None, None
         return sid, get_store(cfg).get_session(sid)
 
-    def _require_access(self, cfg: dict) -> tuple[int, str] | None:
-        if cfg["identity_enabled"]:
+    def _require_access(self, cfg: dict) -> tuple[int, str, dict | None]:
+        """Return (error_status, error_message, session_or_none).
+        error_status == 0 means allowed.
+        - hybrid (identity_enabled + public_demo_enabled): anyone allowed; signed-in session attached if present.
+        - identity (identity_enabled only): valid signed-in session required; fail-closed if misconfigured.
+        - public-demo: anyone allowed.
+        - maintenance (both false): fail-closed 503.
+        """
+        _, sess = self._get_session(cfg)
+        if cfg["identity_enabled"] and not cfg["public_demo_enabled"]:
             if not cfg["identity_configured"]:
-                return 503, "Autentikasi SnapQC belum dikonfigurasi lengkap."
-            _, sess = self._get_session(cfg)
+                return 503, "Autentikasi SnapQC belum dikonfigurasi lengkap.", None
             if not sess:
-                return 401, "Silakan masuk ke SnapQC terlebih dahulu."
+                return 401, "Silakan masuk ke SnapQC terlebih dahulu.", None
             if not has_required_role({"roles": sess.get("roles", [])}, cfg["required_roles"]):
-                return 403, "Akun ini tidak memiliki izin inspeksi di SnapQC."
-        elif not cfg["public_demo_enabled"]:
-            return 503, "SnapQC sedang dalam mode pemeliharaan."
-        return None
+                return 403, "Akun ini tidak memiliki izin inspeksi di SnapQC.", None
+            return 0, "", sess
+        if cfg["public_demo_enabled"]:
+            return 0, "", sess
+        return 503, "SnapQC sedang dalam mode pemeliharaan.", None
 
     def _send_security_headers(self, cfg: dict):
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -498,7 +507,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _handle_oidc_start(self, cfg: dict):
         if not cfg["identity_enabled"] or not cfg["identity_configured"]:
-            return self.send_json(503, {"error": "Autentikasi SnapQC sedang tidak aktif atau belum dikonfigurasi."})
+            return self.send_json(503, {"error": "Layanan masuk akun SnapQC sedang tidak aktif."})
         prune_expired_state(cfg)
         try:
             discovery = fetch_discovery(cfg["issuer"])
@@ -506,7 +515,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not auth_endpoint:
                 raise ValueError("Discovery tidak menyertakan authorization_endpoint.")
         except Exception as exc:
-            return self.send_json(503, {"error": f"Gagal menghubungi layanan autentikasi: {exc}"})
+            return self.send_json(503, {"error": f"Gagal menghubungi layanan masuk akun: {exc}"})
 
         state = secrets.token_urlsafe(24)
         verifier = secrets.token_urlsafe(48)
@@ -528,7 +537,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _handle_oidc_callback(self, cfg: dict, qs: dict):
         if not cfg["identity_enabled"] or not cfg["identity_configured"]:
-            return self.send_json(503, {"error": "Autentikasi SnapQC belum aktif."})
+            return self.send_json(503, {"error": "Layanan masuk akun SnapQC belum aktif."})
         if qs.get("error"):
             return self.send_json(403, {"error": f"Masuk ditolak: {qs['error'][0]}"})
 
@@ -536,7 +545,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         state = (qs.get("state") or [""])[0]
         cookie_state = self._get_cookie("snapqc_oauth_state")
         if not code or not state or not cookie_state or not secrets.compare_digest(state, cookie_state):
-            return self.send_json(400, {"error": "Parameter state atau code OAuth tidak valid."})
+            return self.send_json(400, {"error": "Parameter state atau code login tidak valid."})
 
         with STATE_LOCK:
             pending = PENDING_OAUTH.pop(state, None)
@@ -576,11 +585,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 extra_headers=[("Set-Cookie", clear_state)],
             )
 
+        email = claims.get("email") or ""
+        display_name = claims.get("name") or claims.get("preferred_username") or (email.split("@")[0] if email else "Pengguna SnapQC")
         sid = secrets.token_urlsafe(32)
         get_store(cfg).put_session(sid, {
             "sub": claims["sub"],
-            "name": claims.get("name") or claims.get("preferred_username") or "Inspector",
-            "email": claims.get("email") or "",
+            "name": display_name,
+            "email": email,
             "roles": claims.get("roles") or [],
             "refresh_token": token_res.get("refresh_token"),
             "exp": float(claims.get("exp", time.time() + 3600)),
@@ -592,7 +603,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def _handle_auth_refresh(self, cfg: dict):
         if not cfg["identity_enabled"] or not cfg["identity_configured"]:
-            return self.send_json(503, {"error": "Autentikasi SnapQC belum aktif."})
+            return self.send_json(503, {"error": "Layanan masuk akun SnapQC belum aktif."})
         sid, sess = self._get_session(cfg)
         if not sess or not sess.get("refresh_token"):
             return self.send_json(401, {"error": "Sesi tidak aktif atau tidak dapat diperbarui."})
@@ -659,13 +670,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "classes": CLASS_NAMES,
                 "version": VERSION,
                 "authMode": cfg["auth_mode"],
+                "identityEnabled": cfg["identity_enabled"],
                 "identityConfigured": cfg["identity_configured"],
+                "publicDemoEnabled": cfg["public_demo_enabled"],
                 "db": db_stats,
             })
 
         if path == "/api/auth/status":
             _, sess = self._get_session(cfg)
-            user = {"sub": sess["sub"], "name": sess["name"], "roles": sess["roles"]} if sess else None
+            user = (
+                {"sub": sess["sub"], "name": sess["name"], "email": sess["email"], "roles": sess["roles"]}
+                if sess
+                else None
+            )
+            sso_ready = cfg["identity_enabled"] and cfg["identity_configured"]
             return self.send_json(200, {
                 "authenticated": user is not None,
                 "user": user,
@@ -673,11 +691,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "identityEnabled": cfg["identity_enabled"],
                 "identityConfigured": cfg["identity_configured"],
                 "publicDemoEnabled": cfg["public_demo_enabled"],
-                "loginUrl": "/api/auth/oidc/start" if cfg["identity_enabled"] else None,
+                "loginUrl": "/api/auth/oidc/start" if sso_ready else None,
+                "logoutUrl": "/api/auth/logout",
             })
 
         if path == "/api/auth/oidc/start":
             return self._handle_oidc_start(cfg)
+
+        if path == "/login":
+            if cfg["identity_enabled"] and cfg["identity_configured"]:
+                return self._handle_oidc_start(cfg)
+            return self.send_redirect("/")
 
         if path == "/api/auth/callback":
             return self._handle_oidc_callback(cfg, parse_qs(parsed.query))
@@ -694,17 +718,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
             })
 
         if path == "/api/inspections":
-            err = self._require_access(cfg)
-            if err:
-                return self.send_json(err[0], {"error": err[1]})
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            owner_sub = sess["sub"] if sess else ""
             store = get_store(cfg)
-            return self.send_json(200, {"items": store.list_inspections(), "stats": store.stats()})
+            return self.send_json(200, {
+                "scope": "personal" if owner_sub else "public-demo",
+                "items": store.list_inspections(owner_sub=owner_sub),
+                "stats": store.stats(owner_sub=owner_sub),
+            })
 
         if path == "/api/inspections.csv":
-            err = self._require_access(cfg)
-            if err:
-                return self.send_json(err[0], {"error": err[1]})
-            csv_data = get_store(cfg).export_csv().encode("utf-8-sig")
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            owner_sub = sess["sub"] if sess else ""
+            csv_data = get_store(cfg).export_csv(owner_sub=owner_sub).encode("utf-8-sig")
             return self.send_bytes(
                 200,
                 csv_data,
@@ -713,10 +743,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             )
 
         if path == "/api/active-learning/export":
-            err = self._require_access(cfg)
-            if err:
-                return self.send_json(err[0], {"error": err[1]})
-            al_data = json.dumps(get_store(cfg).export_active_learning(), indent=2).encode("utf-8")
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            owner_sub = sess["sub"] if sess else ""
+            al_data = json.dumps(get_store(cfg).export_active_learning(owner_sub=owner_sub), indent=2).encode("utf-8")
             return self.send_bytes(
                 200,
                 al_data,
@@ -725,16 +756,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
             )
 
         if path.startswith("/api/inspections/"):
-            err = self._require_access(cfg)
-            if err:
-                return self.send_json(err[0], {"error": err[1]})
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            owner_sub = sess["sub"] if sess else ""
             insp_id = path.split("/", 3)[-1].strip()
-            item = get_store(cfg).get_inspection(insp_id)
+            item = get_store(cfg).get_inspection(insp_id, owner_sub=owner_sub)
             if not item:
                 return self.send_json(404, {"error": "Catatan inspeksi tidak ditemukan."})
             return self.send_json(200, item)
 
-        if path in ("/", "/app", "/whats-new", "/login"):
+        if path in ("/", "/app", "/whats-new"):
             target = ROOT / "prototype" / "index.html"
         elif path in ("/portfolio", "/portfolio/"):
             target = ROOT / "portfolio" / "index.html"
@@ -764,9 +796,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._handle_auth_logout(cfg)
 
         if parsed.path == "/api/inspections":
-            err = self._require_access(cfg)
-            if err:
-                return self.send_json(err[0], {"error": err[1]})
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
             if not check_rate_limit(self._client_ip() + ":save", cfg["rate_limit_per_min"]):
                 return self.send_json(429, {"error": "Terlalu banyak permintaan simpan. Coba lagi sebentar."})
             try:
@@ -778,7 +810,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     raise ValueError("Format payload laporan harus objek JSON.")
                 if not payload.get("modelVersion"):
                     payload["modelVersion"] = MODEL_DISPLAY_NAME
-                saved = get_store(cfg).create_inspection(payload)
+                owner_sub = sess["sub"] if sess else ""
+                owner_name = sess["name"] if sess else ""
+                saved = get_store(cfg).create_inspection(payload, owner_sub=owner_sub, owner_name=owner_name)
                 return self.send_json(201, saved)
             except ValueError as exc:
                 return self.send_json(400, {"error": str(exc)})
@@ -788,9 +822,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if parsed.path != "/api/detect":
             return self.send_json(404, {"error": "Endpoint tidak ditemukan."})
 
-        err = self._require_access(cfg)
-        if err:
-            return self.send_json(err[0], {"error": err[1]})
+        code, msg, _ = self._require_access(cfg)
+        if code:
+            return self.send_json(code, {"error": msg})
 
         if not check_rate_limit(self._client_ip(), cfg["rate_limit_per_min"]):
             return self.send_json(429, {"error": "Terlalu banyak permintaan deteksi. Coba lagi dalam 1 menit."})
@@ -816,11 +850,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if not parsed.path.startswith("/api/inspections/"):
             return self.send_json(404, {"error": "Endpoint tidak ditemukan."})
-        err = self._require_access(cfg)
-        if err:
-            return self.send_json(err[0], {"error": err[1]})
+        code, msg, sess = self._require_access(cfg)
+        if code:
+            return self.send_json(code, {"error": msg})
+        owner_sub = sess["sub"] if sess else ""
         insp_id = parsed.path.split("/", 3)[-1].strip()
-        deleted = get_store(cfg).delete_inspection(insp_id)
+        deleted = get_store(cfg).delete_inspection(insp_id, owner_sub=owner_sub)
         if not deleted:
             return self.send_json(404, {"error": "Catatan inspeksi tidak ditemukan."})
         return self.send_json(200, {"deleted": True, "id": insp_id})

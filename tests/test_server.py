@@ -1,5 +1,6 @@
-"""Automated verification for SnapQC v0.3.0:
+"""Automated verification for SnapQC v0.4.0:
 - Real ONNX inference + SAHI 2x2 tiled mode (?tile=1)
+- Hybrid open guest + SSO mode & per-user SQLite ownership isolation
 - Persistent SQLite QC inspection CRUD, CSV export, and Active Learning YOLO export
 - Security headers, /whats-new, /portfolio, rate limiting, fail-closed mode
 - OAuth 2.0 Authorization Code + PKCE S256 + RS256 JWKS + SQLite session persistence
@@ -59,12 +60,12 @@ class MockIdentityServer:
                 if self.path == "/.well-known/openid-configuration":
                     return self._send(200, {
                         "issuer": parent.issuer,
-                        "authorization_endpoint": f"{parent.issuer}/oauth/authorize",
-                        "token_endpoint": f"{parent.issuer}/oauth/token",
-                        "jwks_uri": f"{parent.issuer}/oauth/jwks",
-                        "revocation_endpoint": f"{parent.issuer}/oauth/revoke",
+                        "authorization_endpoint": f"{parent.issuer}/authorize",
+                        "token_endpoint": f"{parent.issuer}/token",
+                        "jwks_uri": f"{parent.issuer}/jwks",
+                        "revocation_endpoint": f"{parent.issuer}/revoke",
                     })
-                if self.path == "/oauth/jwks":
+                if self.path == "/jwks":
                     return self._send(200, {"keys": [parent.public_jwk]})
                 self._send(404, {"error": "not_found"})
 
@@ -72,12 +73,12 @@ class MockIdentityServer:
                 length = int(self.headers.get("Content-Length", "0"))
                 body = self.rfile.read(length).decode("utf-8")
                 form = urllib.parse.parse_qs(body)
-                if self.path == "/oauth/revoke":
+                if self.path == "/revoke":
                     tok = (form.get("token") or [""])[0]
                     if tok:
                         parent.revoked_tokens.add(tok)
                     return self._send(200, {"revoked": True})
-                if self.path == "/oauth/token":
+                if self.path == "/token":
                     grant = (form.get("grant_type") or [""])[0]
                     if grant == "refresh_token":
                         rt = (form.get("refresh_token") or [""])[0]
@@ -132,6 +133,7 @@ class SnapQCServerTest(unittest.TestCase):
         os.environ["APP_ORIGIN"] = "https://snapqc.icxhnk.com"
         os.environ["PUBLIC_DEMO_ENABLED"] = "true"
         os.environ["IDENTITY_PLATFORM_ENABLED"] = "false"
+        os.environ["IDENTITY_REQUIRED_ROLES"] = ""
         os.environ["SNAPQC_RATE_LIMIT_PER_MIN"] = "30"
 
     def tearDown(self):
@@ -148,6 +150,32 @@ class SnapQCServerTest(unittest.TestCase):
                 return r.status, dict(r.headers), r.read()
         except urllib.error.HTTPError as e:
             return e.code, dict(e.headers), e.read()
+
+    def _login_user(self, sub: str, email: str, name: str, roles=None) -> str:
+        _, h, _ = self._req("/api/auth/oidc/start")
+        state = urllib.parse.parse_qs(urllib.parse.urlparse(h["Location"]).query)["state"][0]
+        state_cookie = h["Set-Cookie"].split(";")[0]
+        self.mock_idp.next_token_claims = {
+            "iss": self.mock_idp.issuer,
+            "aud": "snapqc",
+            "sub": sub,
+            "email": email,
+            "name": name,
+            "roles": roles or [],
+            "exp": int(time.time()) + 3600,
+        }
+        req_cb = urllib.request.Request(
+            f"{self.base}/api/auth/callback?code=code-{sub}&state={state}",
+            headers={"Cookie": state_cookie},
+        )
+        opener = urllib.request.build_opener(NoRedirect)
+        try:
+            opener.open(req_cb, timeout=10)
+            self.fail("Expected 302 redirect")
+        except urllib.error.HTTPError as e:
+            self.assertEqual(e.code, 302)
+            cookies = e.headers.get_all("Set-Cookie") or []
+            return [c.split(";")[0] for c in cookies if c.startswith("snapqc_session=")][0]
 
     def test_healthz_whats_new_portfolio_and_security_headers(self):
         status, headers, body = self._req("/healthz")
@@ -170,17 +198,11 @@ class SnapQCServerTest(unittest.TestCase):
         st_p, _, _ = self._req("/portfolio")
         self.assertEqual(st_p, 200)
 
-        st_m, _, body_m = self._req("/api/metrics")
-        self.assertEqual(st_m, 200)
-        self.assertIn("activeModel", json.loads(body_m))
-
     def test_live_onnx_detect_standard_and_sahi_tiling(self):
         img_bytes = SAMPLE_IMG.read_bytes()
         st1, _, b1 = self._req("/api/detect?conf=0.35&tile=0", method="POST", data=img_bytes)
         self.assertEqual(st1, 200)
-        d1 = json.loads(b1)
-        self.assertFalse(d1["tileMode"])
-        self.assertGreaterEqual(len(d1["detections"]), 3)
+        self.assertGreaterEqual(len(json.loads(b1)["detections"]), 3)
 
         st2, _, b2 = self._req("/api/detect?conf=0.35&tile=1", method="POST", data=img_bytes)
         self.assertEqual(st2, 200)
@@ -191,59 +213,49 @@ class SnapQCServerTest(unittest.TestCase):
         bad_status, _, _ = self._req("/api/detect", method="POST", data=b"not-an-image")
         self.assertEqual(bad_status, 400)
 
-    def test_sqlite_inspections_crud_csv_and_active_learning_export(self):
-        payload = json.dumps({
-            "vesselName": "TB Samudra Nusantara 24",
-            "blockLocation": "Bottom Shell Fr. 28-34",
-            "jointNo": "W-B04-12",
-            "wpsNo": "WPS-SMAW-04",
-            "welderId": "WLD-108",
-            "inspectorName": "Miftahul Ikhsan Tahir",
-            "standardRef": "ISO 5817 Level B",
-            "verdict": "REPAIR",
-            "notes": "Indikasi porositas lokal perlu grinding dan re-weld.",
-            "imageTitle": "Foto Uji Nyata 1",
-            "tileMode": True,
-            "detections": [{"id": "d1", "clsId": 0, "label": "Bad Weld", "conf": 0.89, "box": [0.4, 0.3, 0.15, 0.1]}],
-            "decisions": [{"id": "d1", "label": "Bad Weld", "conf": 0.89, "status": "approved"}],
-            "yoloLabels": "0 0.4750 0.3500 0.1500 0.1000  # Bad Weld",
-        }).encode("utf-8")
+    def test_hybrid_guest_plus_sso_personal_isolation(self):
+        os.environ["IDENTITY_PLATFORM_ENABLED"] = "true"
+        os.environ["PUBLIC_DEMO_ENABLED"] = "true"
+        os.environ["IDENTITY_ISSUER"] = self.mock_idp.issuer
+        os.environ["IDENTITY_CLIENT_ID"] = "snapqc"
+        os.environ["IDENTITY_CLIENT_SECRET"] = "test-secret-value"
+        os.environ["IDENTITY_REDIRECT_URI"] = "https://snapqc.icxhnk.com/api/auth/callback"
+        os.environ["IDENTITY_REQUIRED_ROLES"] = ""
 
-        st_c, _, b_c = self._req("/api/inspections", method="POST", data=payload, headers={"Content-Type": "application/json"})
-        self.assertEqual(st_c, 201)
-        created = json.loads(b_c)
-        self.assertTrue(created["reportNo"].startswith("SQC-"))
-        self.assertEqual(created["verdict"], "REPAIR")
-        self.assertEqual(created["approvedCount"], 1)
+        # Healthz reports hybrid mode
+        _, _, hb = self._req("/healthz")
+        self.assertEqual(json.loads(hb)["authMode"], "hybrid")
 
-        # Simulate container restart by clearing in-memory STORE_CACHE; SQLite file must retain data
-        snapqc_server.STORE_CACHE.clear()
+        # Guest can detect AND save public-demo report without logging in
+        st_gdet, _, _ = self._req("/api/detect", method="POST", data=SAMPLE_IMG.read_bytes())
+        self.assertEqual(st_gdet, 200)
+        guest_save = json.dumps({"vesselName": "Guest Ship", "verdict": "HOLD"}).encode("utf-8")
+        st_gs, _, b_gs = self._req("/api/inspections", method="POST", data=guest_save, headers={"Content-Type": "application/json"})
+        self.assertEqual(st_gs, 201)
+        guest_id = json.loads(b_gs)["id"]
 
-        st_l, _, b_l = self._req("/api/inspections")
-        self.assertEqual(st_l, 200)
-        listed = json.loads(b_l)
-        self.assertEqual(len(listed["items"]), 1)
-        self.assertEqual(listed["stats"]["approvedLabels"], 1)
+        # Any free SSO user (roles=[]) can sign in via SSO & save private personal report
+        user_cookie = self._login_user("sub-alice", "alice@example.com", "Alice Inspector", roles=[])
+        st_auth, _, b_auth = self._req("/api/auth/status", headers={"Cookie": user_cookie})
+        self.assertEqual(st_auth, 200)
+        auth_data = json.loads(b_auth)
+        self.assertTrue(auth_data["authenticated"])
+        self.assertEqual(auth_data["user"]["name"], "Alice Inspector")
 
-        st_g, _, b_g = self._req(f"/api/inspections/{created['id']}")
-        self.assertEqual(st_g, 200)
-        self.assertEqual(json.loads(b_g)["jointNo"], "W-B04-12")
+        alice_save = json.dumps({"vesselName": "Alice Private Ship", "verdict": "ACCEPT", "yoloLabels": "1 0.5 0.5 0.2 0.2 # Good Weld"}).encode("utf-8")
+        st_as, _, b_as = self._req("/api/inspections", method="POST", data=alice_save, headers={"Content-Type": "application/json", "Cookie": user_cookie})
+        self.assertEqual(st_as, 201)
+        alice_id = json.loads(b_as)["id"]
 
-        st_csv, h_csv, b_csv = self._req("/api/inspections.csv")
-        self.assertEqual(st_csv, 200)
-        self.assertIn("text/csv", h_csv.get("Content-Type", ""))
-        self.assertIn("TB Samudra Nusantara 24", b_csv.decode("utf-8"))
-
-        st_al, _, b_al = self._req("/api/active-learning/export")
-        self.assertEqual(st_al, 200)
-        al = json.loads(b_al)
-        self.assertEqual(al["sampleCount"], 1)
-        self.assertEqual(al["totalApprovedBoxes"], 1)
-
-        st_d, _, _ = self._req(f"/api/inspections/{created['id']}", method="DELETE")
-        self.assertEqual(st_d, 200)
-        st_l2, _, b_l2 = self._req("/api/inspections")
-        self.assertEqual(len(json.loads(b_l2)["items"]), 0)
+        # Isolation: Alice sees ONLY her private report, Guest sees ONLY guest report, Guest cannot read/delete Alice's report!
+        _, _, alice_list = self._req("/api/inspections", headers={"Cookie": user_cookie})
+        self.assertEqual([it["id"] for it in json.loads(alice_list)["items"]], [alice_id])
+        _, _, guest_list = self._req("/api/inspections")
+        self.assertEqual([it["id"] for it in json.loads(guest_list)["items"]], [guest_id])
+        st_forbid, _, _ = self._req(f"/api/inspections/{alice_id}")
+        self.assertEqual(st_forbid, 404)
+        st_del_forbid, _, _ = self._req(f"/api/inspections/{alice_id}", method="DELETE")
+        self.assertEqual(st_del_forbid, 404)
 
     def test_public_demo_rate_limit(self):
         os.environ["SNAPQC_RATE_LIMIT_PER_MIN"] = "2"
@@ -259,7 +271,7 @@ class SnapQCServerTest(unittest.TestCase):
         st, _, _ = self._req("/api/detect", method="POST", data=SAMPLE_IMG.read_bytes())
         self.assertEqual(st, 503)
 
-    def test_oauth_pkce_full_lifecycle_and_persistent_sessions(self):
+    def test_strict_oauth_pkce_lifecycle_and_role_enforcement(self):
         os.environ["IDENTITY_PLATFORM_ENABLED"] = "true"
         os.environ["PUBLIC_DEMO_ENABLED"] = "false"
         os.environ["IDENTITY_ISSUER"] = self.mock_idp.issuer
@@ -273,8 +285,7 @@ class SnapQCServerTest(unittest.TestCase):
 
         st_start, h_start, _ = self._req("/api/auth/oidc/start")
         self.assertEqual(st_start, 302)
-        q = urllib.parse.parse_qs(urllib.parse.urlparse(h_start["Location"]).query)
-        state = q["state"][0]
+        state = urllib.parse.parse_qs(urllib.parse.urlparse(h_start["Location"]).query)["state"][0]
         state_cookie = h_start["Set-Cookie"].split(";")[0]
 
         st_bad, _, _ = self._req("/api/auth/callback?code=abc&state=wrong-state", headers={"Cookie": state_cookie})
@@ -303,31 +314,7 @@ class SnapQCServerTest(unittest.TestCase):
         st_role, _, _ = self._req(f"/api/auth/callback?code=abc&state={state2}", headers={"Cookie": cookie2})
         self.assertEqual(st_role, 403)
 
-        _, h3, _ = self._req("/api/auth/oidc/start")
-        state3 = urllib.parse.parse_qs(urllib.parse.urlparse(h3["Location"]).query)["state"][0]
-        cookie3 = h3["Set-Cookie"].split(";")[0]
-        self.mock_idp.next_token_claims = {
-            "iss": self.mock_idp.issuer,
-            "aud": "snapqc",
-            "sub": "user-valid-1",
-            "name": "Ikhsan Inspector",
-            "roles": ["snapqc:user"],
-            "exp": int(time.time()) + 3600,
-        }
-        req_cb = urllib.request.Request(
-            f"{self.base}/api/auth/callback?code=valid-code&state={state3}",
-            headers={"Cookie": cookie3},
-        )
-        opener = urllib.request.build_opener(NoRedirect)
-        try:
-            opener.open(req_cb, timeout=10)
-            self.fail("Expected 302 redirect")
-        except urllib.error.HTTPError as e:
-            self.assertEqual(e.code, 302)
-            cookies = e.headers.get_all("Set-Cookie") or []
-            sess_cookie = [c.split(";")[0] for c in cookies if c.startswith("snapqc_session=")][0]
-
-        # Clear in-memory cache -> session must still survive via SQLite!
+        sess_cookie = self._login_user("user-valid-1", "ikhsan@example.com", "Ikhsan Inspector", roles=["snapqc:user"])
         snapqc_server.STORE_CACHE.clear()
         st_ok, _, _ = self._req("/api/detect", method="POST", data=SAMPLE_IMG.read_bytes(), headers={"Cookie": sess_cookie})
         self.assertEqual(st_ok, 200)

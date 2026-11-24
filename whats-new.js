@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.4.0",
+    date: "2026-11-24",
+    category: "Baru",
+    title: "Tampilan jauh lebih ramah pengguna, Login SSO aktif, & terbuka untuk siapa saja",
+    summary:
+      "SnapQC kini langsung bisa dipakai siapa saja tanpa wajib login (mode tamu gratis), sekaligus menyediakan tombol Sign in to SnapQC berbasis SSO agar setiap pengguna dapat masuk atau mendaftar dan menyimpan riwayat laporan QC pribadinya secara terpisah. Alur antarmuka diringkas menjadi 3 langkah mudah dengan ringkasan hasil otomatis berbahasa sederhana, tombol preset sensitivitas (Teliti/Seimbang/Ketat), serta bagian detail teknis YOLO yang dapat dibuka saat dibutuhkan.",
+  },
+  {
     version: "0.3.1",
     date: "2026-11-24",
     category: "Perbaikan",
@@ -14,7 +22,7 @@ const SnapQCReleases = [
     category: "Baru",
     title: "Laporan QC Galangan (SQLite + Cetak PDF), Mode Detail Mikro SAHI 2×2, & Upgrade UI/UX",
     summary:
-      "Menambahkan Formulir Laporan QC Galangan (kapal, blok/frame, joint, WPS, welder ID, standar ISO 5817/AWS D1.1/BKI, keputusan ACCEPT/REPAIR/HOLD) yang tersimpan permanen di database SQLite lengkap dengan ekspor CSV, ekspor dataset Active Learning JSON, dan cetak PDF laporan resmi A4. Menambahkan mode Detail Mikro (SAHI 2×2 tiling), drag-and-drop serta tempel Ctrl+V foto las, penempatan label kotak anti-tumpuk, tombol unduh PNG beranotasi dan salin/unduh label YOLO .txt, serta benchmark jujur Champion (YOLO11n 640px, 59,7% mAP@50) vs Challenger eksperimen (YOLO11s 960px, 56,6% mAP@50, +1,1% Defect).",
+      "Menambahkan Formulir Laporan QC Galangan (kapal, blok/frame, joint, WPS, welder ID, standar ISO 5817/AWS D1.1/BKI, keputusan ACCEPT/REPAIR/HOLD) yang tersimpan permanen di database SQLite lengkap dengan ekspor CSV, ekspor dataset Active Learning JSON, dan cetak PDF laporan resmi A4. Menambahkan mode Detail Mikro (SAHI 2×2 tiling), drag-and-drop serta tempel Ctrl+V foto las, penempatan label kotak anti-tumpuk, tombol unduh PNG beranotasi dan salin/unduh label YOLO .txt, serta benchmark jujur Champion vs Challenger.",
   },
   {
     version: "0.2.2",
@@ -30,7 +38,7 @@ const SnapQCReleases = [
     category: "Baru",
     title: "Rilis web produksi SnapQC, container Docker, dan kesiapan OAuth PKCE",
     summary:
-      "SnapQC kini dikemas sebagai container produksi Docker dengan pemuatan model ONNX di latar belakang agar halaman terbuka instan, proteksi batas laju unggahan foto, header keamanan HTTPS, dukungan rute langsung /whats-new, serta alur autentikasi OAuth 2.0 + PKCE S256 yang siap diaktifkan.",
+      "SnapQC dikemas sebagai container produksi Docker dengan pemuatan model ONNX di latar belakang, proteksi batas laju unggahan foto, header keamanan HTTPS, rute langsung /whats-new, serta alur autentikasi OAuth 2.0 + PKCE S256.",
   },
   {
     version: "0.2.0-welding-v1",
@@ -38,7 +46,7 @@ const SnapQCReleases = [
     category: "Baru",
     title: "Model Deep Learning Cacat Las v1 terlatih (YOLO11n ONNX) & deteksi foto nyata",
     summary:
-      "Model mandiri SnapQC Welding v1 selesai dilatih selama 40 epoch di GPU RTX 5060 menggunakan 2.028 foto las publik CC0 (5.686 label: Bad Weld, Good Weld, Defect) dan diekspor ke ONNX 10,13 MB. Evaluasi pada 126 foto uji terpisah mencapai mAP@50 59,7% (Bad Weld 80,2%, Good Weld 71,5%, Defect kecil 27,4%). Server kini menjalankan deteksi ONNX nyata pada foto kamera maupun unggahan, tetap dengan verifikasi wajib inspector manusia.",
+      "Model mandiri SnapQC Welding v1 selesai dilatih selama 40 epoch di GPU RTX 5060 menggunakan 2.028 foto las publik CC0 (5.686 label: Bad Weld, Good Weld, Defect) dan diekspor ke ONNX 10,13 MB.",
   },
   {
     version: "0.1.0-design",
@@ -46,7 +54,7 @@ const SnapQCReleases = [
     category: "Baru",
     title: "Prototipe desain antarmuka dan blueprint Deep Learning maritim",
     summary:
-      "Rilis awal tahap desain SnapQC khusus inspeksi visual galangan kapal (lambung, pengelasan, coating/karat, fit-up, dan outfitting). Mencakup prototipe kamera interaktif, filter batas keyakinan (confidence), verifikasi inspector (Human-in-the-Loop), pratinjau ekspor label YOLO untuk Active Learning, serta kurasi dataset publik.",
+      "Rilis awal tahap desain SnapQC khusus inspeksi visual galangan kapal beserta kurasi dataset publik.",
   },
 ];
 if (typeof module !== "undefined") module.exports = SnapQCReleases;
