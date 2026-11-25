@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.5.2",
+    date: "2026-11-25",
+    category: "Baru",
+    title: "Komunitas Saling Bantu Pekerja Maritim (Second Opinion, Sensor Privasi, & Solusi Terbaik)",
+    summary:
+      "Menghadirkan ruang sosial media khusus pekerja maritim (Welder, QC Inspector, Fitter, Marine Engineer, Surveyor, & K3) untuk saling meminta pendapat kedua layaknya konsultasi klinis. Pekerja dapat mengirim foto kasus langsung dari hasil Scan AI atau Galeri dengan alat Sensor Privasi untuk memburamkan nama kapal/nomor hull sebelum posting, mendapatkan voting cepat (Aman / Cek NDT / Wajib Rework), diskusi saran teknis ber-role, tombol Bermanfaat, penandaan Solusi Terbaik, serta filter & pencarian pustaka kasus lapangan.",
+  },
+  {
     version: "0.5.1",
     date: "2026-11-24",
     category: "Perbaikan",

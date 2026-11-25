@@ -6,6 +6,7 @@
 - OAuth 2.0 Authorization Code + PKCE S256 + RS256 JWKS + SQLite session persistence
 """
 
+import base64
 import http.server
 import json
 import os
@@ -335,6 +336,153 @@ class SnapQCServerTest(unittest.TestCase):
 
         st_after, _, _ = self._req("/api/detect", method="POST", data=SAMPLE_IMG.read_bytes(), headers={"Cookie": sess_cookie})
         self.assertEqual(st_after, 401)
+
+    def test_maritime_peer_help_community_lifecycle(self):
+        # /komunitas route serves SPA cleanly
+        st_page, _, body_page = self._req("/komunitas")
+        self.assertEqual(st_page, 200)
+        self.assertIn("Komunitas Second Opinion", body_page.decode("utf-8"))
+
+        # Starter cases auto-seeded
+        st_list, h_list, b_list = self._req("/api/community/posts")
+        self.assertEqual(st_list, 200)
+        list_data = json.loads(b_list)
+        self.assertEqual(len(list_data["items"]), 3)
+        self.assertEqual(list_data["stats"]["totalPosts"], 3)
+        owner_cookie = h_list.get("Set-Cookie", "").split(";")[0]
+        self.assertTrue(owner_cookie.startswith("snapqc_cid="))
+
+        # Reject invalid image payload
+        bad_payload = json.dumps({
+            "title": "Uji validasi gambar rusak",
+            "question": "Apakah payload gambar tidak valid ditolak dengan status 400?",
+            "imageDataUrl": "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
+        }).encode("utf-8")
+        st_bad, _, _ = self._req(
+            "/api/community/posts",
+            method="POST",
+            data=bad_payload,
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_bad, 400)
+
+        # Create real community post with JPEG photo
+        b64_jpg = base64.b64encode(SAMPLE_IMG.read_bytes()).decode("ascii")
+        create_payload = json.dumps({
+            "category": "Pengelasan",
+            "urgency": "critical",
+            "authorRole": "Welder",
+            "processPos": "FCAW · 4G",
+            "materialSpec": "AH36 · 14 mm",
+            "title": "Porositas rapat di fillet overhead — wajib gouging?",
+            "question": "Rekan senior, hasil fillet overhead keluar bintik porositas sepanjang 3 cm, apakah wajib gouging penuh?",
+            "isAnonymous": True,
+            "hasPrivacyBlur": True,
+            "aiSummary": "Perlu Periksa · 1 jalur las perlu dicek",
+            "imageDataUrl": f"data:image/jpeg;base64,{b64_jpg}",
+        }).encode("utf-8")
+        st_create, _, b_create = self._req(
+            "/api/community/posts",
+            method="POST",
+            data=create_payload,
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_create, 201)
+        post = json.loads(b_create)
+        post_id = post["id"]
+        self.assertTrue(post["canManage"])
+        self.assertEqual(post["authorName"], "Anonim · Welder")
+        self.assertTrue(post["imageUrl"].startswith("/api/community/images/"))
+
+        # Image endpoint serves sanitized JPEG
+        st_img, h_img, b_img = self._req(post["imageUrl"])
+        self.assertEqual(st_img, 200)
+        self.assertEqual(h_img.get("Content-Type"), "image/jpeg")
+        self.assertGreater(len(b_img), 1000)
+
+        # Second opinion voting: vote -> switch -> toggle off
+        st_v1, _, b_v1 = self._req(
+            f"/api/community/posts/{post_id}/vote",
+            method="POST",
+            data=json.dumps({"opinion": "rework"}).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_v1, 200)
+        self.assertEqual(json.loads(b_v1)["votes"]["rework"], 1)
+        st_v2, _, b_v2 = self._req(
+            f"/api/community/posts/{post_id}/vote",
+            method="POST",
+            data=json.dumps({"opinion": "ndt"}).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_v2, 200)
+        v2 = json.loads(b_v2)
+        self.assertEqual((v2["votes"]["rework"], v2["votes"]["ndt"], v2["myVote"]), (0, 1, "ndt"))
+
+        # Another worker adds a technical reply & marks helpful
+        st_rep, h_rep, b_rep = self._req(
+            f"/api/community/posts/{post_id}/replies",
+            method="POST",
+            data=json.dumps({
+                "authorName": "Pak Agus QC",
+                "authorRole": "QC Inspector",
+                "recommendation": "rework",
+                "body": "Gouging sampai logam bersih lalu cek gas pelindung dari angin galangan.",
+            }).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(st_rep, 201)
+        reply = json.loads(b_rep)
+        other_cookie = h_rep.get("Set-Cookie", "").split(";")[0]
+
+        st_help, _, b_help = self._req(
+            f"/api/community/replies/{reply['id']}/helpful",
+            method="POST",
+            data=b"{}",
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_help, 200)
+        self.assertEqual(json.loads(b_help)["helpfulCount"], 1)
+
+        # Non-owner cannot accept solution or delete post
+        st_acc_forbid, _, _ = self._req(
+            f"/api/community/posts/{post_id}/accept",
+            method="POST",
+            data=json.dumps({"replyId": reply["id"]}).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Cookie": other_cookie},
+        )
+        self.assertEqual(st_acc_forbid, 403)
+
+        st_del_forbid, _, _ = self._req(
+            f"/api/community/posts/{post_id}",
+            method="DELETE",
+            headers={"Cookie": other_cookie},
+        )
+        self.assertEqual(st_del_forbid, 403)
+
+        # Owner accepts reply -> post becomes solved and searchable
+        st_acc, _, b_acc = self._req(
+            f"/api/community/posts/{post_id}/accept",
+            method="POST",
+            data=json.dumps({"replyId": reply["id"]}).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Cookie": owner_cookie},
+        )
+        self.assertEqual(st_acc, 200)
+        self.assertTrue(json.loads(b_acc)["isSolved"])
+
+        st_q, _, b_q = self._req("/api/community/posts?status=solved&q=fillet%20overhead")
+        self.assertEqual(st_q, 200)
+        self.assertEqual([x["id"] for x in json.loads(b_q)["items"]], [post_id])
+
+        # Owner deletes post -> image cleaned up too
+        st_del, _, _ = self._req(
+            f"/api/community/posts/{post_id}",
+            method="DELETE",
+            headers={"Cookie": owner_cookie},
+        )
+        self.assertEqual(st_del, 200)
+        st_img_gone, _, _ = self._req(post["imageUrl"])
+        self.assertEqual(st_img_gone, 404)
 
 
 if __name__ == "__main__":

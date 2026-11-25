@@ -34,7 +34,7 @@ except ImportError:  # pragma: no cover
     PyJWK = None
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 METRICS_V1_PATH = ROOT / "models" / "metrics-v1.json"
 METRICS_V2_PATH = ROOT / "models" / "metrics-v2.json"
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -398,6 +398,37 @@ def prune_expired_state(cfg: dict):
     get_store(cfg).prune_sessions()
 
 
+def decode_and_sanitize_community_image(data_url: str) -> bytes | None:
+    raw_str = str(data_url or "").strip()
+    if not raw_str:
+        return None
+    if not raw_str.startswith("data:image/") or ";base64," not in raw_str:
+        raise ValueError("Format gambar komunitas harus berupa data URL gambar (JPG/PNG/WebP).")
+    header, b64_part = raw_str.split(";base64,", 1)
+    mime = header[5:].lower()
+    if mime not in {"image/jpeg", "image/jpg", "image/png", "image/webp"}:
+        raise ValueError("Hanya format JPG, PNG, atau WebP yang didukung.")
+    try:
+        raw_bytes = base64.b64decode(b64_part, validate=True)
+    except Exception:
+        raise ValueError("Data gambar base64 tidak valid.")
+    if len(raw_bytes) == 0 or len(raw_bytes) > 2_500_000:
+        raise ValueError("Ukuran foto komunitas maksimal 2,5 MB.")
+    arr = np.frombuffer(raw_bytes, dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("Foto komunitas tidak dapat dibaca sebagai gambar.")
+    h, w = img.shape[:2]
+    max_side = 1400
+    if max(h, w) > max_side:
+        scale = max_side / max(h, w)
+        img = cv2.resize(img, (max(1, int(round(w * scale))), max(1, int(round(h * scale)))), interpolation=cv2.INTER_AREA)
+    ok, enc = cv2.imencode(".jpg", img, [int(cv2.IMWRITE_JPEG_QUALITY), 86])
+    if not ok:
+        raise ValueError("Gagal mengonversi foto komunitas.")
+    return enc.tobytes()
+
+
 MIME_TYPES = {
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
@@ -446,6 +477,28 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return None, None
         return sid, get_store(cfg).get_session(sid)
 
+    def _client_identity(self, cfg: dict, sess: dict | None, ensure_cookie: bool = False) -> tuple[str, str, str, list[tuple[str, str]]]:
+        """Return (viewer_sub, viewer_token, voter_key, extra_headers)."""
+        viewer_sub = str(sess["sub"]).strip() if sess and sess.get("sub") else ""
+        cid = self._get_cookie("snapqc_cid") or ""
+        if cid and (not cid.replace("-", "").replace("_", "").isalnum() or len(cid) > 64):
+            cid = ""
+        extra_headers: list[tuple[str, str]] = []
+        if not cid and ensure_cookie:
+            cid = secrets.token_urlsafe(18)
+            extra_headers.append(("Set-Cookie", self._format_cookie("snapqc_cid", cid, 86400 * 180, cfg)))
+        voter_key = f"sub:{viewer_sub}" if viewer_sub else (f"cid:{cid}" if cid else "")
+        return viewer_sub, cid, voter_key, extra_headers
+
+    def _read_json_body(self, max_bytes: int = MAX_JSON_BYTES) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length <= 0 or length > max_bytes:
+            raise OverflowError("Ukuran payload melebihi batas (maks 3 MB).")
+        payload = json.loads(self.rfile.read(length).decode("utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("Format payload harus objek JSON.")
+        return payload
+
     def _require_access(self, cfg: dict) -> tuple[int, str, dict | None]:
         """Return (error_status, error_message, session_or_none).
         error_status == 0 means allowed.
@@ -488,12 +541,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def send_bytes(self, status: int, data: bytes, content_type: str, extra_headers: list[tuple[str, str]] | None = None):
+    def send_bytes(self, status: int, data: bytes, content_type: str, extra_headers: list[tuple[str, str]] | None = None, cache_control: str = "no-store"):
         cfg = get_config()
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", cache_control)
         self._send_security_headers(cfg)
         for k, v in (extra_headers or []):
             self.send_header(k, v)
@@ -664,7 +717,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         path = parsed.path
 
         if path == "/healthz":
-            db_stats = get_store(cfg).stats()
+            store = get_store(cfg)
+            db_stats = store.stats()
+            db_stats["community"] = store.community_stats()
             return self.send_json(200, {
                 "status": "ok",
                 "modelLoaded": SESSION is not None,
@@ -730,6 +785,39 @@ class Handler(http.server.BaseHTTPRequestHandler):
             store = get_store(cfg)
             return self.send_json(200, {"items": store.list_public_feed(limit=24)})
 
+        if path == "/api/community/posts":
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            qs = parse_qs(parsed.query)
+            viewer_sub, viewer_token, voter_key, extra_headers = self._client_identity(cfg, sess, ensure_cookie=True)
+            data = get_store(cfg).list_community_posts(
+                category=(qs.get("category") or [""])[0],
+                urgency=(qs.get("urgency") or [""])[0],
+                status=(qs.get("status") or [""])[0],
+                query=(qs.get("q") or [""])[0],
+                limit=int((qs.get("limit") or ["40"])[0] or 40),
+                voter_key=voter_key,
+                viewer_sub=viewer_sub,
+                viewer_token=viewer_token,
+            )
+            return self.send_json(200, data, extra_headers=extra_headers)
+
+        if path.startswith("/api/community/images/") and path.endswith(".jpg"):
+            code, msg, _ = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            post_id = path[len("/api/community/images/") : -4]
+            img_path = get_store(cfg).get_community_image_path(post_id)
+            if not img_path:
+                return self.send_json(404, {"error": "Foto kasus tidak ditemukan."})
+            return self.send_bytes(
+                200,
+                img_path.read_bytes(),
+                "image/jpeg",
+                cache_control="public, max-age=86400",
+            )
+
         if path == "/api/inspections":
             code, msg, sess = self._require_access(cfg)
             if code:
@@ -779,7 +867,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return self.send_json(404, {"error": "Catatan inspeksi tidak ditemukan."})
             return self.send_json(200, item)
 
-        if path in ("/", "/app", "/whats-new"):
+        if path in ("/", "/app", "/whats-new", "/komunitas"):
             target = ROOT / "prototype" / "index.html"
         elif path in ("/portfolio", "/portfolio/"):
             target = ROOT / "portfolio" / "index.html"
@@ -832,6 +920,99 @@ class Handler(http.server.BaseHTTPRequestHandler):
             except Exception as exc:
                 return self.send_json(500, {"error": str(exc)})
 
+        if parsed.path == "/api/community/posts":
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            if not check_rate_limit(self._client_ip() + ":comm_post", max(10, cfg["rate_limit_per_min"])):
+                return self.send_json(429, {"error": "Terlalu banyak kiriman komunitas. Coba lagi sebentar."})
+            viewer_sub, viewer_token, voter_key, extra_headers = self._client_identity(cfg, sess, ensure_cookie=True)
+            try:
+                payload = self._read_json_body()
+                img_bytes = decode_and_sanitize_community_image(payload.get("imageDataUrl") or "")
+                created = get_store(cfg).create_community_post(
+                    payload,
+                    image_bytes=img_bytes,
+                    author_sub=viewer_sub,
+                    author_token=viewer_token,
+                    sso_name=sess["name"] if sess else "",
+                    voter_key=voter_key,
+                )
+                return self.send_json(201, created, extra_headers=extra_headers)
+            except OverflowError as exc:
+                return self.send_json(413, {"error": str(exc)})
+            except ValueError as exc:
+                return self.send_json(400, {"error": str(exc)})
+            except Exception as exc:
+                return self.send_json(500, {"error": str(exc)})
+
+        if parsed.path.startswith("/api/community/posts/"):
+            parts = [p for p in parsed.path.split("/") if p]
+            # Expected: ['api', 'community', 'posts', post_id, action]
+            if len(parts) == 5 and parts[4] in {"vote", "replies", "accept"}:
+                code, msg, sess = self._require_access(cfg)
+                if code:
+                    return self.send_json(code, {"error": msg})
+                if not check_rate_limit(self._client_ip() + ":comm_act", max(30, cfg["rate_limit_per_min"] * 2)):
+                    return self.send_json(429, {"error": "Terlalu banyak interaksi. Coba lagi sebentar."})
+                post_id, action = parts[3], parts[4]
+                viewer_sub, viewer_token, voter_key, extra_headers = self._client_identity(cfg, sess, ensure_cookie=True)
+                try:
+                    payload = self._read_json_body(max_bytes=256 * 1024)
+                    store = get_store(cfg)
+                    if action == "vote":
+                        res = store.vote_community_post(post_id, voter_key, payload.get("opinion") or "")
+                        if not res:
+                            return self.send_json(404, {"error": "Kasus tidak ditemukan."})
+                        return self.send_json(200, res, extra_headers=extra_headers)
+                    if action == "replies":
+                        rep = store.add_community_reply(
+                            post_id,
+                            payload,
+                            author_sub=viewer_sub,
+                            author_token=viewer_token,
+                            sso_name=sess["name"] if sess else "",
+                        )
+                        if not rep:
+                            return self.send_json(404, {"error": "Kasus tidak ditemukan."})
+                        return self.send_json(201, rep, extra_headers=extra_headers)
+                    if action == "accept":
+                        res = store.accept_community_reply(
+                            post_id,
+                            str(payload.get("replyId") or "").strip(),
+                            viewer_sub,
+                            viewer_token,
+                        )
+                        if not res:
+                            return self.send_json(404, {"error": "Kasus tidak ditemukan."})
+                        return self.send_json(200, res, extra_headers=extra_headers)
+                except OverflowError as exc:
+                    return self.send_json(413, {"error": str(exc)})
+                except PermissionError as exc:
+                    return self.send_json(403, {"error": str(exc)})
+                except ValueError as exc:
+                    return self.send_json(400, {"error": str(exc)})
+                except Exception as exc:
+                    return self.send_json(500, {"error": str(exc)})
+
+        if parsed.path.startswith("/api/community/replies/") and parsed.path.endswith("/helpful"):
+            parts = [p for p in parsed.path.split("/") if p]
+            if len(parts) == 5:
+                code, msg, sess = self._require_access(cfg)
+                if code:
+                    return self.send_json(code, {"error": msg})
+                if not check_rate_limit(self._client_ip() + ":comm_act", max(30, cfg["rate_limit_per_min"] * 2)):
+                    return self.send_json(429, {"error": "Terlalu banyak interaksi. Coba lagi sebentar."})
+                reply_id = parts[3]
+                _, _, voter_key, extra_headers = self._client_identity(cfg, sess, ensure_cookie=True)
+                try:
+                    res = get_store(cfg).toggle_reply_helpful(reply_id, voter_key)
+                    if not res:
+                        return self.send_json(404, {"error": "Komentar tidak ditemukan."})
+                    return self.send_json(200, res, extra_headers=extra_headers)
+                except ValueError as exc:
+                    return self.send_json(400, {"error": str(exc)})
+
         if parsed.path != "/api/detect":
             return self.send_json(404, {"error": "Endpoint tidak ditemukan."})
 
@@ -861,6 +1042,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_DELETE(self):
         cfg = get_config()
         parsed = urlparse(self.path)
+        if parsed.path.startswith("/api/community/posts/"):
+            code, msg, sess = self._require_access(cfg)
+            if code:
+                return self.send_json(code, {"error": msg})
+            post_id = parsed.path[len("/api/community/posts/") :].strip().strip("/")
+            viewer_sub, viewer_token, _, _ = self._client_identity(cfg, sess, ensure_cookie=False)
+            try:
+                deleted = get_store(cfg).delete_community_post(post_id, viewer_sub, viewer_token)
+            except PermissionError as exc:
+                return self.send_json(403, {"error": str(exc)})
+            if not deleted:
+                return self.send_json(404, {"error": "Kasus komunitas tidak ditemukan."})
+            return self.send_json(200, {"deleted": True, "id": post_id})
+
         if not parsed.path.startswith("/api/inspections/"):
             return self.send_json(404, {"error": "Endpoint tidak ditemukan."})
         code, msg, sess = self._require_access(cfg)

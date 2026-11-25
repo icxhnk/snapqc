@@ -362,18 +362,150 @@
       .bottom-bar {
         display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 45;
         background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(12px);
-        border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
-        grid-template-columns: repeat(4, 1fr); gap: 2px;
+        border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+        grid-template-columns: repeat(5, 1fr); gap: 2px;
       }
       .bottom-bar button, .bottom-bar label {
-        border: 0; background: transparent; color: var(--muted); padding: 6px 2px;
-        border-radius: 10px; font: 600 11px/1.2 inherit; cursor: pointer;
+        border: 0; background: transparent; color: var(--muted); padding: 5px 1px;
+        border-radius: 10px; font: 600 10.5px/1.2 inherit; cursor: pointer;
         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-        margin: 0;
+        margin: 0; min-width: 0;
       }
       .bottom-bar button[aria-current="page"] { color: var(--brand-dark); }
       .bottom-bar label { color: var(--brand-dark); }
-      .bottom-bar svg { width: 21px; height: 21px; }
+      .bottom-bar svg { width: 20px; height: 20px; }
+
+      /* Maritime Peer-Help Community ("Second Opinion") */
+      .comm-hero {
+        padding: 16px; background: linear-gradient(135deg, #0f172a 0%, #0e7490 100%);
+        color: #fff; border: 0;
+      }
+      .comm-hero h1 { margin: 0 0 6px; font-size: 19px; letter-spacing: -0.02em; line-height: 1.25; }
+      .comm-hero p { margin: 0 0 13px; font-size: 13.5px; color: rgba(241, 245, 249, 0.9); line-height: 1.45; }
+      .comm-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .comm-hero .btn-hero-main {
+        background: #fff; color: #0f172a; border-color: #fff; font-weight: 700;
+      }
+      .comm-hero .btn-hero-main:hover { background: #f1f5f9; }
+      .comm-hero .btn-hero-sec {
+        background: rgba(255, 255, 255, 0.14); color: #fff; border-color: rgba(255, 255, 255, 0.3);
+      }
+      .comm-hero .btn-hero-sec:hover { background: rgba(255, 255, 255, 0.24); }
+      .comm-stat-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+      .comm-stat-pill {
+        background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 12px; padding: 8px 10px; text-align: center;
+      }
+      .comm-stat-pill strong { display: block; font-size: 17px; line-height: 1.15; }
+      .comm-stat-pill span { font-size: 11px; color: rgba(241, 245, 249, 0.86); }
+
+      .comm-filters { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+      .comm-search-row { display: flex; gap: 8px; align-items: center; }
+      .comm-search-input {
+        flex: 1; min-width: 0; font: 14px/1.3 inherit; padding: 9px 12px;
+        border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); color: var(--ink);
+      }
+      .comm-search-input:focus { outline: 2px solid var(--brand); background: #fff; border-color: transparent; }
+      .chip-strip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+      .chip-strip::-webkit-scrollbar { display: none; }
+      .filter-chip {
+        border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
+        padding: 6px 11px; border-radius: 999px; font: 600 12px/1.2 inherit;
+        cursor: pointer; white-space: nowrap; flex: none; min-height: 32px;
+      }
+      .filter-chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+      .filter-chip.cat.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+      .case-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+      .case-meta-badges { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+      .role-chip {
+        display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+        font-size: 11px; font-weight: 700; background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+      }
+      .verified-mark {
+        display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px;
+        border-radius: 50%; background: #0284c7; color: #fff; font-size: 10px; font-weight: 800; flex: none;
+      }
+      .case-title { margin: 0 0 6px; font-size: 15.5px; line-height: 1.35; color: var(--ink); }
+      .case-question { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-soft); white-space: pre-line; }
+      .case-img-wrap { position: relative; background: #0a1017; cursor: zoom-in; }
+      .case-img { width: 100%; max-height: 360px; object-fit: cover; display: block; }
+      .case-img-badge {
+        position: absolute; bottom: 8px; right: 8px; background: rgba(15, 23, 42, 0.78);
+        color: #f8fafc; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px;
+      }
+      .ai-note-pill {
+        display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+        background: var(--brand-pale); color: var(--brand-dark); border: 1px solid #a5f3fc;
+        padding: 5px 10px; border-radius: 10px; margin-bottom: 10px;
+      }
+
+      /* Structured Second-Opinion Vote Bar */
+      .opinion-box {
+        background: var(--surface-soft); border: 1px solid var(--line-soft);
+        border-radius: 12px; padding: 11px 12px; margin: 10px 0 12px;
+      }
+      .opinion-head {
+        display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap;
+        font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 8px;
+      }
+      .opinion-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .op-btn {
+        border: 1px solid var(--line); background: #fff; color: var(--ink);
+        padding: 8px 6px; border-radius: 10px; font: 600 12px/1.2 inherit;
+        cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+        transition: all 0.15s; min-height: 46px; justify-content: center; text-align: center;
+      }
+      .op-btn strong { font-size: 13px; }
+      .op-btn.pass.active, .op-btn.pass:hover { background: var(--ok-pale); border-color: #86efac; color: #15803d; }
+      .op-btn.ndt.active, .op-btn.ndt:hover { background: var(--amber-pale); border-color: #fcd34d; color: #b45309; }
+      .op-btn.rework.active, .op-btn.rework:hover { background: var(--danger-pale); border-color: #fca5a5; color: #b91c1c; }
+      .consensus-bar {
+        display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: #e2e8f0; margin-top: 9px;
+      }
+      .consensus-bar .seg-pass { background: #16a34a; }
+      .consensus-bar .seg-ndt { background: #f59e0b; }
+      .consensus-bar .seg-rework { background: #dc2626; }
+      .consensus-text { font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+
+      /* Peer Replies */
+      .replies-wrap { border-top: 1px solid var(--line-soft); padding-top: 11px; display: flex; flex-direction: column; gap: 9px; }
+      .reply-card {
+        border: 1px solid var(--line-soft); background: var(--surface-soft);
+        border-radius: 12px; padding: 10px 12px;
+      }
+      .reply-card.accepted {
+        border: 1.5px solid #22c55e; background: #f0fdf4;
+      }
+      .reply-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+      .reply-author { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; }
+      .reply-body { margin: 0 0 8px; font-size: 13.5px; color: var(--ink); white-space: pre-line; }
+      .reply-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .reply-form {
+        margin-top: 4px; padding: 11px; border-radius: 12px; background: #f8fafc;
+        border: 1px dashed #cbd5e1; display: flex; flex-direction: column; gap: 8px;
+      }
+      .reply-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .reply-form input, .reply-form select, .reply-form textarea {
+        font: 13.5px/1.35 inherit; padding: 8px 10px; border: 1px solid var(--line);
+        border-radius: 10px; background: #fff; color: var(--ink); width: 100%;
+      }
+
+      /* Privacy Blur Canvas inside Community Modal */
+      .blur-stage-wrap {
+        position: relative; background: #0a1017; border-radius: 12px; overflow: hidden;
+        border: 1px solid var(--line); margin-bottom: 8px;
+      }
+      .blur-stage-wrap canvas { width: 100%; height: auto; max-height: 260px; object-fit: contain; display: block; touch-action: none; }
+      .blur-stage-wrap.blur-active canvas { cursor: crosshair; }
+      .blur-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+
+      /* Image Lightbox */
+      .lightbox {
+        position: fixed; inset: 0; z-index: 90; background: rgba(2, 6, 23, 0.88);
+        display: flex; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out;
+      }
+      .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 12px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
 
       /* Toast */
       .toast {
@@ -419,7 +551,9 @@
         .feed-layout { grid-template-columns: 1fr; gap: 14px; }
         .side-col { position: static; }
         .kpi-row { grid-template-columns: repeat(2, 1fr); }
-        .two-col, .form-grid { grid-template-columns: 1fr; }
+        .two-col, .form-grid, .reply-form-row { grid-template-columns: 1fr; }
+        .opinion-btns { gap: 5px; }
+        .op-btn { padding: 7px 4px; font-size: 11.5px; }
         .history-table-card { display: none; }
         .history-cards { display: flex; }
         .bottom-bar { display: grid; }
@@ -436,6 +570,8 @@
     <!-- Dedicated separate inputs: Gallery (NO capture!) vs Native Phone Camera (capture=environment) -->
     <input id="file-gallery" class="sr-file" type="file" accept="image/*" />
     <input id="file-camera" class="sr-file" type="file" accept="image/*" capture="environment" />
+    <input id="file-comm-gallery" class="sr-file" type="file" accept="image/*" />
+    <input id="file-comm-camera" class="sr-file" type="file" accept="image/*" capture="environment" />
 
     <header class="nav-bar">
       <div class="nav-inner">
@@ -446,7 +582,8 @@
         </a>
 
         <nav class="nav-tabs" aria-label="Navigasi utama">
-          <button type="button" data-tab="kamera" aria-current="page">Beranda</button>
+          <button type="button" data-tab="kamera" aria-current="page">Scan AI</button>
+          <button type="button" data-tab="komunitas">Komunitas</button>
           <button type="button" data-tab="riwayat">Riwayat</button>
           <button type="button" data-tab="model">Performa AI</button>
           <button type="button" data-tab="whats-new">What's New</button>
@@ -469,7 +606,8 @@
     </header>
 
     <nav class="mobile-drawer" id="mobile-drawer" aria-label="Menu mobile">
-      <button type="button" data-tab="kamera" aria-current="page">Beranda &amp; Cek Las</button>
+      <button type="button" data-tab="kamera" aria-current="page">Scan AI &amp; Cek Las</button>
+      <button type="button" data-tab="komunitas">Komunitas Saling Bantu</button>
       <button type="button" data-tab="riwayat">Riwayat Laporan</button>
       <button type="button" data-tab="model">Performa AI</button>
       <button type="button" data-tab="whats-new">What's New</button>
@@ -572,9 +710,13 @@
 
             <div class="post-actions">
               <div class="action-group">
-                <button type="button" class="act-btn primary" id="btn-open-report">
+                <button type="button" class="act-btn primary" id="btn-ask-community">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Tanya Komunitas
+                </button>
+                <button type="button" class="act-btn" id="btn-open-report">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  Simpan &amp; Laporan QC
+                  Laporan QC
                 </button>
                 <button type="button" class="act-btn" id="btn-print-qc">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -614,6 +756,12 @@
 
         <!-- Sticky Right Rail (desktop) / Bottom Info Cards (mobile) -->
         <aside class="side-col">
+          <div class="card side-card" style="background:linear-gradient(135deg,#0f172a 0%,#0e7490 100%);color:#fff;border:0">
+            <h3 style="color:#fff">Komunitas Second Opinion</h3>
+            <p style="color:rgba(241,245,249,0.9)">Ragu soal hasil las atau kondisi lapangan? Minta pendapat kedua dari rekan welder, QC Inspector, &amp; marine engineer dengan privasi kapal tetap aman.</p>
+            <button type="button" class="btn btn-sm" style="width:100%;background:#fff;color:#0f172a;border-color:#fff;font-weight:700" data-tab-jump="komunitas">Buka Forum Komunitas →</button>
+          </div>
+
           <div class="card side-card">
             <h3 id="side-auth-title">Gratis untuk Siapa Saja</h3>
             <p id="side-auth-desc">Langsung pilih foto dari galeri atau kamera tanpa login. Masuk akun agar riwayat laporan QC Anda tersimpan pribadi.</p>
@@ -636,13 +784,72 @@
           <div class="card side-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <h3 style="margin:0">Status Mesin AI</h3>
-              <span class="badge b-info" id="side-version">v0.5.1</span>
+              <span class="badge b-info" id="side-version">v0.5.2</span>
             </div>
             <p id="engine-banner" style="margin-bottom:10px">Menyiapkan model ONNX…</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button type="button" class="btn btn-sm" data-tab-jump="model">Lihat Akurasi</button>
               <a class="btn btn-sm" href="/portfolio">Portofolio PDF</a>
             </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- TAB 1B: KOMUNITAS SALING BANTU PEKERJA MARITIM -->
+      <section id="tab-komunitas" class="feed-layout hidden">
+        <div class="feed-col">
+          <div class="card comm-hero">
+            <h1>Komunitas Second Opinion Pekerja Maritim</h1>
+            <p>Layaknya konsultasi sesama dokter — kirim foto kasus lapangan secara anonim, sensor nama kapal/hull, dan dapatkan pendapat kedua yang terstruktur dari rekan Welder, QC Inspector, Fitter, Marine Engineer, &amp; Surveyor.</p>
+            <div class="comm-hero-actions">
+              <button type="button" class="btn btn-hero-main" id="btn-new-case">+ Tanya Kasus Lapangan</button>
+              <button type="button" class="btn btn-hero-sec" id="btn-case-from-scan">Pakai Foto Scan AI</button>
+            </div>
+            <div class="comm-stat-bar">
+              <div class="comm-stat-pill"><strong id="comm-stat-open">0</strong><span>Butuh Pendapat</span></div>
+              <div class="comm-stat-pill"><strong id="comm-stat-solved">0</strong><span>Terselesaikan</span></div>
+              <div class="comm-stat-pill"><strong id="comm-stat-replies">0</strong><span>Saran Rekan</span></div>
+            </div>
+          </div>
+
+          <div class="card comm-filters">
+            <div class="comm-search-row">
+              <input id="comm-search" class="comm-search-input" type="search" placeholder="Cari kasus: undercut, porosity, FCAW, BKI, pipa…" />
+              <button type="button" class="btn btn-sm" id="btn-comm-refresh">Segarkan</button>
+            </div>
+            <div class="chip-strip" id="comm-status-chips" role="group" aria-label="Filter status kasus">
+              <button type="button" class="filter-chip active" data-comm-status="">Semua Kasus</button>
+              <button type="button" class="filter-chip" data-comm-status="open">Butuh Pendapat</button>
+              <button type="button" class="filter-chip" data-comm-status="critical">🚨 Kritis</button>
+              <button type="button" class="filter-chip" data-comm-status="solved">✅ Terselesaikan</button>
+            </div>
+            <div class="chip-strip" id="comm-cat-chips" role="group" aria-label="Filter kategori kasus">
+              <button type="button" class="filter-chip cat active" data-comm-cat="">Semua Bidang</button>
+              <button type="button" class="filter-chip cat" data-comm-cat="Pengelasan">Pengelasan</button>
+              <button type="button" class="filter-chip cat" data-comm-cat="Lambung & Pelat">Lambung &amp; Pelat</button>
+              <button type="button" class="filter-chip cat" data-comm-cat="Perpipaan">Perpipaan</button>
+              <button type="button" class="filter-chip cat" data-comm-cat="Kamar Mesin">Kamar Mesin</button>
+              <button type="button" class="filter-chip cat" data-comm-cat="K3 & Keselamatan">K3 &amp; Keselamatan</button>
+            </div>
+          </div>
+
+          <div id="comm-posts-list" class="feed-col"></div>
+        </div>
+
+        <aside class="side-col">
+          <div class="card side-card">
+            <h3>Etika &amp; Privasi Proyek</h3>
+            <div class="legend">
+              <div class="legend-item"><span>🔒</span><span><strong>Anonim Otomatis:</strong> Nama kapal, nomor hull, &amp; logo galangan wajib disamarkan demi kepatuhan NDA.</span></div>
+              <div class="legend-item"><span>🩺</span><span><strong>Second Opinion Terstruktur:</strong> Gunakan voting <em>Aman / Cek NDT / Wajib Rework</em> + sebutkan alasan teknis.</span></div>
+              <div class="legend-item"><span>⚠️</span><span><strong>Keselamatan Utama:</strong> Diskusi komunitas adalah bantuan rekan; keputusan akhir tetap merujuk standar kelas &amp; QC resmi.</span></div>
+            </div>
+          </div>
+
+          <div class="card side-card">
+            <h3>Punya Foto Cacat Las?</h3>
+            <p>Scan dulu memakai AI SnapQC untuk menandai area mencurigakan, lalu klik <strong>Tanya Komunitas</strong> agar rekan senior bisa langsung memberi masukan.</p>
+            <button type="button" class="btn btn-primary btn-sm" style="width:100%" data-tab-jump="kamera">Buka Scan AI</button>
           </div>
         </aside>
       </section>
@@ -737,8 +944,12 @@
     <!-- Mobile Bottom Navigation (native label for="file-gallery" directly opens Gallery!) -->
     <nav class="bottom-bar" aria-label="Navigasi bawah mobile">
       <button type="button" data-tab="kamera" aria-current="page">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
-        Beranda
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-3h4l2 3h4v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        Scan AI
+      </button>
+      <button type="button" data-tab="komunitas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Komunitas
       </button>
       <label for="file-gallery">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -750,9 +961,111 @@
       </button>
       <button type="button" data-tab="whats-new">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"/></svg>
-        What's New
+        Update
       </button>
     </nav>
+
+    <!-- Community New Case / Second Opinion Composer Modal (with Privacy Blur Brush!) -->
+    <div class="modal-backdrop hidden" id="comm-modal" role="dialog" aria-modal="true" aria-labelledby="comm-modal-title">
+      <div class="modal">
+        <div class="modal-head">
+          <h2 id="comm-modal-title">Minta Second Opinion Komunitas</h2>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-close-comm-modal">Tutup ✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <label for="file-comm-gallery" class="btn btn-primary btn-sm" style="margin:0">Pilih Foto Galeri</label>
+            <label for="file-comm-camera" class="btn btn-sm" style="margin:0">Foto Kamera</label>
+            <button type="button" class="btn btn-sm" id="btn-comm-use-scan">Pakai Foto Scan Aktif</button>
+          </div>
+
+          <div id="comm-photo-area" class="hidden">
+            <div class="blur-stage-wrap" id="comm-blur-wrap">
+              <canvas id="comm-blur-canvas" width="960" height="640"></canvas>
+            </div>
+            <div class="blur-toolbar">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <button type="button" class="btn btn-sm" id="btn-toggle-blur-mode">🔒 Sensor Area Privasi</button>
+                <button type="button" class="btn btn-sm" id="btn-undo-blur">Undo Sensor</button>
+                <button type="button" class="btn btn-sm btn-ghost" id="btn-clear-comm-photo" style="color:var(--danger)">Hapus Foto</button>
+              </div>
+              <label style="font-size:12px;display:inline-flex;align-items:center;gap:5px;cursor:pointer" id="comm-ai-boxes-wrap" class="hidden">
+                <input id="comm-include-ai-boxes" type="checkbox" checked />
+                <span>Sertakan Kotak AI</span>
+              </label>
+            </div>
+            <p style="margin:0 0 10px;font-size:12px;color:var(--muted)" id="comm-blur-hint">Tips privasi: Aktifkan <strong>Sensor Area Privasi</strong> lalu geser/usap pada foto untuk memburamkan nama kapal, nomor hull, atau logo perusahaan sebelum diposting.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="c-category">Bidang Kasus</label>
+              <select id="c-category">
+                <option value="Pengelasan">Pengelasan</option>
+                <option value="Lambung & Pelat">Lambung &amp; Pelat</option>
+                <option value="Perpipaan">Perpipaan</option>
+                <option value="Kamar Mesin">Kamar Mesin</option>
+                <option value="K3 & Keselamatan">K3 &amp; Keselamatan</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-urgency">Tingkat Urgensi</label>
+              <select id="c-urgency">
+                <option value="normal">Diskusi Santai</option>
+                <option value="survey">Perlu Cek Sebelum Survei</option>
+                <option value="critical">Kritis / Tahan Pekerjaan</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-role">Peran Anda</label>
+              <select id="c-role">
+                <option value="Welder">Welder</option>
+                <option value="QC Inspector">QC Inspector</option>
+                <option value="Fitter">Fitter</option>
+                <option value="Marine Engineer">Marine Engineer</option>
+                <option value="Surveyor">Surveyor</option>
+                <option value="K3 / Safety">K3 / Safety</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-process">Proses / Posisi (Opsional)</label>
+              <input id="c-process" type="text" placeholder="Contoh: FCAW · 3G Vertikal" />
+            </div>
+            <div class="field full">
+              <label for="c-material">Material / Tebal Pelat (Opsional)</label>
+              <input id="c-material" type="text" placeholder="Contoh: Baja Grade A · 12 mm / Pipa Sch 40" />
+            </div>
+            <div class="field full">
+              <label for="c-title">Judul Singkat Kasus *</label>
+              <input id="c-title" type="text" maxlength="140" placeholder="Contoh: Indikasi undercut di sambungan bottom shell — wajib gouging ulang?" />
+            </div>
+            <div class="field full">
+              <label for="c-question">Ceritakan Kondisi &amp; Pertanyaan Anda *</label>
+              <textarea id="c-question" rows="3" maxlength="2000" placeholder="Jelaskan kendala lapangan, parameter las, atau hal yang membuat Anda ragu agar rekan senior bisa memberi saran tepat..."></textarea>
+            </div>
+            <div class="field full">
+              <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+                <input id="c-anon" type="checkbox" checked style="width:auto" />
+                <span><strong>Posting Anonim</strong> (sembunyikan nama akun &amp; proyek, tampilkan peran lapangan saja)</span>
+              </label>
+            </div>
+            <div class="field full hidden" id="c-author-name-wrap">
+              <label for="c-author-name">Nama Tampilan Anda</label>
+              <input id="c-author-name" type="text" maxlength="80" placeholder="Contoh: Andi · Welder Batam" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span style="font-size:12px;color:var(--muted)" id="comm-ai-badge">Metadata EXIF &amp; GPS otomatis dibersihkan</span>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-submit-case">Kirim ke Komunitas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photo Lightbox -->
+    <div class="lightbox hidden" id="photo-lightbox" role="dialog" aria-modal="true" aria-label="Perbesar foto kasus">
+      <img id="lightbox-img" src="" alt="Foto kasus diperbesar" />
+    </div>
 
     <!-- QC Report & Save Modal -->
     <div class="modal-backdrop hidden" id="report-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -971,15 +1284,16 @@
             if (b.dataset.tab === tab) b.setAttribute("aria-current", "page");
             else b.removeAttribute("aria-current");
           });
-          ["kamera", "riwayat", "model", "whats-new"].forEach((id) => {
+          ["kamera", "komunitas", "riwayat", "model", "whats-new"].forEach((id) => {
             document.getElementById("tab-" + id).classList.toggle("hidden", id !== tab);
           });
           mobileDrawer.classList.remove("open");
           menuToggle.setAttribute("aria-expanded", "false");
+          if (tab === "komunitas") loadPeerCommunity();
           if (tab === "riwayat") loadHistoryFromServer();
           if (tab === "model") loadMetricsFromServer();
           if (location.protocol !== "file:") {
-            const targetPath = tab === "whats-new" ? "/whats-new" : "/";
+            const targetPath = tab === "whats-new" ? "/whats-new" : tab === "komunitas" ? "/komunitas" : "/";
             if (location.pathname !== targetPath) history.replaceState(null, "", targetPath);
           }
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1017,6 +1331,8 @@
             pubWrap.classList.remove("hidden");
             const inspInput = document.getElementById("f-inspector");
             if (!inspInput.value.trim()) inspInput.value = nm;
+            const cNameInput = document.getElementById("c-author-name");
+            if (cNameInput && !cNameInput.value.trim()) cNameInput.value = nm;
           } else {
             navUser.classList.add("hidden");
             drawerOut.classList.add("hidden");
@@ -1690,13 +2006,680 @@
           loadCommunityFeed();
         }
 
+        // ---------------- Maritime Peer-Help Community ("Second Opinion") ----------------
+        const commModal = document.getElementById("comm-modal");
+        const commBlurCanvas = document.getElementById("comm-blur-canvas");
+        const commBlurCtx = commBlurCanvas.getContext("2d");
+        const commBlurWrap = document.getElementById("comm-blur-wrap");
+        const commGalleryInput = document.getElementById("file-comm-gallery");
+        const commCameraInput = document.getElementById("file-comm-camera");
+        const lightbox = document.getElementById("photo-lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+
+        let commFilterStatus = "";
+        let commFilterCat = "";
+        let commSearchTimer = null;
+        let commCachedPosts = [];
+        let commBaseImg = null;
+        let commFromScanner = false;
+        let commBlurMode = false;
+        let commBlurRects = [];
+        let commDragStart = null;
+        let commDragCurrent = null;
+        let commAttachedAiSummary = "";
+        let commAttachedDetections = [];
+
+        const URGENCY_META = {
+          critical: { label: "🚨 Kritis", cls: "b-high" },
+          survey: { label: "📋 Cek Survei", cls: "b-warn" },
+          normal: { label: "💬 Diskusi", cls: "b-info" },
+        };
+        const REC_META = {
+          pass: { label: "Saran: Aman / Lolos", cls: "b-ok" },
+          ndt: { label: "Saran: Perlu Cek NDT", cls: "b-warn" },
+          rework: { label: "Saran: Wajib Rework", cls: "b-high" },
+          tips: { label: "Tips Teknis", cls: "b-info" },
+        };
+
+        lightbox.onclick = () => lightbox.classList.add("hidden");
+        function openLightbox(src) {
+          if (!src) return;
+          lightboxImg.src = src;
+          lightbox.classList.remove("hidden");
+        }
+
+        function pixelateRegion(c, x, y, w, h) {
+          const rx = Math.max(0, Math.floor(x));
+          const ry = Math.max(0, Math.floor(y));
+          const rw = Math.min(c.canvas.width - rx, Math.ceil(w));
+          const rh = Math.min(c.canvas.height - ry, Math.ceil(h));
+          if (rw < 4 || rh < 4) return;
+          const step = Math.max(10, Math.round(Math.min(rw, rh) / 6));
+          const imgData = c.getImageData(rx, ry, rw, rh);
+          const d = imgData.data;
+          for (let py = 0; py < rh; py += step) {
+            for (let px = 0; px < rw; px += step) {
+              const idx = (Math.min(rh - 1, py + Math.floor(step / 2)) * rw + Math.min(rw - 1, px + Math.floor(step / 2))) * 4;
+              const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+              c.fillStyle = `rgb(${r},${g},${b})`;
+              c.fillRect(rx + px, ry + py, Math.min(step, rw - px), Math.min(step, rh - py));
+            }
+          }
+          c.strokeStyle = "rgba(255,255,255,0.65)";
+          c.lineWidth = 2;
+          c.strokeRect(rx, ry, rw, rh);
+        }
+
+        function drawCommPreview() {
+          const area = document.getElementById("comm-photo-area");
+          if (!commBaseImg) {
+            area.classList.add("hidden");
+            return;
+          }
+          area.classList.remove("hidden");
+          const maxW = 960;
+          const iw = commBaseImg.naturalWidth || commBaseImg.width || 960;
+          const ih = commBaseImg.naturalHeight || commBaseImg.height || 640;
+          const scale = Math.min(1, maxW / Math.max(iw, ih));
+          commBlurCanvas.width = Math.max(1, Math.round(iw * scale));
+          commBlurCanvas.height = Math.max(1, Math.round(ih * scale));
+          commBlurCtx.drawImage(commBaseImg, 0, 0, commBlurCanvas.width, commBlurCanvas.height);
+
+          // Optional AI bounding boxes when attached from scanner
+          const includeBoxes = commFromScanner && document.getElementById("comm-include-ai-boxes").checked;
+          if (includeBoxes && commAttachedDetections.length) {
+            const cw = commBlurCanvas.width, ch = commBlurCanvas.height;
+            commBlurCtx.font = "bold 14px -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif";
+            commAttachedDetections.forEach((d) => {
+              const [bx, by, bw, bh] = d.box;
+              const px = bx * cw, py = by * ch, pw = bw * cw, ph = bh * ch;
+              const info = CLASS_INFO[d.label] || { friendly: d.label, color: "#22d3ee" };
+              commBlurCtx.strokeStyle = info.color;
+              commBlurCtx.lineWidth = 3;
+              commBlurCtx.strokeRect(px, py, pw, ph);
+              const tag = `${info.friendly} ${Math.round(d.conf * 100)}%`;
+              const tw = commBlurCtx.measureText(tag).width + 12;
+              const ty = Math.max(4, py - 24);
+              commBlurCtx.fillStyle = info.color;
+              fillRoundRect(commBlurCtx, Math.min(cw - tw - 4, Math.max(4, px)), ty, tw, 22, 5);
+              commBlurCtx.fillStyle = "#0b1720";
+              commBlurCtx.fillText(tag, Math.min(cw - tw - 4, Math.max(4, px)) + 6, ty + 15);
+            });
+          }
+
+          // Apply saved privacy blur rectangles
+          commBlurRects.forEach((r) => {
+            pixelateRegion(commBlurCtx, r.x * commBlurCanvas.width, r.y * commBlurCanvas.height, r.w * commBlurCanvas.width, r.h * commBlurCanvas.height);
+          });
+
+          // Preview active drag selection
+          if (commDragStart && commDragCurrent) {
+            const x = Math.min(commDragStart.x, commDragCurrent.x) * commBlurCanvas.width;
+            const y = Math.min(commDragStart.y, commDragCurrent.y) * commBlurCanvas.height;
+            const w = Math.abs(commDragCurrent.x - commDragStart.x) * commBlurCanvas.width;
+            const h = Math.abs(commDragCurrent.y - commDragStart.y) * commBlurCanvas.height;
+            commBlurCtx.fillStyle = "rgba(8, 145, 178, 0.35)";
+            commBlurCtx.fillRect(x, y, w, h);
+            commBlurCtx.strokeStyle = "#22d3ee";
+            commBlurCtx.lineWidth = 2;
+            commBlurCtx.strokeRect(x, y, w, h);
+          }
+        }
+
+        function canvasNormPoint(e) {
+          const rect = commBlurCanvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return {
+            x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+            y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+          };
+        }
+
+        function startBlurDrag(e) {
+          if (!commBlurMode || !commBaseImg) return;
+          e.preventDefault();
+          commDragStart = canvasNormPoint(e);
+          commDragCurrent = commDragStart;
+        }
+        function moveBlurDrag(e) {
+          if (!commDragStart) return;
+          e.preventDefault();
+          commDragCurrent = canvasNormPoint(e);
+          drawCommPreview();
+        }
+        function endBlurDrag() {
+          if (!commDragStart || !commDragCurrent) return;
+          const x = Math.min(commDragStart.x, commDragCurrent.x);
+          const y = Math.min(commDragStart.y, commDragCurrent.y);
+          const w = Math.abs(commDragCurrent.x - commDragStart.x);
+          const h = Math.abs(commDragCurrent.y - commDragStart.y);
+          if (w > 0.025 && h > 0.025) {
+            commBlurRects.push({ x, y, w, h });
+            showToast("Area privasi disensor ✓");
+          }
+          commDragStart = null;
+          commDragCurrent = null;
+          drawCommPreview();
+        }
+        commBlurCanvas.addEventListener("mousedown", startBlurDrag);
+        window.addEventListener("mousemove", moveBlurDrag);
+        window.addEventListener("mouseup", endBlurDrag);
+        commBlurCanvas.addEventListener("touchstart", startBlurDrag, { passive: false });
+        commBlurCanvas.addEventListener("touchmove", moveBlurDrag, { passive: false });
+        commBlurCanvas.addEventListener("touchend", endBlurDrag);
+
+        function setBlurMode(on) {
+          commBlurMode = Boolean(on);
+          commBlurWrap.classList.toggle("blur-active", commBlurMode);
+          const btn = document.getElementById("btn-toggle-blur-mode");
+          btn.classList.toggle("btn-primary", commBlurMode);
+          btn.textContent = commBlurMode ? "✓ Geser Foto untuk Sensor" : "🔒 Sensor Area Privasi";
+        }
+        document.getElementById("btn-toggle-blur-mode").onclick = () => setBlurMode(!commBlurMode);
+        document.getElementById("btn-undo-blur").onclick = () => {
+          if (commBlurRects.length) { commBlurRects.pop(); drawCommPreview(); showToast("Sensor terakhir dibatalkan"); }
+        };
+        document.getElementById("btn-clear-comm-photo").onclick = () => {
+          commBaseImg = null;
+          commFromScanner = false;
+          commBlurRects = [];
+          commAttachedAiSummary = "";
+          commAttachedDetections = [];
+          setBlurMode(false);
+          document.getElementById("comm-ai-boxes-wrap").classList.add("hidden");
+          drawCommPreview();
+        };
+        document.getElementById("comm-include-ai-boxes").addEventListener("change", drawCommPreview);
+
+        document.getElementById("c-anon").addEventListener("change", (e) => {
+          document.getElementById("c-author-name-wrap").classList.toggle("hidden", e.target.checked);
+        });
+
+        function attachScannerPhotoToComm() {
+          if (!currentImage) return showToast("Belum ada foto aktif di Scan AI.");
+          commBaseImg = currentImage;
+          commFromScanner = true;
+          commBlurRects = [];
+          const list = visibleDetections();
+          commAttachedDetections = list;
+          const bad = list.filter((d) => d.label === "Bad Weld").length;
+          const def = list.filter((d) => d.label === "Defect").length;
+          const good = list.filter((d) => d.label === "Good Weld").length;
+          const parts = [];
+          if (bad) parts.push(`${bad} jalur las perlu dicek`);
+          if (def) parts.push(`${def} titik cacat kecil`);
+          if (good) parts.push(`${good} jalur las rapi`);
+          commAttachedAiSummary = list.length ? `${bad || def ? "Perlu Periksa" : "Terlihat Rapi"} · ${parts.join(", ")}` : "";
+          document.getElementById("comm-ai-boxes-wrap").classList.remove("hidden");
+          document.getElementById("comm-include-ai-boxes").checked = true;
+          drawCommPreview();
+        }
+
+        async function handleCommPickedFile(file) {
+          if (!file) return;
+          try {
+            const { img } = await prepareImageFile(file);
+            commBaseImg = img;
+            commFromScanner = false;
+            commBlurRects = [];
+            commAttachedAiSummary = "";
+            commAttachedDetections = [];
+            document.getElementById("comm-ai-boxes-wrap").classList.add("hidden");
+            drawCommPreview();
+            showToast("Foto dimuat — gunakan Sensor Privasi jika ada nama kapal.");
+          } catch (err) {
+            showToast(err.message || "Gagal memuat foto.");
+          }
+        }
+        commGalleryInput.addEventListener("change", (e) => {
+          const f = e.target.files?.[0];
+          if (f) handleCommPickedFile(f);
+          commGalleryInput.value = "";
+        });
+        commCameraInput.addEventListener("change", (e) => {
+          const f = e.target.files?.[0];
+          if (f) handleCommPickedFile(f);
+          commCameraInput.value = "";
+        });
+
+        function openCommModal(withScannerPhoto) {
+          setBlurMode(false);
+          if (withScannerPhoto && currentImage) {
+            attachScannerPhotoToComm();
+          } else if (!commBaseImg) {
+            document.getElementById("comm-ai-boxes-wrap").classList.add("hidden");
+            drawCommPreview();
+          }
+          if (authState.authenticated && authState.user?.name) {
+            const nm = document.getElementById("c-author-name");
+            if (!nm.value.trim()) nm.value = authState.user.name;
+          }
+          commModal.classList.remove("hidden");
+        }
+        document.getElementById("btn-ask-community").onclick = () => openCommModal(true);
+        document.getElementById("btn-case-from-scan").onclick = () => openCommModal(true);
+        document.getElementById("btn-new-case").onclick = () => openCommModal(false);
+        document.getElementById("btn-comm-use-scan").onclick = () => { attachScannerPhotoToComm(); showToast("Foto Scan AI dilampirkan ✓"); };
+        document.getElementById("btn-close-comm-modal").onclick = () => commModal.classList.add("hidden");
+        commModal.addEventListener("click", (e) => { if (e.target === commModal) commModal.classList.add("hidden"); });
+
+        document.getElementById("btn-submit-case").onclick = async () => {
+          const title = document.getElementById("c-title").value.trim();
+          const question = document.getElementById("c-question").value.trim();
+          if (title.length < 6) return showToast("Isi judul singkat kasus minimal 6 karakter.");
+          if (question.length < 10) return showToast("Jelaskan pertanyaan lapangan minimal 10 karakter.");
+          const btn = document.getElementById("btn-submit-case");
+          btn.disabled = true;
+          btn.textContent = "Mengirim…";
+          try {
+            let imageDataUrl = "";
+            if (commBaseImg) {
+              drawCommPreview();
+              imageDataUrl = commBlurCanvas.toDataURL("image/jpeg", 0.84);
+            }
+            const payload = {
+              category: document.getElementById("c-category").value,
+              urgency: document.getElementById("c-urgency").value,
+              authorRole: document.getElementById("c-role").value,
+              processPos: document.getElementById("c-process").value.trim(),
+              materialSpec: document.getElementById("c-material").value.trim(),
+              title,
+              question,
+              isAnonymous: document.getElementById("c-anon").checked,
+              authorName: document.getElementById("c-author-name").value.trim(),
+              imageDataUrl,
+              aiSummary: commAttachedAiSummary,
+              aiDetections: commAttachedDetections,
+              hasPrivacyBlur: commBlurRects.length > 0,
+            };
+            const res = await fetch("/api/community/posts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Gagal mengirim kasus.");
+            document.getElementById("c-title").value = "";
+            document.getElementById("c-question").value = "";
+            document.getElementById("c-process").value = "";
+            document.getElementById("c-material").value = "";
+            commBaseImg = null;
+            commBlurRects = [];
+            commAttachedAiSummary = "";
+            commAttachedDetections = [];
+            commModal.classList.add("hidden");
+            showToast("Kasus berhasil dipublikasikan ke Komunitas ✓");
+            activateTab("komunitas");
+          } catch (err) {
+            showToast(err.message || "Gagal mengirim kasus.");
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Kirim ke Komunitas";
+          }
+        };
+
+        function formatRelTime(iso) {
+          const ts = Date.parse(iso);
+          if (!ts) return iso || "";
+          const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+          if (diffSec < 60) return "Baru saja";
+          if (diffSec < 3600) return `${Math.floor(diffSec / 60)} menit lalu`;
+          if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} jam lalu`;
+          return `${Math.floor(diffSec / 86400)} hari lalu`;
+        }
+
+        function renderConsensusHtml(votes) {
+          const total = votes.total || 0;
+          if (!total) return `<div class="consensus-text">Belum ada suara second opinion — jadilah rekan pertama yang membantu!</div>`;
+          const pPass = Math.round((votes.pass / total) * 100);
+          const pNdt = Math.round((votes.ndt / total) * 100);
+          const pRew = Math.max(0, 100 - pPass - pNdt);
+          const parts = [];
+          if (votes.rework) parts.push(`${pRew}% Wajib Rework`);
+          if (votes.ndt) parts.push(`${pNdt}% Cek NDT`);
+          if (votes.pass) parts.push(`${pPass}% Aman`);
+          return `<div class="consensus-bar">
+              ${votes.pass ? `<div class="seg-pass" style="width:${pPass}%"></div>` : ""}
+              ${votes.ndt ? `<div class="seg-ndt" style="width:${pNdt}%"></div>` : ""}
+              ${votes.rework ? `<div class="seg-rework" style="width:${pRew}%"></div>` : ""}
+            </div>
+            <div class="consensus-text">Konsensus sementara: <strong>${parts.join(" · ")}</strong> (${total} suara)</div>`;
+        }
+
+        function renderCaseCard(p) {
+          const urg = URGENCY_META[p.urgency] || URGENCY_META.normal;
+          const init = (p.authorName || "A").replace(/^Anonim\s*·\s*/i, "").trim().charAt(0).toUpperCase() || "R";
+          const specs = [
+            `<span class="hashtag">#${escHtml(p.category)}</span>`,
+            p.processPos ? `<span class="hashtag">${escHtml(p.processPos)}</span>` : "",
+            p.materialSpec ? `<span class="hashtag">${escHtml(p.materialSpec)}</span>` : "",
+            p.hasPrivacyBlur ? `<span class="hashtag">🔒 Privasi Disensor</span>` : "",
+          ].filter(Boolean).join("");
+
+          const repliesHtml = (p.replies || []).map((r) => {
+            const rec = REC_META[r.recommendation] || REC_META.tips;
+            return `<div class="reply-card ${r.isAccepted ? "accepted" : ""}">
+              <div class="reply-head">
+                <div class="reply-author">
+                  <strong>${escHtml(r.authorName)}</strong>
+                  ${r.isVerified ? `<span class="verified-mark" title="Akun Terverifikasi">✓</span>` : ""}
+                  <span class="role-chip">${escHtml(r.authorRole)}</span>
+                  <span class="badge ${rec.cls}">${escHtml(rec.label)}</span>
+                  ${r.isAccepted ? `<span class="badge b-ok">✓ Solusi Terbaik</span>` : ""}
+                </div>
+                <small style="color:var(--muted)">${escHtml(formatRelTime(r.createdAt))}</small>
+              </div>
+              <p class="reply-body">${escHtml(r.body)}</p>
+              <div class="reply-foot">
+                <button type="button" class="icon-pill ok ${r.myHelpful ? "on" : ""}" data-helpful-id="${escHtml(r.id)}">👍 Bermanfaat (${r.helpfulCount})</button>
+                ${p.canManage ? `<button type="button" class="btn btn-sm" data-accept-post="${escHtml(p.id)}" data-accept-reply="${escHtml(r.id)}">${r.isAccepted ? "Batalkan Solusi" : "✓ Tandai Solusi Terbaik"}</button>` : ""}
+              </div>
+            </div>`;
+          }).join("");
+
+          const defaultReplyName = authState.authenticated && authState.user?.name ? authState.user.name : "";
+
+          return `<article class="case-card" data-case-id="${escHtml(p.id)}">
+            <div class="post-head">
+              <div class="post-author">
+                <span class="avatar">${escHtml(init)}</span>
+                <div>
+                  <strong style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap">
+                    ${escHtml(p.authorName)}
+                    ${p.isVerified ? `<span class="verified-mark" title="Akun Terverifikasi">✓</span>` : ""}
+                  </strong>
+                  <small>${escHtml(p.authorRole)} · ${escHtml(formatRelTime(p.createdAt))}</small>
+                </div>
+              </div>
+              <div class="case-meta-badges">
+                ${p.isSolved ? `<span class="badge b-ok">✓ Selesai</span>` : ""}
+                <span class="badge ${urg.cls}">${urg.label}</span>
+              </div>
+            </div>
+
+            ${p.imageUrl ? `<div class="case-img-wrap" data-zoom-img="${escHtml(p.imageUrl)}">
+              <img class="case-img" src="${escHtml(p.imageUrl)}" alt="Foto kasus ${escHtml(p.title)}" loading="lazy" />
+              <span class="case-img-badge">Ketuk untuk perbesar</span>
+            </div>` : ""}
+
+            <div class="post-body">
+              <h2 class="case-title">${escHtml(p.title)}</h2>
+              ${p.aiSummary ? `<div class="ai-note-pill">🤖 Scan AI: ${escHtml(p.aiSummary)}</div>` : ""}
+              <p class="case-question">${escHtml(p.question)}</p>
+              <div class="tag-row">${specs}</div>
+
+              <div class="opinion-box">
+                <div class="opinion-head">
+                  <span>🩺 Second Opinion Rekan Kerja</span>
+                  <span>${p.votes.total || 0} suara</span>
+                </div>
+                <div class="opinion-btns">
+                  <button type="button" class="op-btn pass ${p.myVote === "pass" ? "active" : ""}" data-vote-post="${escHtml(p.id)}" data-vote-op="pass">
+                    <span>✅ Aman / Lolos</span><strong>${p.votes.pass || 0}</strong>
+                  </button>
+                  <button type="button" class="op-btn ndt ${p.myVote === "ndt" ? "active" : ""}" data-vote-post="${escHtml(p.id)}" data-vote-op="ndt">
+                    <span>🔍 Cek NDT</span><strong>${p.votes.ndt || 0}</strong>
+                  </button>
+                  <button type="button" class="op-btn rework ${p.myVote === "rework" ? "active" : ""}" data-vote-post="${escHtml(p.id)}" data-vote-op="rework">
+                    <span>🛠️ Wajib Rework</span><strong>${p.votes.rework || 0}</strong>
+                  </button>
+                </div>
+                <div data-consensus-for="${escHtml(p.id)}">${renderConsensusHtml(p.votes)}</div>
+              </div>
+
+              <div class="replies-wrap">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                  <strong style="font-size:13px">Saran &amp; Diskusi Teknis (${p.replyCount})</strong>
+                  ${p.canManage ? `<button type="button" class="btn btn-sm btn-danger" data-del-case="${escHtml(p.id)}">Hapus Kasus</button>` : ""}
+                </div>
+                ${repliesHtml || `<div style="font-size:13px;color:var(--muted)">Belum ada saran tertulis. Bantu rekan Anda dengan pengalaman lapangan di bawah ini.</div>`}
+
+                <form class="reply-form" data-reply-form="${escHtml(p.id)}">
+                  <div class="reply-form-row">
+                    <select name="authorRole" aria-label="Peran Anda">
+                      <option value="QC Inspector">Peran: QC Inspector</option>
+                      <option value="Welder">Peran: Welder</option>
+                      <option value="Marine Engineer">Peran: Marine Engineer</option>
+                      <option value="Surveyor">Peran: Surveyor</option>
+                      <option value="Fitter">Peran: Fitter</option>
+                      <option value="K3 / Safety">Peran: K3 / Safety</option>
+                    </select>
+                    <select name="recommendation" aria-label="Rekomendasi Anda">
+                      <option value="tips">Saran: Tips Teknis</option>
+                      <option value="rework">Saran: Wajib Rework</option>
+                      <option value="ndt">Saran: Perlu Cek NDT</option>
+                      <option value="pass">Saran: Aman / Lolos Visual</option>
+                    </select>
+                  </div>
+                  <input name="authorName" type="text" maxlength="80" value="${escHtml(defaultReplyName)}" placeholder="Nama / panggilan Anda (opsional, mis. Budi · QC Batam)" />
+                  <textarea name="body" rows="2" maxlength="2000" required placeholder="Tulis saran teknis: parameter ampere, standar acuan, langkah repair, atau tips K3…"></textarea>
+                  <div style="display:flex;justify-content:flex-end">
+                    <button type="submit" class="btn btn-primary btn-sm">Kirim Saran</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </article>`;
+        }
+
+        async function loadPeerCommunity() {
+          const listEl = document.getElementById("comm-posts-list");
+          listEl.innerHTML = `<div class="card card-pad" style="color:var(--muted)">Memuat kasus komunitas maritim…</div>`;
+          try {
+            const params = new URLSearchParams();
+            if (commFilterStatus) params.set("status", commFilterStatus);
+            if (commFilterCat) params.set("category", commFilterCat);
+            const q = document.getElementById("comm-search").value.trim();
+            if (q) params.set("q", q);
+            const res = await fetch(`/api/community/posts?${params.toString()}`, { cache: "no-store" });
+            const data = await res.json();
+            commCachedPosts = data.items || [];
+            if (data.stats) {
+              document.getElementById("comm-stat-open").textContent = String(data.stats.openPosts || 0);
+              document.getElementById("comm-stat-solved").textContent = String(data.stats.solvedPosts || 0);
+              document.getElementById("comm-stat-replies").textContent = String(data.stats.totalReplies || 0);
+            }
+            if (!commCachedPosts.length) {
+              listEl.innerHTML = `<div class="card card-pad" style="text-align:center;color:var(--muted)">
+                <p style="margin:0 0 10px">Belum ada kasus yang cocok dengan filter ini.</p>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-empty-new-case">+ Buat Kasus Pertama</button>
+              </div>`;
+              const eb = document.getElementById("btn-empty-new-case");
+              if (eb) eb.onclick = () => openCommModal(false);
+              return;
+            }
+            listEl.innerHTML = commCachedPosts.map(renderCaseCard).join("");
+            bindCommunityInteractions(listEl);
+          } catch {
+            listEl.innerHTML = `<div class="card card-pad" style="color:var(--danger)">Gagal memuat forum komunitas. Coba segarkan kembali.</div>`;
+          }
+        }
+
+        function bindCommunityInteractions(container) {
+          container.querySelectorAll("[data-zoom-img]").forEach((el) => {
+            el.onclick = () => openLightbox(el.dataset.zoomImg);
+          });
+          container.querySelectorAll("[data-vote-post]").forEach((btn) => {
+            btn.onclick = async () => {
+              const postId = btn.dataset.votePost;
+              const opinion = btn.dataset.voteOp;
+              try {
+                const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/vote`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ opinion }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Gagal menyimpan suara.");
+                const card = container.querySelector(`[data-case-id="${postId}"]`);
+                if (card) {
+                  card.querySelectorAll(`[data-vote-post="${postId}"]`).forEach((b) => {
+                    const op = b.dataset.voteOp;
+                    b.classList.toggle("active", data.myVote === op);
+                    const strong = b.querySelector("strong");
+                    if (strong) strong.textContent = String(data.votes[op] || 0);
+                  });
+                  const headCount = card.querySelector(".opinion-head span:last-child");
+                  if (headCount) headCount.textContent = `${data.votes.total || 0} suara`;
+                  const consEl = card.querySelector(`[data-consensus-for="${postId}"]`);
+                  if (consEl) consEl.innerHTML = renderConsensusHtml(data.votes);
+                }
+                showToast(data.myVote ? "Pendapat kedua Anda tercatat ✓" : "Suara dibatalkan");
+              } catch (err) {
+                showToast(err.message || "Gagal mengirim suara.");
+              }
+            };
+          });
+
+          container.querySelectorAll("[data-helpful-id]").forEach((btn) => {
+            btn.onclick = async () => {
+              const replyId = btn.dataset.helpfulId;
+              try {
+                const res = await fetch(`/api/community/replies/${encodeURIComponent(replyId)}/helpful`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: "{}",
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Gagal menandai bermanfaat.");
+                btn.classList.toggle("on", Boolean(data.myHelpful));
+                btn.textContent = `👍 Bermanfaat (${data.helpfulCount})`;
+              } catch (err) {
+                showToast(err.message);
+              }
+            };
+          });
+
+          container.querySelectorAll("[data-accept-reply]").forEach((btn) => {
+            btn.onclick = async () => {
+              const postId = btn.dataset.acceptPost;
+              const replyId = btn.dataset.acceptReply;
+              try {
+                const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/accept`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ replyId }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Gagal menandai solusi.");
+                showToast(data.isSolved ? "Solusi Terbaik ditandai ✓" : "Tanda solusi dilepas");
+                loadPeerCommunity();
+              } catch (err) {
+                showToast(err.message);
+              }
+            };
+          });
+
+          container.querySelectorAll("[data-del-case]").forEach((btn) => {
+            btn.onclick = async () => {
+              const postId = btn.dataset.delCase;
+              try {
+                const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}`, { method: "DELETE" });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Gagal menghapus kasus.");
+                showToast("Kasus dihapus dari komunitas");
+                loadPeerCommunity();
+              } catch (err) {
+                showToast(err.message);
+              }
+            };
+          });
+
+          container.querySelectorAll("[data-reply-form]").forEach((form) => {
+            form.onsubmit = async (e) => {
+              e.preventDefault();
+              const postId = form.dataset.replyForm;
+              const fd = new FormData(form);
+              const body = String(fd.get("body") || "").trim();
+              if (body.length < 4) return showToast("Tulis saran minimal 4 karakter.");
+              const submitBtn = form.querySelector('button[type="submit"]');
+              submitBtn.disabled = true;
+              try {
+                const res = await fetch(`/api/community/posts/${encodeURIComponent(postId)}/replies`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    authorRole: String(fd.get("authorRole") || "QC Inspector"),
+                    recommendation: String(fd.get("recommendation") || "tips"),
+                    authorName: String(fd.get("authorName") || "").trim(),
+                    body,
+                  }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Gagal mengirim saran.");
+                showToast("Terima kasih! Saran Anda membantu rekan lapangan ✓");
+                loadPeerCommunity();
+              } catch (err) {
+                showToast(err.message || "Gagal mengirim saran.");
+                submitBtn.disabled = false;
+              }
+            };
+          });
+        }
+
+        document.querySelectorAll("[data-comm-status]").forEach((btn) => {
+          btn.onclick = () => {
+            commFilterStatus = btn.dataset.commStatus;
+            document.querySelectorAll("[data-comm-status]").forEach((b) => b.classList.toggle("active", b === btn));
+            loadPeerCommunity();
+          };
+        });
+        document.querySelectorAll("[data-comm-cat]").forEach((btn) => {
+          btn.onclick = () => {
+            commFilterCat = btn.dataset.commCat;
+            document.querySelectorAll("[data-comm-cat]").forEach((b) => b.classList.toggle("active", b === btn));
+            loadPeerCommunity();
+          };
+        });
+        document.getElementById("comm-search").addEventListener("input", () => {
+          clearTimeout(commSearchTimer);
+          commSearchTimer = setTimeout(loadPeerCommunity, 260);
+        });
+        document.getElementById("btn-comm-refresh").onclick = () => { loadPeerCommunity(); showToast("Komunitas diperbarui"); };
+
         async function loadCommunityFeed() {
           const feedEl = document.getElementById("community-feed");
           let items = [];
+          let commItems = [];
           try {
-            const res = await fetch("/api/feed", { cache: "no-store" });
-            items = (await res.json()).items || [];
+            const [fRes, cRes] = await Promise.all([
+              fetch("/api/feed", { cache: "no-store" }),
+              fetch("/api/community/posts?limit=2", { cache: "no-store" }),
+            ]);
+            items = (await fRes.json()).items || [];
+            commItems = (await cRes.json()).items || [];
           } catch {}
+
+          const peerCards = commItems.map((p) => {
+            const urg = URGENCY_META[p.urgency] || URGENCY_META.normal;
+            const init = (p.authorName || "A").replace(/^Anonim\s*·\s*/i, "").trim().charAt(0).toUpperCase() || "R";
+            return `<article class="card">
+              <div class="post-head">
+                <div class="post-author">
+                  <span class="avatar">${escHtml(init)}</span>
+                  <div>
+                    <strong>${escHtml(p.authorName)}</strong>
+                    <small>${escHtml(p.category)} · ${p.votes.total || 0} suara · ${p.replyCount} saran</small>
+                  </div>
+                </div>
+                <span class="badge ${urg.cls}">${urg.label}</span>
+              </div>
+              ${p.imageUrl ? `<img class="feed-post-img" src="${escHtml(p.imageUrl)}" alt="${escHtml(p.title)}" loading="lazy" />` : ""}
+              <div class="post-body">
+                <strong style="display:block;margin-bottom:5px;font-size:14.5px">${escHtml(p.title)}</strong>
+                <p style="margin:0 0 10px;font-size:13px;color:var(--ink-soft)">${escHtml(p.question.slice(0, 150))}${p.question.length > 150 ? "…" : ""}</p>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div class="tag-row" style="margin:0">
+                    <span class="hashtag">✅ ${p.votes.pass || 0}</span>
+                    <span class="hashtag">🔍 ${p.votes.ndt || 0}</span>
+                    <span class="hashtag">🛠️ ${p.votes.rework || 0}</span>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" data-open-comm="1">Bantu Jawab →</button>
+                </div>
+              </div>
+            </article>`;
+          }).join("");
 
           const savedCards = items.map((it) => {
             const vCls = it.verdict === "ACCEPT" ? "b-ok" : it.verdict === "REPAIR" ? "b-high" : "b-warn";
@@ -1746,7 +2729,10 @@
             </article>`;
           }).join("");
 
-          feedEl.innerHTML = savedCards + showcaseCards;
+          feedEl.innerHTML = peerCards + savedCards + showcaseCards;
+          feedEl.querySelectorAll("[data-open-comm]").forEach((btn) => {
+            btn.onclick = () => activateTab("komunitas");
+          });
           feedEl.querySelectorAll("[data-load-sample]").forEach((btn) => {
             btn.onclick = () => { loadSample(btn.dataset.loadSample); window.scrollTo({ top: 0, behavior: "smooth" }); };
           });
@@ -1841,6 +2827,7 @@
         loadSample("test-05");
         loadCommunityFeed();
         if (location.pathname === "/whats-new") activateTab("whats-new");
+        else if (location.pathname === "/komunitas") activateTab("komunitas");
       })();
     </script>
   </body>
