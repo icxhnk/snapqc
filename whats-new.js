@@ -1,6 +1,14 @@
 /* Single versioned source for SnapQC release history. */
 const SnapQCReleases = [
   {
+    version: "0.5.3",
+    date: "2026-11-25",
+    category: "Peningkatan",
+    title: "Peningkatan total desain antarmuka: tipografi modern, ikon SVG presisi, & feed lebih lapang",
+    summary:
+      "Memperbarui seluruh tampilan SnapQC menjadi lebih bersih, modern, dan nyaman dipandang di HP maupun desktop: tipografi Plus Jakarta Sans, penggantian seluruh emoji antarmuka dengan ikon SVG presisi, header Komunitas lebih ringkas agar kasus pertama langsung terlihat, kartu diskusi rapi dengan pratinjau solusi & ekspansi komentar sekali ketuk, tombol Galeri menonjol di bar bawah mobile, serta modal bergaya bottom-sheet di layar HP.",
+  },
+  {
     version: "0.5.2",
     date: "2026-11-25",
     category: "Baru",
